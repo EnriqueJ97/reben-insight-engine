@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -285,15 +286,17 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button onClick={uploadEmployees} variant="outline" className="h-32">
-                    <div className="text-center">
-                      <Download className="h-8 w-8 mx-auto mb-2" />
-                      <div className="font-medium">Cargar CSV</div>
-                      <div className="text-sm text-muted-foreground">
-                        Formato: id, nombre, email, rol, team
+                  <Link to="/dashboard/employees/import">
+                    <Button variant="outline" className="h-32 w-full">
+                      <div className="text-center">
+                        <Download className="h-8 w-8 mx-auto mb-2" />
+                        <div className="font-medium">Importar Empleados</div>
+                        <div className="text-sm text-muted-foreground">
+                          Carga masiva desde CSV
+                        </div>
                       </div>
-                    </div>
-                  </Button>
+                    </Button>
+                  </Link>
                   
                   <div className="p-4 rounded-lg border-2 border-dashed border-border">
                     <div className="text-center space-y-2">
@@ -310,7 +313,7 @@ const Settings = () => {
                   <Users className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Formato CSV requerido:</strong> El archivo debe contener las columnas: 
-                    id, nombre, email, rol (EMPLOYEE/MANAGER/HR_ADMIN), team_id.
+                    id, nombre, email, rol (EMPLOYEE/MANAGER/HR_ADMIN), equipo.
                   </AlertDescription>
                 </Alert>
               </CardContent>

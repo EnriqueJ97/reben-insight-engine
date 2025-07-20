@@ -14,6 +14,7 @@ import Team from "@/pages/Team";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
+import EmployeeImport from "@/components/EmployeeImport";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <Settings />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="employees/import"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <EmployeeImport />
             </RoleProtectedRoute>
           }
         />
