@@ -5,33 +5,147 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { WellnessMetrics } from '@/components/ui/wellness-metrics';
-import { Users, AlertTriangle, MessageSquare, TrendingUp, Heart, Calendar } from 'lucide-react';
+import { Users, AlertTriangle, MessageSquare, TrendingUp, Heart, Calendar, UserCheck, Shield, Activity } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useProfiles } from '@/hooks/useProfiles';
+import { useAlerts } from '@/hooks/useAlerts';
+import { useCheckins } from '@/hooks/useCheckins';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const Team = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const { profiles: teamMembers, loading: profilesLoading, fetchTeamMembers, getTeamOverview } = useProfiles();
+  const { alerts, loading: alertsLoading, resolveAlert, fetchAlerts } = useAlerts();
+  const { getTeamCheckinStats } = useCheckins();
+  
+  const [teamStats, setTeamStats] = useState<any>(null);
+  const [teamMetrics, setTeamMetrics] = useState<any[]>([]);
+  const [isResolving, setIsResolving] = useState<string | null>(null);
 
-  // Mock team data
-  const teamMembers = [
-    { id: '1', name: 'María Rodríguez', email: 'maria@empresa.com', avatar: '👩‍💻', wellnessScore: 58, riskLevel: 'high', lastCheckin: '2 horas', alerts: 3 },
-    { id: '2', name: 'Juan Pérez', email: 'juan@empresa.com', avatar: '👨‍💼', wellnessScore: 82, riskLevel: 'low', lastCheckin: '1 día', alerts: 0 },
-    { id: '3', name: 'Ana López', email: 'ana.lopez@empresa.com', avatar: '👩‍🎨', wellnessScore: 75, riskLevel: 'medium', lastCheckin: '3 horas', alerts: 1 },
-    { id: '4', name: 'Pedro Martín', email: 'pedro@empresa.com', avatar: '👨‍🔧', wellnessScore: 88, riskLevel: 'low', lastCheckin: '5 horas', alerts: 0 },
-    { id: '5', name: 'Sofia García', email: 'sofia@empresa.com', avatar: '👩‍🔬', wellnessScore: 65, riskLevel: 'medium', lastCheckin: '1 día', alerts: 2 }
-  ];
+  // Load team data
+  useEffect(() => {
+    if (user && (user.role === 'MANAGER' || user.role === 'HR_ADMIN')) {
+      fetchTeamMembers();
+      fetchAlerts();
+      loadTeamStats();
+    }
+  }, [user]);
 
-  const teamMetrics = [
-    { title: 'Bienestar Promedio', value: 74, trend: 'up' as const, status: 'good' as const, description: '5 miembros activos' },
-    { title: 'Riesgo Alto', value: 20, trend: 'stable' as const, status: 'warning' as const, description: '1 persona' },
-    { title: 'Participación', value: 100, trend: 'up' as const, status: 'good' as const, description: 'Todos activos' },
-    { title: 'Satisfacción', value: 78, trend: 'up' as const, status: 'good' as const, description: 'Tendencia positiva' }
-  ];
+  const loadTeamStats = async () => {
+    try {
+      const overview = await getTeamOverview();
+      if (overview) {
+        setTeamStats(overview);
+        
+        // Calculate team metrics from real data using memberStats
+        const memberStats = overview.memberStats || [];
+        const avgWellness = memberStats.length > 0 
+          ? Math.round(memberStats.reduce((sum: number, m: any) => sum + (m.stats?.averageMood || 0), 0) / memberStats.length * 10)
+          : 0;
+        
+        const highRiskCount = memberStats.filter((m: any) => (m.stats?.averageMood || 0) < 6).length || 0;
+        const highRiskPercentage = memberStats.length > 0 
+          ? Math.round((highRiskCount / memberStats.length) * 100)
+          : 0;
+        
+        const participationRate = memberStats.length > 0
+          ? Math.round((memberStats.filter((m: any) => (m.stats?.totalCheckins || 0) > 0).length / memberStats.length) * 100)
+          : 0;
 
-  const recentAlerts = [
-    { id: '1', member: 'María Rodríguez', type: 'ALERTA_BURNOUT_ALTO', message: 'Reporta agotamiento emocional alto (3 días)', time: '2 horas', severity: 'high' },
-    { id: '2', member: 'Ana López', type: 'ALERTA_FUGA_TALENTO', message: 'Indica intención de búsqueda activa', time: '1 día', severity: 'medium' },
-    { id: '3', member: 'Sofia García', type: 'ALERTA_INSATISFACCION', message: 'Baja satisfacción con políticas actuales', time: '2 días', severity: 'medium' }
-  ];
+        setTeamMetrics([
+          { 
+            title: 'Bienestar Promedio', 
+            value: avgWellness, 
+            trend: avgWellness >= 70 ? 'up' as const : avgWellness >= 50 ? 'stable' as const : 'down' as const, 
+            status: avgWellness >= 70 ? 'good' as const : avgWellness >= 50 ? 'warning' as const : 'critical' as const, 
+            description: `${memberStats.length || 0} miembros` 
+          },
+          { 
+            title: 'Riesgo Alto', 
+            value: highRiskPercentage, 
+            trend: highRiskPercentage <= 20 ? 'down' as const : 'up' as const, 
+            status: highRiskPercentage <= 20 ? 'good' as const : highRiskPercentage <= 40 ? 'warning' as const : 'critical' as const, 
+            description: `${highRiskCount} persona${highRiskCount !== 1 ? 's' : ''}` 
+          },
+          { 
+            title: 'Participación', 
+            value: participationRate, 
+            trend: participationRate >= 80 ? 'up' as const : 'stable' as const, 
+            status: participationRate >= 80 ? 'good' as const : participationRate >= 60 ? 'warning' as const : 'critical' as const, 
+            description: 'Últimos 7 días' 
+          },
+          { 
+            title: 'Alertas Activas', 
+            value: alerts.filter(a => !a.resolved).length, 
+            trend: 'stable' as const, 
+            status: alerts.filter(a => !a.resolved).length === 0 ? 'good' as const : alerts.filter(a => !a.resolved).length <= 3 ? 'warning' as const : 'critical' as const, 
+            description: 'Requieren atención' 
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error loading team stats:', error);
+    }
+  };
+
+  const handleResolveAlert = async (alertId: string) => {
+    setIsResolving(alertId);
+    try {
+      await resolveAlert(alertId);
+      toast({
+        title: "Alerta resuelta",
+        description: "La alerta ha sido marcada como resuelta exitosamente."
+      });
+      loadTeamStats(); // Refresh metrics
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo resolver la alerta. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResolving(null);
+    }
+  };
+
+  const getWellnessScore = (member: any) => {
+    if (!member.stats?.averageMood) return 0;
+    return Math.round(member.stats.averageMood * 10);
+  };
+
+  const getRiskLevel = (score: number) => {
+    if (score >= 70) return 'low';
+    if (score >= 50) return 'medium';
+    return 'high';
+  };
+
+  const getMemberAlerts = (memberId: string) => {
+    return alerts.filter(alert => alert.user_id === memberId && !alert.resolved).length;
+  };
+
+  const getLastCheckinText = (member: any) => {
+    if (!member.stats?.lastCheckin) return 'Sin check-ins';
+    const lastCheckin = new Date(member.stats.lastCheckin);
+    const now = new Date();
+    const diffHours = Math.floor((now.getTime() - lastCheckin.getTime()) / (1000 * 60 * 60));
+    
+    if (diffHours < 1) return 'Hace menos de 1 hora';
+    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+  };
+
+  const unresolvedAlerts = alerts.filter(alert => !alert.resolved);
+
+  if (profilesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const getRiskColor = (level: string) => {
     switch (level) {
@@ -82,11 +196,11 @@ const Team = () => {
       <WellnessMetrics metrics={teamMetrics} />
 
       {/* Active Alerts */}
-      {recentAlerts.length > 0 && (
+      {unresolvedAlerts.length > 0 && (
         <Alert className="border-warning bg-warning/5">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Alertas Activas:</strong> Tienes {recentAlerts.length} alertas que requieren tu atención.
+            <strong>Alertas Activas:</strong> Tienes {unresolvedAlerts.length} alertas que requieren tu atención inmediata.
           </AlertDescription>
         </Alert>
       )}
@@ -103,49 +217,65 @@ const Team = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="text-lg">{member.avatar}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-medium">{member.name}</h3>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Último check-in: hace {member.lastCheckin}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${getRiskColor(member.riskLevel)}`}>
-                          {member.wellnessScore}%
+                {teamMembers.map((member) => {
+                  const wellnessScore = getWellnessScore(member);
+                  const riskLevel = getRiskLevel(wellnessScore);
+                  const memberAlerts = getMemberAlerts(member.id);
+                  
+                  return (
+                    <div key={member.id} className="flex items-center justify-between p-4 rounded-lg border">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <Avatar className="h-12 w-12">
+                            <AvatarFallback className="text-lg">
+                              {member.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          {/* Semáforo indicator */}
+                          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background ${
+                            riskLevel === 'low' ? 'bg-success' : 
+                            riskLevel === 'medium' ? 'bg-warning' : 'bg-destructive'
+                          }`} />
                         </div>
-                        <Badge 
-                          variant="secondary" 
-                          className={`${getRiskBg(member.riskLevel)} ${getRiskColor(member.riskLevel)} text-xs`}
-                        >
-                          {member.riskLevel === 'low' && 'Bajo Riesgo'}
-                          {member.riskLevel === 'medium' && 'Riesgo Medio'}
-                          {member.riskLevel === 'high' && 'Alto Riesgo'}
-                        </Badge>
+                        <div>
+                          <h3 className="font-medium">{member.full_name || 'Usuario'}</h3>
+                          <p className="text-sm text-muted-foreground">{member.email}</p>
+                          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                            <Activity className="h-3 w-3" />
+                            <span>Último check-in: {getLastCheckinText(member)}</span>
+                          </div>
+                        </div>
                       </div>
                       
-                      {member.alerts > 0 && (
-                        <Badge variant="destructive" className="ml-2">
-                          {member.alerts} alerta{member.alerts > 1 ? 's' : ''}
-                        </Badge>
-                      )}
-                      
-                      <Button variant="outline" size="sm">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Hablar
-                      </Button>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${getRiskColor(riskLevel)}`}>
+                            {wellnessScore}%
+                          </div>
+                          <Badge 
+                            variant="secondary" 
+                            className={`${getRiskBg(riskLevel)} ${getRiskColor(riskLevel)} text-xs`}
+                          >
+                            {riskLevel === 'low' && 'Bajo Riesgo'}
+                            {riskLevel === 'medium' && 'Riesgo Medio'}
+                            {riskLevel === 'high' && 'Alto Riesgo'}
+                          </Badge>
+                        </div>
+                        
+                        {memberAlerts > 0 && (
+                          <Badge variant="destructive" className="ml-2">
+                            {memberAlerts} alerta{memberAlerts > 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                        
+                        <Button variant="outline" size="sm">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Hablar
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -162,23 +292,58 @@ const Team = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentAlerts.map((alert) => (
-                  <div key={alert.id} className="p-3 rounded-lg border-l-4 border-l-warning bg-warning/5">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium text-sm">{alert.member}</p>
-                      <Badge variant={getSeverityColor(alert.severity) as any} className="text-xs">
-                        {alert.severity === 'high' ? 'Alto' : 'Medio'}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">{alert.message}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">hace {alert.time}</span>
-                      <Button variant="ghost" size="sm" className="text-xs h-6">
-                        Revisar
-                      </Button>
-                    </div>
+                {unresolvedAlerts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Shield className="h-12 w-12 text-success mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      ¡Excelente! No hay alertas activas
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  unresolvedAlerts.slice(0, 5).map((alert) => {
+                    const member = teamMembers.find(m => m.id === alert.user_id);
+                    const timeAgo = alert.created_at ? 
+                      new Date(alert.created_at).toLocaleDateString('es-ES', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'Fecha desconocida';
+                    
+                    return (
+                      <div key={alert.id} className={`p-3 rounded-lg border-l-4 ${
+                        alert.severity === 'high' ? 'border-l-destructive bg-destructive/5' :
+                        alert.severity === 'medium' ? 'border-l-warning bg-warning/5' :
+                        'border-l-muted bg-muted/5'
+                      }`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="font-medium text-sm">{member?.full_name || 'Usuario'}</p>
+                          <Badge variant={getSeverityColor(alert.severity) as any} className="text-xs">
+                            {alert.severity === 'high' ? 'Alto' : 
+                             alert.severity === 'medium' ? 'Medio' : 'Bajo'}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2">{alert.message}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">{timeAgo}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-xs h-6"
+                            onClick={() => handleResolveAlert(alert.id)}
+                            disabled={isResolving === alert.id}
+                          >
+                            {isResolving === alert.id ? (
+                              <div className="w-3 h-3 animate-spin rounded-full border border-current border-t-transparent" />
+                            ) : (
+                              'Resolver'
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </CardContent>
           </Card>
@@ -190,30 +355,50 @@ const Team = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Heart className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">Reunión 1:1</span>
+                {/* Dynamic recommendations based on team data */}
+                {teamMembers.filter(m => getRiskLevel(getWellnessScore(m)) === 'high').length > 0 && (
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Heart className="h-4 w-4 text-destructive" />
+                      <span className="text-sm font-medium">Atención Urgente</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {teamMembers.filter(m => getRiskLevel(getWellnessScore(m)) === 'high').length} miembros en alto riesgo necesitan apoyo inmediato
+                    </p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Calendar className="h-3 w-3 mr-2" />
+                      Programar Reuniones
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Programa una conversación con María sobre su carga de trabajo
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Calendar className="h-3 w-3 mr-2" />
-                    Agendar
-                  </Button>
-                </div>
+                )}
 
-                <div className="p-3 rounded-lg bg-muted/50">
+                {unresolvedAlerts.length > 3 && (
+                  <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <AlertTriangle className="h-4 w-4 text-warning" />
+                      <span className="text-sm font-medium">Gestión de Alertas</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Muchas alertas activas. Revisa y resuelve las más críticas
+                    </p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <UserCheck className="h-3 w-3 mr-2" />
+                      Revisar Todas
+                    </Button>
+                  </div>
+                )}
+
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center space-x-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-accent" />
-                    <span className="text-sm font-medium">Plan de Mejora</span>
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Análisis del Equipo</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">
-                    Crear estrategia para mejorar la satisfacción del equipo
+                    Genera reporte de tendencias y recomendaciones personalizadas
                   </p>
                   <Button variant="outline" size="sm" className="w-full">
-                    Crear Plan
+                    <Activity className="h-3 w-3 mr-2" />
+                    Ver Análisis
                   </Button>
                 </div>
               </div>
