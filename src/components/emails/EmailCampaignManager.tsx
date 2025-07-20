@@ -77,14 +77,14 @@ export const EmailCampaignManager = () => {
       let customQuestions: CustomQuestionDB[] = [];
       try {
         const { data, error } = await supabase
-          .from('custom_questions' as any)
+          .from('custom_questions')
           .select('*')
           .eq('tenant_id', profile?.tenant_id)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
-        if (!error && data) {
-          customQuestions = data as CustomQuestionDB[];
+        if (!error && data && Array.isArray(data)) {
+          customQuestions = data;
         }
       } catch (error) {
         console.log('Custom questions not available yet:', error);
