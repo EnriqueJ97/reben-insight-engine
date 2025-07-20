@@ -1,0 +1,425 @@
+
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BarChart3, TrendingUp, TrendingDown, Users, AlertTriangle, Calendar, Download, DollarSign } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+
+const Reports = () => {
+  const { user } = useAuth();
+  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [selectedTeam, setSelectedTeam] = useState('all');
+
+  // Mock data for charts
+  const wellnessTrendData = [
+    { date: '01/12', bienestar: 72, burnout: 28, satisfaccion: 68 },
+    { date: '05/12', bienestar: 74, burnout: 26, satisfaccion: 71 },
+    { date: '10/12', bienestar: 69, burnout: 31, satisfaccion: 65 },
+    { date: '15/12', bienestar: 76, burnout: 24, satisfaccion: 73 },
+    { date: '20/12', bienestar: 78, burnout: 22, satisfaccion: 75 },
+    { date: '25/12', bienestar: 75, burnout: 25, satisfaccion: 72 },
+    { date: '30/12', bienestar: 80, burnout: 20, satisfaccion: 78 }
+  ];
+
+  const teamComparisonData = [
+    { team: 'Desarrollo', bienestar: 82, miembros: 15 },
+    { team: 'Marketing', bienestar: 75, miembros: 8 },
+    { team: 'Ventas', bienestar: 68, miembros: 12 },
+    { team: 'RRHH', bienestar: 85, miembros: 4 },
+    { team: 'Operaciones', bienestar: 72, miembros: 10 }
+  ];
+
+  const alertDistributionData = [
+    { name: 'Burnout Alto', value: 35, color: '#ef4444' },
+    { name: 'Fuga Talento', value: 25, color: '#f97316' },
+    { name: 'Insatisfacción', value: 20, color: '#eab308' },
+    { name: 'Baja Autoeficacia', value: 15, color: '#3b82f6' },
+    { name: 'Cinismo', value: 5, color: '#6b7280' }
+  ];
+
+  const costImpactData = [
+    { categoria: 'Rotación', costo_actual: 45000, costo_potencial: 78000 },
+    { categoria: 'Ausentismo', costo_actual: 12000, costo_potencial: 28000 },
+    { categoria: 'Productividad', costo_actual: 25000, costo_potencial: 52000 },
+    { categoria: 'Salud Mental', costo_actual: 8000, costo_potencial: 18000 }
+  ];
+
+  const keyMetrics = {
+    totalEmployees: user?.role === 'MANAGER' ? 12 : 150,
+    responseRate: 94,
+    riskEmployees: user?.role === 'MANAGER' ? 2 : 18,
+    avgWellness: user?.role === 'MANAGER' ? 78 : 75,
+    monthlyTrend: '+5%',
+    costSavings: '€45,000'
+  };
+
+  const generatePDFReport = () => {
+    // Simulate PDF generation
+    setTimeout(() => {
+      alert('📋 Informe PDF generado y enviado por email');
+    }, 1000);
+  };
+
+  return (
+    <div className="space-y-6 animate-slide-up">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center space-x-2">
+            <BarChart3 className="h-8 w-8 text-primary" />
+            <span>Informes y Análisis</span>
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {user?.role === 'MANAGER' 
+              ? 'Análisis detallado del bienestar de tu equipo'
+              : 'Dashboard ejecutivo de bienestar organizacional'
+            }
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 días</SelectItem>
+              <SelectItem value="30d">30 días</SelectItem>
+              <SelectItem value="90d">3 meses</SelectItem>
+              <SelectItem value="1y">1 año</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={generatePDFReport}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{keyMetrics.totalEmployees}</div>
+              <p className="text-xs text-muted-foreground">Empleados</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-success">{keyMetrics.responseRate}%</div>
+              <p className="text-xs text-muted-foreground">Participación</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-warning">{keyMetrics.riskEmployees}</div>
+              <p className="text-xs text-muted-foreground">Alto Riesgo</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{keyMetrics.avgWellness}%</div>
+              <p className="text-xs text-muted-foreground">Bienestar Prom.</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-success">{keyMetrics.monthlyTrend}</div>
+              <p className="text-xs text-muted-foreground">Tendencia</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-accent">{keyMetrics.costSavings}</div>
+              <p className="text-xs text-muted-foreground">Ahorro Est.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="trends" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="trends">Tendencias</TabsTrigger>
+          <TabsTrigger value="teams">Equipos</TabsTrigger>
+          <TabsTrigger value="alerts">Alertas</TabsTrigger>
+          <TabsTrigger value="impact">Impacto</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="trends">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tendencia de Bienestar - Últimos 30 días</CardTitle>
+                <CardDescription>
+                  Evolución de las métricas principales de bienestar laboral
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={wellnessTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip 
+                      formatter={(value, name) => [`${value}%`, name === 'bienestar' ? 'Bienestar' : name === 'burnout' ? 'Riesgo Burnout' : 'Satisfacción']}
+                    />
+                    <Line type="monotone" dataKey="bienestar" stroke="#3b82f6" strokeWidth={3} name="bienestar" />
+                    <Line type="monotone" dataKey="burnout" stroke="#ef4444" strokeWidth={2} name="burnout" />
+                    <Line type="monotone" dataKey="satisfaccion" stroke="#10b981" strokeWidth={2} name="satisfaccion" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="teams">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparación por Equipos</CardTitle>
+                <CardDescription>
+                  Nivel de bienestar promedio por equipo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={teamComparisonData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="team" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip formatter={(value) => [`${value}%`, 'Bienestar']} />
+                    <Bar dataKey="bienestar" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Ranking de Equipos</CardTitle>
+                <CardDescription>
+                  Equipos ordenados por nivel de bienestar
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {teamComparisonData
+                    .sort((a, b) => b.bienestar - a.bienestar)
+                    .map((team, index) => (
+                      <div key={team.team} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                            index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                            index === 1 ? 'bg-gray-100 text-gray-800' :
+                            index === 2 ? 'bg-orange-100 text-orange-800' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium">{team.team}</p>
+                            <p className="text-sm text-muted-foreground">{team.miembros} miembros</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-primary">{team.bienestar}%</div>
+                          <Badge variant={team.bienestar >= 80 ? "default" : team.bienestar >= 70 ? "secondary" : "destructive"}>
+                            {team.bienestar >= 80 ? 'Excelente' : team.bienestar >= 70 ? 'Bueno' : 'Necesita Atención'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="alerts">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribución de Alertas</CardTitle>
+                <CardDescription>
+                  Tipos de alertas más frecuentes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={alertDistributionData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {alertDistributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Alertas Críticas</CardTitle>
+                <CardDescription>
+                  Empleados que requieren atención inmediata
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { name: 'María Rodríguez', team: 'Desarrollo', alert: 'Burnout Alto', days: 5, severity: 'high' },
+                    { name: 'Carlos Méndez', team: 'Ventas', alert: 'Fuga Talento', days: 3, severity: 'medium' },
+                    { name: 'Ana Torres', team: 'Marketing', alert: 'Insatisfacción', days: 7, severity: 'medium' },
+                    { name: 'Luis García', team: 'Operaciones', alert: 'Baja Autoeficacia', days: 2, severity: 'low' }
+                  ].map((alert, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border-l-4 border-l-warning bg-warning/5">
+                      <div>
+                        <p className="font-medium">{alert.name}</p>
+                        <p className="text-sm text-muted-foreground">{alert.team}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'outline'}>
+                          {alert.alert}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-1">{alert.days} días</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="impact">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5" />
+                  <span>Análisis de Impacto Económico</span>
+                </CardTitle>
+                <CardDescription>
+                  Costes actuales vs. costes potenciales sin programa de bienestar
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={costImpactData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="categoria" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`€${value.toLocaleString()}`, '']} />
+                    <Bar dataKey="costo_actual" fill="#10b981" name="Coste Actual" />
+                    <Bar dataKey="costo_potencial" fill="#ef4444" name="Coste Potencial" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-success/5 border-success/20">
+                <CardHeader>
+                  <CardTitle className="text-success flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>ROI del Programa</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-success mb-2">3.2:1</div>
+                  <p className="text-sm text-muted-foreground">
+                    Por cada €1 invertido en bienestar, se ahorran €3.2 en costes
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-primary/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-primary">Ahorro Anual</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-primary mb-2">€123,000</div>
+                  <p className="text-sm text-muted-foreground">
+                    Reducción en costes de rotación y ausentismo
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-accent/5 border-accent/20">
+                <CardHeader>
+                  <CardTitle className="text-accent">Productividad</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-accent mb-2">+18%</div>
+                  <p className="text-sm text-muted-foreground">
+                    Incremento en productividad del equipo
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>🎯 Recomendaciones Estratégicas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-muted/50">
+                    <h4 className="font-medium mb-2">1. Intervención Inmediata</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      5 empleados requieren sesiones 1:1 con sus managers esta semana
+                    </p>
+                    <Badge variant="destructive">Alta Prioridad</Badge>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50">
+                    <h4 className="font-medium mb-2">2. Programa de Pausas</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Implementar pausas obligatorias de 15 min cada 2 horas
+                    </p>
+                    <Badge variant="secondary">Media Prioridad</Badge>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/50">
+                    <h4 className="font-medium mb-2">3. Training Managers</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Capacitar en detección temprana de burnout
+                    </p>
+                    <Badge variant="outline">Baja Prioridad</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Reports;
