@@ -1,4 +1,3 @@
-
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -126,7 +125,7 @@ const AppLayout = () => {
       <Sidebar mobile />
 
       <div className="lg:ml-64">
-        <header className="bg-card border-b px-6 py-4">
+        <header className="bg-background border-b px-6 py-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -150,7 +149,7 @@ const AppLayout = () => {
           </div>
         </header>
 
-        <main className="bg-background min-h-[calc(100vh-5rem)] p-6">
+        <main className="bg-background p-6">
           <Outlet />
         </main>
       </div>
