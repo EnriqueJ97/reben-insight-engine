@@ -56,7 +56,7 @@ const AppRoutes = () => {
       >
         <Route index element={<Dashboard />} />
         <Route
-          path="/checkin"
+          path="checkin"
           element={
             <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>
               <CheckIn />
@@ -64,7 +64,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/team"
+          path="team"
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER']}>
               <Team />
@@ -72,7 +72,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/teams"
+          path="teams"
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <Team />
@@ -80,7 +80,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/reports"
+          path="reports"
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
               <Reports />
@@ -88,7 +88,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/settings"
+          path="settings"
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <Settings />
