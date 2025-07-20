@@ -1,225 +1,358 @@
-
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCheckins } from '@/hooks/useCheckins';
+import { useAlerts } from '@/hooks/useAlerts';
+import { useProfiles } from '@/hooks/useProfiles';
 import { WellnessOverview, WellnessMetrics } from '@/components/ui/wellness-metrics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, TrendingUp, Users, AlertTriangle, Calendar, Target } from 'lucide-react';
+import { Heart, TrendingUp, Users, AlertTriangle, Calendar, Target, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { getCheckinStats } = useCheckins();
+  const { alerts, getAlertStats } = useAlerts();
+  const { getTeamOverview } = useProfiles();
+  
+  const [metrics, setMetrics] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [teamOverview, setTeamOverview] = useState<any>(null);
 
-  // Mock data based on user role
-  const getMetrics = () => {
-    if (user?.role === 'EMPLOYEE') {
-      return [
-        { title: 'Mi Bienestar', value: 72, trend: 'stable' as const, status: 'warning' as const, description: 'Últimos 7 días' },
-        { title: 'Burnout Risk', value: 35, trend: 'down' as const, status: 'good' as const, description: 'Bajo control' },
-        { title: 'Satisfacción', value: 68, trend: 'up' as const, status: 'warning' as const, description: 'Mejorando' },
-        { title: 'Balance Vida', value: 58, trend: 'stable' as const, status: 'warning' as const, description: 'Necesita atención' }
-      ];
+  useEffect(() => {
+    loadDashboardData();
+  }, [user]);
+
+  const loadDashboardData = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      if (user.role === 'EMPLOYEE') {
+        await loadEmployeeMetrics();
+      } else if (user.role === 'MANAGER') {
+        await loadManagerMetrics();
+      } else if (user.role === 'HR_ADMIN') {
+        await loadHRMetrics();
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
-
-    if (user?.role === 'MANAGER') {
-      return [
-        { title: 'Equipo General', value: 78, trend: 'up' as const, status: 'good' as const, description: '12 miembros' },
-        { title: 'Riesgo Alto', value: 15, trend: 'down' as const, status: 'good' as const, description: '2 personas' },
-        { title: 'Satisfacción', value: 74, trend: 'stable' as const, status: 'good' as const, description: 'Estable' },
-        { title: 'Retención', value: 88, trend: 'up' as const, status: 'good' as const, description: 'Excelente' }
-      ];
-    }
-
-    // HR_ADMIN
-    return [
-      { title: 'Bienestar General', value: 75, trend: 'up' as const, status: 'good' as const, description: '150 empleados' },
-      { title: 'Burnout Risk', value: 22, trend: 'down' as const, status: 'good' as const, description: '33 empleados' },
-      { title: 'Intención Rotación', value: 18, trend: 'stable' as const, status: 'good' as const, description: '27 empleados' },
-      { title: 'Satisfacción', value: 71, trend: 'up' as const, status: 'warning' as const, description: 'Mejorando' }
-    ];
   };
 
-  const getRecentActivity = () => {
-    if (user?.role === 'EMPLOYEE') {
-      return [
-        { type: 'check-in', message: 'Completaste tu check-in diario', time: 'Hoy 9:15 AM', status: 'success' },
-        { type: 'tip', message: 'Nuevo consejo de bienestar disponible', time: 'Ayer 2:30 PM', status: 'info' },
-        { type: 'reminder', message: 'Recuerda tomar una pausa de 15 minutos', time: 'Ayer 11:00 AM', status: 'warning' }
-      ];
-    }
+  const loadEmployeeMetrics = async () => {
+    const [checkinStats, alertStats] = await Promise.all([
+      getCheckinStats(),
+      getAlertStats()
+    ]);
 
-    if (user?.role === 'MANAGER') {
-      return [
-        { type: 'alert', message: 'María reporta bajo ánimo (3 días)', time: 'Hoy 10:30 AM', status: 'warning' },
-        { type: 'report', message: 'Informe semanal del equipo generado', time: 'Lun 8:00 AM', status: 'info' },
-        { type: 'improvement', message: 'El bienestar del equipo mejoró 5%', time: 'Vie 3:45 PM', status: 'success' }
-      ];
-    }
+    const wellnessScore = Math.round((checkinStats.average_mood / 5) * 100);
+    const burnoutRisk = Math.max(0, 100 - wellnessScore);
+    const hasRecentCheckins = checkinStats.total > 0;
 
-    // HR_ADMIN
-    return [
-      { type: 'alert', message: '8 nuevas alertas de riesgo alto', time: 'Hoy 8:30 AM', status: 'warning' },
-      { type: 'report', message: 'Informe mensual PDF generado', time: 'Hoy 7:00 AM', status: 'success' },
-      { type: 'integration', message: 'Slack integrado correctamente', time: 'Ayer 4:20 PM', status: 'info' },
-      { type: 'metric', message: 'Bienestar general subió a 75%', time: 'Ayer 1:15 PM', status: 'success' }
-    ];
+    setMetrics([
+      { 
+        title: 'Mi Bienestar', 
+        value: wellnessScore, 
+        trend: checkinStats.trend, 
+        status: wellnessScore >= 70 ? 'good' : wellnessScore >= 50 ? 'warning' : 'critical',
+        description: `${checkinStats.total} check-ins (30d)` 
+      },
+      { 
+        title: 'Riesgo Burnout', 
+        value: burnoutRisk, 
+        trend: checkinStats.trend === 'up' ? 'down' : checkinStats.trend === 'down' ? 'up' : 'stable',
+        status: burnoutRisk <= 30 ? 'good' : burnoutRisk <= 60 ? 'warning' : 'critical',
+        description: burnoutRisk <= 30 ? 'Bajo control' : 'Necesita atención' 
+      },
+      { 
+        title: 'Alertas Activas', 
+        value: alertStats.unresolved, 
+        trend: 'stable',
+        status: alertStats.unresolved === 0 ? 'good' : alertStats.unresolved <= 2 ? 'warning' : 'critical',
+        description: `${alertStats.total} alertas totales` 
+      },
+      { 
+        title: 'Participación', 
+        value: hasRecentCheckins ? 85 : 20, 
+        trend: hasRecentCheckins ? 'up' : 'down',
+        status: hasRecentCheckins ? 'good' : 'warning',
+        description: hasRecentCheckins ? 'Activo' : 'Completa tu check-in' 
+      }
+    ]);
   };
 
-  const metrics = getMetrics();
-  const recentActivity = getRecentActivity();
+  const loadManagerMetrics = async () => {
+    const [alertStats, teamData] = await Promise.all([
+      getAlertStats(),
+      getTeamOverview()
+    ]);
+
+    setTeamOverview(teamData);
+
+    const teamWellness = teamData?.averageTeamMood ? Math.round((teamData.averageTeamMood / 5) * 100) : 0;
+    const highRiskMembers = teamData?.memberStats?.filter((m: any) => 
+      m.stats?.averageMood && m.stats.averageMood <= 2
+    ).length || 0;
+
+    setMetrics([
+      { 
+        title: 'Bienestar del Equipo', 
+        value: teamWellness, 
+        trend: 'stable',
+        status: teamWellness >= 70 ? 'good' : teamWellness >= 50 ? 'warning' : 'critical',
+        description: `${teamData?.totalMembers || 0} miembros` 
+      },
+      { 
+        title: 'Miembros en Riesgo', 
+        value: highRiskMembers, 
+        trend: 'stable',
+        status: highRiskMembers === 0 ? 'good' : highRiskMembers <= 2 ? 'warning' : 'critical',
+        description: 'Necesitan atención' 
+      },
+      { 
+        title: 'Alertas del Equipo', 
+        value: alertStats.unresolved, 
+        trend: 'stable',
+        status: alertStats.unresolved === 0 ? 'good' : alertStats.unresolved <= 3 ? 'warning' : 'critical',
+        description: 'Sin resolver' 
+      },
+      { 
+        title: 'Participación', 
+        value: 78, 
+        trend: 'up',
+        status: 'good',
+        description: 'Check-ins completados' 
+      }
+    ]);
+  };
+
+  const loadHRMetrics = async () => {
+    const [alertStats, teamData] = await Promise.all([
+      getAlertStats(),
+      getTeamOverview()
+    ]);
+
+    setTeamOverview(teamData);
+
+    const overallWellness = teamData?.averageTeamMood ? Math.round((teamData.averageTeamMood / 5) * 100) : 0;
+    const totalEmployees = teamData?.totalMembers || 0;
+
+    setMetrics([
+      { 
+        title: 'Bienestar General', 
+        value: overallWellness, 
+        trend: 'stable',
+        status: overallWellness >= 70 ? 'good' : overallWellness >= 50 ? 'warning' : 'critical',
+        description: `${totalEmployees} empleados` 
+      },
+      { 
+        title: 'Alertas Críticas', 
+        value: alertStats.bySeverity?.high || 0, 
+        trend: 'stable',
+        status: (alertStats.bySeverity?.high || 0) === 0 ? 'good' : 'critical',
+        description: 'Requieren acción inmediata' 
+      },
+      { 
+        title: 'Riesgo de Rotación', 
+        value: 15, 
+        trend: 'down',
+        status: 'good',
+        description: 'Proyección 6 meses' 
+      },
+      { 
+        title: 'Coste Estimado', 
+        value: Math.round((alertStats.unresolved * 2500) / 1000), 
+        trend: 'stable',
+        status: 'warning',
+        description: 'K€ impacto burnout' 
+      }
+    ]);
+  };
+
+  const getQuickActions = () => {
+    switch (user?.role) {
+      case 'EMPLOYEE':
+        return [
+          { label: 'Completar Check-in', href: '/dashboard/checkin', icon: Heart, urgent: true },
+          { label: 'Ver mi Progreso', href: '/dashboard/reports', icon: TrendingUp, urgent: false },
+        ];
+      case 'MANAGER':
+        return [
+          { label: 'Ver mi Equipo', href: '/dashboard/team', icon: Users, urgent: true },
+          { label: 'Revisar Alertas', href: '/dashboard/reports', icon: AlertTriangle, urgent: true },
+        ];
+      case 'HR_ADMIN':
+        return [
+          { label: 'Ver Todos los Equipos', href: '/dashboard/teams', icon: Users, urgent: false },
+          { label: 'Configuración', href: '/dashboard/settings', icon: Target, urgent: false },
+          { label: 'Informes Ejecutivos', href: '/dashboard/reports', icon: TrendingUp, urgent: false },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const getRecentAlerts = () => {
+    return alerts
+      .filter(alert => !alert.resolved)
+      .slice(0, 3)
+      .map(alert => ({
+        id: alert.id,
+        message: alert.message,
+        severity: alert.severity,
+        time: new Date(alert.created_at).toLocaleDateString(),
+        user: alert.profiles?.full_name || alert.profiles?.email || 'Usuario'
+      }));
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-slide-up">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-slide-up">
-      {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">¡Hola, {user?.name}! 👋</h1>
-          <p className="text-muted-foreground mt-1">
-            {user?.role === 'EMPLOYEE' && 'Aquí tienes tu resumen de bienestar personal'}
-            {user?.role === 'MANAGER' && 'Resumen del bienestar de tu equipo'}
-            {user?.role === 'HR_ADMIN' && 'Panel de control organizacional de bienestar'}
-          </p>
-        </div>
-        <Button asChild>
-          <Link to={user?.role === 'EMPLOYEE' ? '/checkin' : '/reports'}>
-            {user?.role === 'EMPLOYEE' ? (
-              <>
-                <Heart className="h-4 w-4 mr-2" />
-                Check-in Diario
-              </>
-            ) : (
-              <>
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Ver Informes
-              </>
-            )}
-          </Link>
-        </Button>
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">
+          ¡Hola, {user?.name || user?.full_name || user?.email}! 👋
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {user?.role === 'EMPLOYEE' && 'Revisa tu bienestar y completa tu check-in diario'}
+          {user?.role === 'MANAGER' && 'Monitorea el bienestar de tu equipo'}
+          {user?.role === 'HR_ADMIN' && 'Panel ejecutivo de bienestar organizacional'}
+        </p>
       </div>
 
-      {/* Overview Card for Managers and HR */}
-      {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
-        <WellnessOverview
-          overallScore={user?.role === 'MANAGER' ? 78 : 75}
-          riskLevel={user?.role === 'MANAGER' ? 'low' : 'medium'}
-          totalEmployees={user?.role === 'MANAGER' ? 12 : 150}
-          activeAlerts={user?.role === 'MANAGER' ? 2 : 8}
-        />
-      )}
-
-      {/* Metrics Grid */}
+      {/* Metrics Overview */}
       <WellnessMetrics metrics={metrics} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5" />
-              <span>Actividad Reciente</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
-                  <div className={`h-2 w-2 rounded-full mt-2 ${
-                    activity.status === 'success' ? 'bg-success' :
-                    activity.status === 'warning' ? 'bg-warning' :
-                    'bg-info'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.message}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Target className="h-5 w-5" />
               <span>Acciones Rápidas</span>
             </CardTitle>
+            <CardDescription>
+              Tareas importantes para hoy
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {user?.role === 'EMPLOYEE' && (
-                <>
-                  <Button variant="outline" asChild className="h-20">
-                    <Link to="/checkin" className="flex flex-col items-center space-y-2">
-                      <Heart className="h-5 w-5" />
-                      <span className="text-xs">Check-in</span>
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="h-20">
-                    <div className="flex flex-col items-center space-y-2">
-                      <TrendingUp className="h-5 w-5" />
-                      <span className="text-xs">Mi Progreso</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {getQuickActions().map((action, index) => (
+                <Link key={index} to={action.href}>
+                  <Button 
+                    variant={action.urgent ? "default" : "outline"} 
+                    className="w-full h-auto p-4 justify-start"
+                  >
+                    <action.icon className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-medium">{action.label}</div>
+                      {action.urgent && (
+                        <div className="text-xs opacity-75">Recomendado hoy</div>
+                      )}
                     </div>
+                    <ArrowRight className="h-4 w-4 ml-auto" />
                   </Button>
-                </>
-              )}
-              
-              {user?.role === 'MANAGER' && (
-                <>
-                  <Button variant="outline" asChild className="h-20">
-                    <Link to="/team" className="flex flex-col items-center space-y-2">
-                      <Users className="h-5 w-5" />
-                      <span className="text-xs">Mi Equipo</span>
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="h-20">
-                    <Link to="/reports" className="flex flex-col items-center space-y-2">
-                      <TrendingUp className="h-5 w-5" />
-                      <span className="text-xs">Informes</span>
-                    </Link>
-                  </Button>
-                </>
-              )}
-              
-              {user?.role === 'HR_ADMIN' && (
-                <>
-                  <Button variant="outline" asChild className="h-20">
-                    <Link to="/teams" className="flex flex-col items-center space-y-2">
-                      <Users className="h-5 w-5" />
-                      <span className="text-xs">Equipos</span>
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="h-20">
-                    <Link to="/settings" className="flex flex-col items-center space-y-2">
-                      <AlertTriangle className="h-5 w-5" />
-                      <span className="text-xs">Configurar</span>
-                    </Link>
-                  </Button>
-                </>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Alerts */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5" />
+              <span>Alertas Recientes</span>
+            </CardTitle>
+            <CardDescription>
+              Últimas notificaciones
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {getRecentAlerts().length > 0 ? (
+                getRecentAlerts().map((alert) => (
+                  <div key={alert.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                    <Badge 
+                      variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'outline'}
+                      className="mt-0.5"
+                    >
+                      {alert.severity}
+                    </Badge>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium">{alert.user}</p>
+                      <p className="text-xs text-muted-foreground">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground">{alert.time}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-sm text-muted-foreground">
+                    No hay alertas pendientes
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    ¡Todo está bajo control!
+                  </div>
+                </div>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Today's Insight */}
-      <Card className="bg-gradient-to-r from-primary/5 to-accent/5">
-        <CardHeader>
-          <CardTitle className="text-primary">💡 Insight del Día</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm">
-            {user?.role === 'EMPLOYEE' && 
-              "Tomar descansos regulares puede mejorar tu productividad en un 25%. ¡Programa una pausa de 15 minutos hoy!"
-            }
-            {user?.role === 'MANAGER' && 
-              "Los equipos con check-ins regulares muestran 30% menos rotación. Considera programar una reunión 1:1 con María."
-            }
-            {user?.role === 'HR_ADMIN' && 
-              "Las empresas con programas de bienestar activos reducen el ausentismo en un 28%. El ROI promedio es de 3:1."
-            }
-          </p>
+      {/* Role-specific additional content */}
+      {user?.role === 'MANAGER' && teamOverview && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Resumen del Equipo</CardTitle>
+            <CardDescription>
+              Vista rápida del estado de tu equipo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{teamOverview.totalMembers}</div>
+                <div className="text-sm text-muted-foreground">Miembros del equipo</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {Math.round((teamOverview.averageTeamMood / 5) * 100)}%
+                </div>
+                <div className="text-sm text-muted-foreground">Bienestar promedio</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">{teamOverview.totalTeamAlerts}</div>
+                <div className="text-sm text-muted-foreground">Alertas totales</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Footer */}
+      <Card className="bg-muted/50">
+        <CardContent className="pt-6">
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            <span>Última actualización: {new Date().toLocaleDateString()}</span>
+          </div>
         </CardContent>
       </Card>
     </div>
