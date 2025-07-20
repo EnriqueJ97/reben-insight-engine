@@ -1,3 +1,4 @@
+
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -62,7 +63,7 @@ const AppLayout = () => {
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className={`${mobile ? 'fixed inset-0 z-50 lg:hidden' : 'hidden lg:flex'} bg-card border-r`}>
       {mobile && (
-        <div className="fixed inset-0 bg-background/80" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black/80" onClick={() => setSidebarOpen(false)} />
       )}
       <div className={`${mobile ? 'fixed left-0 top-0 h-full w-64 bg-card' : 'w-64'} flex flex-col`}>
         <div className="p-6 border-b">
@@ -120,12 +121,12 @@ const AppLayout = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen">
       <Sidebar />
       <Sidebar mobile />
 
-      <div className="lg:ml-64">
-        <header className="bg-background border-b px-6 py-4">
+      <div className="flex-1 flex flex-col lg:ml-64">
+        <header className="bg-card border-b px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -149,7 +150,7 @@ const AppLayout = () => {
           </div>
         </header>
 
-        <main className="p-6">
+        <main className="flex-1 p-6 min-h-0">
           <Outlet />
         </main>
       </div>
