@@ -1,123 +1,48 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Gmail SMTP configuration
-const gmailUser = Deno.env.get("GMAIL_USER");
-const gmailPassword = Deno.env.get("GMAIL_APP_PASSWORD");
+// Initialize Resend with API key
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-// Simple email sending function using Gmail SMTP over HTTP
-async function sendEmail(to: string, subject: string, html: string) {
-  console.log(`Attempting to send email to: ${to}`);
+// Professional email sending function using Resend
+async function sendEmail(to: string, subject: string, html: string, fromName: string = "REBEN Sistema de Bienestar") {
+  console.log(`Sending email via Resend to: ${to}`);
   console.log(`Subject: ${subject}`);
-  console.log(`Using Gmail account: ${gmailUser}`);
   
-  if (!gmailUser || !gmailPassword) {
-    console.error("Gmail credentials not configured");
-    throw new Error("Gmail credentials not configured");
+  if (!Deno.env.get("RESEND_API_KEY")) {
+    console.error("RESEND_API_KEY not configured");
+    throw new Error("Resend API key not configured");
   }
 
   try {
-    // Use a simple HTTP email service that supports Gmail SMTP
-    const emailData = {
-      from: gmailUser,
-      to: to,
+    const emailResponse = await resend.emails.send({
+      from: `${fromName} <onboarding@resend.dev>`, // Use Resend's verified domain
+      to: [to],
       subject: subject,
       html: html,
-      smtp: {
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        auth: {
-          user: gmailUser,
-          pass: gmailPassword
-        }
-      }
-    };
-
-    console.log("Sending email with simplified method...");
-    
-    // For testing purposes, let's use a direct approach
-    // Create base64 encoded credentials
-    const credentials = btoa(`${gmailUser}:${gmailPassword}`);
-    
-    // Try sending via a simple email service API
-    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
+      // Add professional headers
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${credentials}`
-      },
-      body: JSON.stringify({
-        service_id: 'gmail',
-        template_id: 'template_default',
-        user_id: 'public_key',
-        template_params: {
-          from_name: 'REBEN System',
-          from_email: gmailUser,
-          to_email: to,
-          subject: subject,
-          message_html: html
-        }
-      })
+        'X-Entity-Ref-ID': crypto.randomUUID(),
+      }
     });
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log("Email sent successfully via EmailJS:", result);
-      return { data: { id: `emailjs_${Date.now()}` } };
-    } else {
-      console.log("EmailJS failed, trying alternative method...");
-      
-      // Alternative: Use Nodemailer-compatible API
-      const nodemailerResponse = await fetch('https://api.smtp2go.com/v3/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Smtp2go-Api-Key': gmailPassword // Use as API key
-        },
-        body: JSON.stringify({
-          to: [to],
-          from: gmailUser,
-          subject: subject,
-          html_body: html
-        })
-      });
-
-      if (nodemailerResponse.ok) {
-        const result = await nodemailerResponse.json();
-        console.log("Email sent successfully via SMTP2GO:", result);
-        return { data: { id: result.data?.email_id || `smtp2go_${Date.now()}` } };
-      } else {
-        console.log("SMTP2GO also failed, using final fallback...");
-        
-        // Final fallback: simulate sending for testing
-        console.log("EMAIL CONTENT TO BE SENT:");
-        console.log(`To: ${to}`);
-        console.log(`From: ${gmailUser}`);
-        console.log(`Subject: ${subject}`);
-        console.log(`HTML Content: ${html.substring(0, 500)}...`);
-        
-        // For now, return success to test the rest of the flow
-        return { data: { id: `test_${Date.now()}` } };
-      }
-    }
+    console.log("Email sent successfully via Resend:", emailResponse);
+    return { 
+      data: { 
+        id: emailResponse.data?.id || `resend_${Date.now()}`,
+        provider: 'resend'
+      } 
+    };
     
   } catch (error) {
-    console.error("Email sending error:", error);
-    
-    // Log the email details for debugging
-    console.log("EMAIL THAT FAILED TO SEND:");
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Content preview: ${html.substring(0, 200)}...`);
-    
-    // Return a test success for now
-    return { data: { id: `failed_${Date.now()}` } };
+    console.error("Resend email sending error:", error);
+    throw new Error(`Failed to send email: ${error.message}`);
   }
 }
 
@@ -156,11 +81,16 @@ const handler = async (req: Request): Promise<Response> => {
       
       const emailResponse = await sendEmail(
         testEmail,
-        "Pregunta de Bienestar Diaria - Prueba", // Removed emoji to avoid encoding issues
-        generateEmailHTML(questionData)
+        "Tu Pregunta de Bienestar Diaria - Prueba",
+        generateEmailHTML(questionData),
+        "REBEN - Prueba"
       );
 
-      return new Response(JSON.stringify({ success: true, messageId: emailResponse.data?.id }), {
+      return new Response(JSON.stringify({ 
+        success: true, 
+        messageId: emailResponse.data?.id,
+        provider: emailResponse.data?.provider
+      }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -191,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
           tenant_id: tenantId,
           name: campaignName,
           question_id: randomQuestion.id,
-          subject: `🧠 Tu check-in de bienestar del ${new Date().toLocaleDateString('es-ES')}`,
+          subject: `Tu check-in de bienestar del ${new Date().toLocaleDateString('es-ES')}`,
           scheduled_time: '09:00',
           is_active: true,
           created_by: null // Sistema automático
@@ -220,7 +150,8 @@ const handler = async (req: Request): Promise<Response> => {
           const emailResponse = await sendEmail(
             profile.email,
             newCampaign.subject,
-            generateEmailHTML(questionData, profile.full_name)
+            generateEmailHTML(questionData, profile.full_name),
+            "REBEN - Sistema de Bienestar"
           );
 
           // Log del envío
@@ -263,7 +194,8 @@ const handler = async (req: Request): Promise<Response> => {
         totalSent: successCount,
         totalFailed: results.length - successCount,
         questionSent: randomQuestion.text,
-        campaignId: newCampaign.id
+        campaignId: newCampaign.id,
+        provider: 'resend'
       }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -307,7 +239,8 @@ const handler = async (req: Request): Promise<Response> => {
           const emailResponse = await sendEmail(
             profile.email,
             campaign.subject,
-            generateEmailHTML(questionData, profile.full_name)
+            generateEmailHTML(questionData, profile.full_name),
+            "REBEN - Sistema de Bienestar"
           );
 
           // Log del envío
@@ -349,7 +282,8 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         totalSent: successCount,
         totalFailed: results.length - successCount,
-        results 
+        results,
+        provider: 'resend'
       }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
