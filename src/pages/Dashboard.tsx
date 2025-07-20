@@ -90,7 +90,6 @@ const Dashboard = () => {
     ]);
   };
 
-
   const loadHRMetrics = async () => {
     const [alertStats, teamData] = await Promise.all([
       getAlertStats(),
@@ -167,120 +166,123 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-slide-up">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Cargando dashboard...</p>
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Cargando dashboard...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-slide-up">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">
-          ¡Hola, {user?.name || user?.full_name || user?.email}! 👋
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {user?.role === 'EMPLOYEE' && 'Revisa tu bienestar y completa tu check-in diario'}
-          {user?.role === 'HR_ADMIN' && 'Panel ejecutivo de bienestar organizacional'}
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="space-y-6 p-0">
+        {/* Header */}
+        <div className="bg-background">
+          <h1 className="text-3xl font-bold text-foreground">
+            ¡Hola, {user?.name || user?.full_name || user?.email}! 👋
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {user?.role === 'EMPLOYEE' && 'Revisa tu bienestar y completa tu check-in diario'}
+            {user?.role === 'HR_ADMIN' && 'Panel ejecutivo de bienestar organizacional'}
+          </p>
+        </div>
 
-      {/* Metrics Overview */}
-      <WellnessMetrics metrics={metrics} />
+        {/* Metrics Overview */}
+        <WellnessMetrics metrics={metrics} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Target className="h-5 w-5" />
-              <span>Acciones Rápidas</span>
-            </CardTitle>
-            <CardDescription>
-              Tareas importantes para hoy
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {getQuickActions().map((action, index) => (
-                <Link key={index} to={action.href}>
-                  <Button 
-                    variant={action.urgent ? "default" : "outline"} 
-                    className="w-full h-auto p-4 justify-start"
-                  >
-                    <action.icon className="h-5 w-5 mr-3" />
-                    <div className="text-left">
-                      <div className="font-medium">{action.label}</div>
-                      {action.urgent && (
-                        <div className="text-xs opacity-75">Recomendado hoy</div>
-                      )}
-                    </div>
-                    <ArrowRight className="h-4 w-4 ml-auto" />
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Alerts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Alertas Recientes</span>
-            </CardTitle>
-            <CardDescription>
-              Últimas notificaciones
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {getRecentAlerts().length > 0 ? (
-                getRecentAlerts().map((alert) => (
-                  <div key={alert.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
-                    <Badge 
-                      variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'outline'}
-                      className="mt-0.5"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Quick Actions */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Target className="h-5 w-5" />
+                <span>Acciones Rápidas</span>
+              </CardTitle>
+              <CardDescription>
+                Tareas importantes para hoy
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {getQuickActions().map((action, index) => (
+                  <Link key={index} to={action.href}>
+                    <Button 
+                      variant={action.urgent ? "default" : "outline"} 
+                      className="w-full h-auto p-4 justify-start"
                     >
-                      {alert.severity}
-                    </Badge>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">{alert.user}</p>
-                      <p className="text-xs text-muted-foreground">{alert.message}</p>
-                      <p className="text-xs text-muted-foreground">{alert.time}</p>
+                      <action.icon className="h-5 w-5 mr-3" />
+                      <div className="text-left">
+                        <div className="font-medium">{action.label}</div>
+                        {action.urgent && (
+                          <div className="text-xs opacity-75">Recomendado hoy</div>
+                        )}
+                      </div>
+                      <ArrowRight className="h-4 w-4 ml-auto" />
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Alerts */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5" />
+                <span>Alertas Recientes</span>
+              </CardTitle>
+              <CardDescription>
+                Últimas notificaciones
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {getRecentAlerts().length > 0 ? (
+                  getRecentAlerts().map((alert) => (
+                    <div key={alert.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                      <Badge 
+                        variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'outline'}
+                        className="mt-0.5"
+                      >
+                        {alert.severity}
+                      </Badge>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium">{alert.user}</p>
+                        <p className="text-xs text-muted-foreground">{alert.message}</p>
+                        <p className="text-xs text-muted-foreground">{alert.time}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="text-sm text-muted-foreground">
+                      No hay alertas pendientes
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      ¡Todo está bajo control!
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-4">
-                  <div className="text-sm text-muted-foreground">
-                    No hay alertas pendientes
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    ¡Todo está bajo control!
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Footer */}
+        <Card className="bg-muted/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Última actualización: {new Date().toLocaleDateString()}</span>
             </div>
           </CardContent>
         </Card>
       </div>
-
-
-      {/* Footer */}
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>Última actualización: {new Date().toLocaleDateString()}</span>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

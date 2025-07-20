@@ -219,299 +219,303 @@ const ManagerDashboard = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Cargando dashboard del equipo...</p>
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Cargando dashboard del equipo...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">
-          Dashboard del Manager 👥
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Monitoreo avanzado del bienestar de tu equipo
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="space-y-6 p-0">
+        {/* Header */}
+        <div className="bg-background">
+          <h1 className="text-3xl font-bold text-foreground">
+            Dashboard del Manager 👥
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Monitoreo avanzado del bienestar de tu equipo
+          </p>
+        </div>
 
-      {/* Enhanced Metrics */}
-      <WellnessMetrics metrics={metrics} />
+        {/* Enhanced Metrics */}
+        <WellnessMetrics metrics={metrics} />
 
-      <Tabs defaultValue="team" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="team">Mi Equipo</TabsTrigger>
-          <TabsTrigger value="trends">Tendencias</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas</TabsTrigger>
-          <TabsTrigger value="actions">Acciones</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="team" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="team">Mi Equipo</TabsTrigger>
+            <TabsTrigger value="trends">Tendencias</TabsTrigger>
+            <TabsTrigger value="alerts">Alertas</TabsTrigger>
+            <TabsTrigger value="actions">Acciones</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="team" className="space-y-6">
-          {/* Team Performance Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <span>Estado del Equipo</span>
-              </CardTitle>
-              <CardDescription>
-                Vista detallada de cada miembro del equipo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {teamDetails.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-medium">{member.name}</div>
-                        <div className="text-sm text-muted-foreground">{member.email}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-6">
-                      <div className="text-center">
-                        <div className={`text-lg font-bold ${
-                          member.wellnessScore >= 70 ? 'text-green-600' : 
-                          member.wellnessScore >= 50 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                          {member.wellnessScore}%
+          <TabsContent value="team" className="space-y-6">
+            {/* Team Performance Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
+                  <span>Estado del Equipo</span>
+                </CardTitle>
+                <CardDescription>
+                  Vista detallada de cada miembro del equipo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {teamDetails.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          {member.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="text-xs text-muted-foreground">Bienestar</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <Badge className={getRiskColor(member.riskLevel)}>
-                          {member.riskLevel === 'high' ? 'Alto' : 
-                           member.riskLevel === 'medium' ? 'Medio' : 'Bajo'}
-                        </Badge>
-                        <div className="text-xs text-muted-foreground mt-1">Riesgo</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="flex items-center space-x-1">
-                          <span className="text-sm">{formatLastCheckin(member.lastCheckin)}</span>
-                          {getTrendIcon(member.trend)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Último check-in</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="text-sm font-medium">{member.participationRate}%</div>
-                        <Progress value={member.participationRate} className="w-16 h-2 mt-1" />
-                      </div>
-                      
-                      {member.alertCount > 0 && (
-                        <Badge variant="destructive" className="ml-2">
-                          {member.alertCount} alertas
-                        </Badge>
-                      )}
-                      
-                      <Link to={`/dashboard/team/${member.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="trends" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tendencias Semanales</CardTitle>
-              <CardDescription>
-                Evolución del bienestar y participación del equipo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Bienestar Promedio del Equipo</h4>
-                  <div className="flex items-end space-x-2 h-20">
-                    {trendData.map((day, index) => (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div 
-                          className="w-full bg-primary/20 rounded-t"
-                          style={{ height: `${(day.wellness / 100) * 60}px` }}
-                        />
-                        <div className="text-xs mt-1">{day.date}</div>
-                        <div className="text-xs text-muted-foreground">{day.wellness}%</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Participación en Check-ins</h4>
-                  <div className="flex items-end space-x-2 h-20">
-                    {trendData.map((day, index) => (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div 
-                          className="w-full bg-secondary/60 rounded-t"
-                          style={{ height: `${(day.participation / 100) * 60}px` }}
-                        />
-                        <div className="text-xs mt-1">{day.date}</div>
-                        <div className="text-xs text-muted-foreground">{day.participation}%</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gestión de Alertas</CardTitle>
-              <CardDescription>
-                Alertas activas que requieren tu atención
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {alerts.filter(alert => !alert.resolved).length > 0 ? (
-                  alerts.filter(alert => !alert.resolved).map((alert) => (
-                    <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-start space-x-3">
-                        <Badge 
-                          variant={alert.severity === 'high' ? 'destructive' : 
-                                  alert.severity === 'medium' ? 'secondary' : 'outline'}
-                        >
-                          {alert.severity}
-                        </Badge>
                         <div>
-                          <div className="font-medium">{alert.message}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {new Date(alert.created_at).toLocaleDateString()} - {alert.profiles?.full_name || 'Usuario'}
+                          <div className="font-medium">{member.name}</div>
+                          <div className="text-sm text-muted-foreground">{member.email}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-6">
+                        <div className="text-center">
+                          <div className={`text-lg font-bold ${
+                            member.wellnessScore >= 70 ? 'text-green-600' : 
+                            member.wellnessScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            {member.wellnessScore}%
+                          </div>
+                          <div className="text-xs text-muted-foreground">Bienestar</div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <Badge className={getRiskColor(member.riskLevel)}>
+                            {member.riskLevel === 'high' ? 'Alto' : 
+                             member.riskLevel === 'medium' ? 'Medio' : 'Bajo'}
+                          </Badge>
+                          <div className="text-xs text-muted-foreground mt-1">Riesgo</div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1">
+                            <span className="text-sm">{formatLastCheckin(member.lastCheckin)}</span>
+                            {getTrendIcon(member.trend)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Último check-in</div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="text-sm font-medium">{member.participationRate}%</div>
+                          <Progress value={member.participationRate} className="w-16 h-2 mt-1" />
+                        </div>
+                        
+                        {member.alertCount > 0 && (
+                          <Badge variant="destructive" className="ml-2">
+                            {member.alertCount} alertas
+                          </Badge>
+                        )}
+                        
+                        <Link to={`/dashboard/team/${member.id}`}>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="trends" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tendencias Semanales</CardTitle>
+                <CardDescription>
+                  Evolución del bienestar y participación del equipo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Bienestar Promedio del Equipo</h4>
+                    <div className="flex items-end space-x-2 h-20">
+                      {trendData.map((day, index) => (
+                        <div key={index} className="flex-1 flex flex-col items-center">
+                          <div 
+                            className="w-full bg-primary/20 rounded-t"
+                            style={{ height: `${(day.wellness / 100) * 60}px` }}
+                          />
+                          <div className="text-xs mt-1">{day.date}</div>
+                          <div className="text-xs text-muted-foreground">{day.wellness}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Participación en Check-ins</h4>
+                    <div className="flex items-end space-x-2 h-20">
+                      {trendData.map((day, index) => (
+                        <div key={index} className="flex-1 flex flex-col items-center">
+                          <div 
+                            className="w-full bg-secondary/60 rounded-t"
+                            style={{ height: `${(day.participation / 100) * 60}px` }}
+                          />
+                          <div className="text-xs mt-1">{day.date}</div>
+                          <div className="text-xs text-muted-foreground">{day.participation}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="alerts" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestión de Alertas</CardTitle>
+                <CardDescription>
+                  Alertas activas que requieren tu atención
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {alerts.filter(alert => !alert.resolved).length > 0 ? (
+                    alerts.filter(alert => !alert.resolved).map((alert) => (
+                      <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-start space-x-3">
+                          <Badge 
+                            variant={alert.severity === 'high' ? 'destructive' : 
+                                    alert.severity === 'medium' ? 'secondary' : 'outline'}
+                          >
+                            {alert.severity}
+                          </Badge>
+                          <div>
+                            <div className="font-medium">{alert.message}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(alert.created_at).toLocaleDateString()} - {alert.profiles?.full_name || 'Usuario'}
+                            </div>
                           </div>
                         </div>
+                        <Link to="/dashboard/alerts">
+                          <Button variant="outline" size="sm">
+                            Revisar <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </Link>
                       </div>
-                      <Link to="/dashboard/alerts">
-                        <Button variant="outline" size="sm">
-                          Revisar <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </Link>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Shield className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium">¡Excelente trabajo!</h3>
-                    <p className="text-muted-foreground">No hay alertas pendientes en tu equipo.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="actions" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Acciones Recomendadas</CardTitle>
-                <CardDescription>
-                  Basadas en el estado actual de tu equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {teamDetails.filter(m => m.riskLevel === 'high').length > 0 && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                      <div className="flex items-center space-x-2 text-destructive mb-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        <span className="font-medium">Acción Urgente</span>
-                      </div>
-                      <p className="text-sm">
-                        {teamDetails.filter(m => m.riskLevel === 'high').length} miembro(s) en riesgo alto. 
-                        Programa reuniones 1:1 inmediatamente.
-                      </p>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Shield className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium">¡Excelente trabajo!</h3>
+                      <p className="text-muted-foreground">No hay alertas pendientes en tu equipo.</p>
                     </div>
                   )}
-                  
-                  {teamDetails.filter(m => m.participationRate < 60).length > 0 && (
-                    <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
-                      <div className="flex items-center space-x-2 text-warning mb-2">
-                        <Clock className="h-4 w-4" />
-                        <span className="font-medium">Mejorar Participación</span>
-                      </div>
-                      <p className="text-sm">
-                        Algunos miembros no están completando check-ins regularmente. 
-                        Considera enviar recordatorios amigables.
-                      </p>
-                    </div>
-                  )}
-                  
-                  <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                    <div className="flex items-center space-x-2 text-primary mb-2">
-                      <Target className="h-4 w-4" />
-                      <span className="font-medium">Oportunidad de Mejora</span>
-                    </div>
-                    <p className="text-sm">
-                      Programa una sesión de team building para fortalecer la cohesión del equipo.
-                    </p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Acciones Rápidas</CardTitle>
-                <CardDescription>
-                  Herramientas de gestión del equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Link to="/dashboard/team">
-                    <Button className="w-full justify-between">
-                      Ver Equipo Completo
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/dashboard/alerts">
-                    <Button variant="outline" className="w-full justify-between">
-                      Centro de Alertas
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/dashboard/reports">
-                    <Button variant="outline" className="w-full justify-between">
-                      Generar Reporte
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/dashboard/settings">
-                    <Button variant="outline" className="w-full justify-between">
-                      Configurar Alertas
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="actions" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Acciones Recomendadas</CardTitle>
+                  <CardDescription>
+                    Basadas en el estado actual de tu equipo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {teamDetails.filter(m => m.riskLevel === 'high').length > 0 && (
+                      <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                        <div className="flex items-center space-x-2 text-destructive mb-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span className="font-medium">Acción Urgente</span>
+                        </div>
+                        <p className="text-sm">
+                          {teamDetails.filter(m => m.riskLevel === 'high').length} miembro(s) en riesgo alto. 
+                          Programa reuniones 1:1 inmediatamente.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {teamDetails.filter(m => m.participationRate < 60).length > 0 && (
+                      <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                        <div className="flex items-center space-x-2 text-warning mb-2">
+                          <Clock className="h-4 w-4" />
+                          <span className="font-medium">Mejorar Participación</span>
+                        </div>
+                        <p className="text-sm">
+                          Algunos miembros no están completando check-ins regularmente. 
+                          Considera enviar recordatorios amigables.
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                      <div className="flex items-center space-x-2 text-primary mb-2">
+                        <Target className="h-4 w-4" />
+                        <span className="font-medium">Oportunidad de Mejora</span>
+                      </div>
+                      <p className="text-sm">
+                        Programa una sesión de team building para fortalecer la cohesión del equipo.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Acciones Rápidas</CardTitle>
+                  <CardDescription>
+                    Herramientas de gestión del equipo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Link to="/dashboard/team">
+                      <Button className="w-full justify-between">
+                        Ver Equipo Completo
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    
+                    <Link to="/dashboard/alerts">
+                      <Button variant="outline" className="w-full justify-between">
+                        Centro de Alertas
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    
+                    <Link to="/dashboard/reports">
+                      <Button variant="outline" className="w-full justify-between">
+                        Generar Reporte
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    
+                    <Link to="/dashboard/settings">
+                      <Button variant="outline" className="w-full justify-between">
+                        Configurar Alertas
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

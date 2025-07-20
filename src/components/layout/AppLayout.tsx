@@ -143,14 +143,14 @@ const AppLayout = () => {
               </span>
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="text-xs">
-                  {user?.avatar || user?.name.charAt(0)}
+                  {user?.avatar || user?.name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
             </div>
           </div>
         </header>
 
-        <main className="p-6">
+        <main className="bg-background min-h-[calc(100vh-5rem)] p-6">
           <Outlet />
         </main>
       </div>
