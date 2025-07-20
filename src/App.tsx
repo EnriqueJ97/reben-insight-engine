@@ -15,6 +15,7 @@ import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
+import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import EmployeeImport from '@/components/EmployeeImport.tsx';
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const AppRoutes = () => {
           }
         />
         <Route path="alerts" element={<AlertsCenter />} />
+        <Route path="integrations" element={<IntegrationsCenter />} />
         <Route
           path="teams"
           element={

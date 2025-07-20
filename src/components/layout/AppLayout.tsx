@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  Bell
+  Bell,
+  Plug
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -48,6 +49,7 @@ const AppLayout = () => {
         ...baseItems,
         { href: '/dashboard/teams', icon: Users, label: 'Equipos' },
         { href: '/dashboard/alerts', icon: Bell, label: 'Centro de Alertas' },
+        { href: '/dashboard/integrations', icon: Plug, label: 'Integraciones' },
         { href: '/dashboard/reports', icon: BarChart3, label: 'Informes' },
         { href: '/dashboard/settings', icon: Settings, label: 'Configuración' }
       ];
