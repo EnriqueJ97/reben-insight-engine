@@ -15,8 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 const Settings = () => {
   const { user, tenant } = useAuth();
   const { toast } = useToast();
-  const [slackEnabled, setSlackEnabled] = useState(tenant?.settings?.slack_enabled || false);
-  const [emailEnabled, setEmailEnabled] = useState(tenant?.settings?.email_enabled || true);
+  const [slackEnabled, setSlackEnabled] = useState<boolean>(tenant?.settings?.slack_enabled || false);
+  const [emailEnabled, setEmailEnabled] = useState<boolean>(tenant?.settings?.email_enabled || true);
   const [dailyTime, setDailyTime] = useState(tenant?.settings?.daily_checkin_time || '09:00');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -173,7 +173,7 @@ const Settings = () => {
                   <Switch
                     id="email-toggle"
                     checked={emailEnabled}
-                    onCheckedChange={setEmailEnabled}
+                    onCheckedChange={(checked) => setEmailEnabled(checked)}
                   />
                 </div>
                 
@@ -431,7 +431,7 @@ const Settings = () => {
                   <AlertDescription>
                     <strong>Cumplimiento RGPD:</strong> Todos los datos personales se procesan bajo 
                     consentimiento explícito. Los empleados pueden solicitar la eliminación de sus 
-                    datos en cualquier momento usando el endpoint DELETE /user/{id}/data.
+                    datos en cualquier momento usando el endpoint DELETE /user/[userId]/data.
                   </AlertDescription>
                 </Alert>
 
