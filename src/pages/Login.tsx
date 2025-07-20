@@ -31,12 +31,8 @@ const Login = () => {
 
   // If user is already authenticated, redirect to dashboard
   if (user && !loading) {
-    console.log('Usuario autenticado, redirigiendo al dashboard:', user);
     return <Navigate to="/dashboard" replace />;
   }
-
-  // Debug logs
-  console.log('Estado del Login:', { user: !!user, loading, userRole: user?.role });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
