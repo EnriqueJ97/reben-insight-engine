@@ -11,7 +11,8 @@ import {
   BarChart3, 
   LogOut,
   Menu,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,24 +29,27 @@ const AppLayout = () => {
     if (user?.role === 'EMPLOYEE') {
       return [
         ...baseItems,
-        { href: '/checkin', icon: Heart, label: 'Check-in Diario' }
+        { href: '/dashboard/checkin', icon: Heart, label: 'Check-in Diario' },
+        { href: '/dashboard/alerts', icon: Bell, label: 'Mis Alertas' }
       ];
     }
 
     if (user?.role === 'MANAGER') {
       return [
         ...baseItems,
-        { href: '/team', icon: Users, label: 'Mi Equipo' },
-        { href: '/reports', icon: BarChart3, label: 'Informes' }
+        { href: '/dashboard/team', icon: Users, label: 'Mi Equipo' },
+        { href: '/dashboard/alerts', icon: Bell, label: 'Alertas del Equipo' },
+        { href: '/dashboard/reports', icon: BarChart3, label: 'Informes' }
       ];
     }
 
     if (user?.role === 'HR_ADMIN') {
       return [
         ...baseItems,
-        { href: '/teams', icon: Users, label: 'Equipos' },
-        { href: '/reports', icon: BarChart3, label: 'Informes' },
-        { href: '/settings', icon: Settings, label: 'Configuración' }
+        { href: '/dashboard/teams', icon: Users, label: 'Equipos' },
+        { href: '/dashboard/alerts', icon: Bell, label: 'Centro de Alertas' },
+        { href: '/dashboard/reports', icon: BarChart3, label: 'Informes' },
+        { href: '/dashboard/settings', icon: Settings, label: 'Configuración' }
       ];
     }
 

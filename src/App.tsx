@@ -14,7 +14,8 @@ import Team from "@/pages/Team";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
-import EmployeeImport from "@/components/EmployeeImport";
+import { AlertsCenter } from '@/components/alerts/AlertsCenter';
+import EmployeeImport from '@/components/EmployeeImport';
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const AppRoutes = () => {
             </RoleProtectedRoute>
           }
         />
+        <Route path="alerts" element={<AlertsCenter />} />
         <Route
           path="teams"
           element={
