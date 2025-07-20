@@ -1,4 +1,3 @@
-
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -125,7 +124,7 @@ const AppLayout = () => {
       <Sidebar />
       <Sidebar mobile />
 
-      <div className="flex-1 flex flex-col lg:ml-64">
+      <div className="flex-1 flex flex-col">
         <header className="bg-card border-b px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <Button
