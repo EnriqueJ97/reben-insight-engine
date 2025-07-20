@@ -149,7 +149,7 @@ const AppLayout = () => {
           </div>
         </header>
 
-        <main className="bg-background p-6">
+        <main className="p-6">
           <Outlet />
         </main>
       </div>
