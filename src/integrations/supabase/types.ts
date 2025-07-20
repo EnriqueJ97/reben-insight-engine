@@ -100,6 +100,97 @@ export type Database = {
           },
         ]
       }
+      email_campaigns: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          name: string
+          question_id: string
+          scheduled_time: string
+          sent_at: string | null
+          subject: string
+          tenant_id: string
+          total_recipients: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          name: string
+          question_id: string
+          scheduled_time?: string
+          sent_at?: string | null
+          subject: string
+          tenant_id: string
+          total_recipients?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          question_id?: string
+          scheduled_time?: string
+          sent_at?: string | null
+          subject?: string
+          tenant_id?: string
+          total_recipients?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sent_log: {
+        Row: {
+          campaign_id: string
+          clicked_at: string | null
+          delivery_status: string | null
+          email: string
+          id: string
+          opened_at: string | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          clicked_at?: string | null
+          delivery_status?: string | null
+          email: string
+          id?: string
+          opened_at?: string | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          clicked_at?: string | null
+          delivery_status?: string | null
+          email?: string
+          id?: string
+          opened_at?: string | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sent_log_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

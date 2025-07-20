@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings as SettingsIcon, Slack, Mail, Clock, Shield, Download, Users } from 'lucide-react';
+import { Settings as SettingsIcon, Slack, Mail, Clock, Shield, Download, Users, Send } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { EmailCampaignManager } from '@/components/emails/EmailCampaignManager';
 
 const Settings = () => {
   const { user, tenant } = useAuth();
@@ -94,8 +95,9 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="integrations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="integrations">Integraciones</TabsTrigger>
+          <TabsTrigger value="emails">Emails</TabsTrigger>
           <TabsTrigger value="employees">Empleados</TabsTrigger>
           <TabsTrigger value="reports">Informes</TabsTrigger>
           <TabsTrigger value="security">Seguridad</TabsTrigger>
@@ -270,6 +272,10 @@ const Settings = () => {
               {isLoading ? "Guardando..." : "Guardar Configuración"}
             </Button>
           </div>
+        </TabsContent>
+
+        <TabsContent value="emails">
+          <EmailCampaignManager />
         </TabsContent>
 
         <TabsContent value="employees">
