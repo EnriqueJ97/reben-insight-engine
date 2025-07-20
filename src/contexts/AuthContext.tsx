@@ -112,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: profile.full_name || profile.email,
           avatar: getAvatarForRole(profile.role)
         };
+        console.log('Perfil de usuario cargado:', userProfile);
         setUser(userProfile);
         setTenant(profile.tenants);
       }

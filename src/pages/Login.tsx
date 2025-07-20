@@ -31,8 +31,12 @@ const Login = () => {
 
   // If user is already authenticated, redirect to dashboard
   if (user && !loading) {
+    console.log('Usuario autenticado, redirigiendo al dashboard:', user);
     return <Navigate to="/dashboard" replace />;
   }
+
+  // Debug logs
+  console.log('Estado del Login:', { user: !!user, loading, userRole: user?.role });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,8 +274,9 @@ const Login = () => {
           <Alert className="mt-6">
             <AlertDescription>
               <strong>Cuentas de prueba:</strong><br />
-              Puedes crear una cuenta nueva o usar estas credenciales de demo:<br />
-              • Email: demo@reben.com / Contraseña: password
+              • <strong>Empleado:</strong> empleado@demo.com / password123<br />
+              • <strong>Manager:</strong> manager@demo.com / password123<br />
+              • <strong>HR Admin:</strong> admin@demo.com / password123
             </AlertDescription>
           </Alert>
         </CardContent>
