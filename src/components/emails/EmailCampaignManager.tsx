@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { WELLNESS_QUESTIONS, getRandomDailyQuestion } from '@/data/questions';
+import { WELLNESS_QUESTIONS } from '@/data/questions';
+import { Question } from '@/types/wellness';
 import { Mail, Send, Clock, Users, CheckCircle, Plus, Eye } from 'lucide-react';
+import { EmailCampaignForm } from './EmailCampaignForm';
 
 interface EmailCampaign {
   id: string;
@@ -34,6 +32,7 @@ interface EmailLog {
 
 export const EmailCampaignManager = () => {
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<EmailCampaign | null>(null);
@@ -44,7 +43,7 @@ export const EmailCampaignManager = () => {
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     question_id: '',
-    subject: '🧠 Tu pregunta de bienestar diaria',
+    subject: 'Pregunta de Bienestar Diaria',
     scheduled_time: '09:00',
     is_active: true
   });
@@ -53,7 +52,46 @@ export const EmailCampaignManager = () => {
 
   useEffect(() => {
     fetchCampaigns();
+    loadAllQuestions();
   }, []);
+
+  const loadAllQuestions = async () => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      // Cargar preguntas personalizadas de la base de datos
+      const { data: customQuestions, error } = await supabase
+        .from('custom_questions')
+        .select('*')
+        .eq('tenant_id', profile?.tenant_id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Combinar preguntas predefinidas con personalizadas
+      const allQuestions: Question[] = [
+        ...WELLNESS_QUESTIONS,
+        ...(customQuestions || []).map(q => ({
+          id: q.id,
+          text: q.text,
+          category: q.category as 'burnout' | 'turnover' | 'satisfaction' | 'extra',
+          subcategory: q.subcategory,
+          scale_description: q.scale_description
+        }))
+      ];
+
+      setQuestions(allQuestions);
+    } catch (error: any) {
+      console.error('Error loading questions:', error);
+      // Fallback a preguntas predefinidas si hay error
+      setQuestions(WELLNESS_QUESTIONS);
+    }
+  };
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -167,7 +205,7 @@ export const EmailCampaignManager = () => {
       setNewCampaign({
         name: '',
         question_id: '',
-        subject: '🧠 Tu pregunta de bienestar diaria',
+        subject: 'Pregunta de Bienestar Diaria',
         scheduled_time: '09:00',
         is_active: true
       });
@@ -269,15 +307,17 @@ export const EmailCampaignManager = () => {
   };
 
   const generateRandomCampaign = () => {
-    const randomQuestion = getRandomDailyQuestion();
-    setNewCampaign(prev => ({
-      ...prev,
-      name: `Campaña ${randomQuestion.category} - ${new Date().toLocaleDateString()}`,
-      question_id: randomQuestion.id,
-      subject: `🧠 ${randomQuestion.category === 'burnout' ? 'Check de Burnout' : 
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    if (randomQuestion) {
+      setNewCampaign(prev => ({
+        ...prev,
+        name: `Campaña ${randomQuestion.category} - ${new Date().toLocaleDateString()}`,
+        question_id: randomQuestion.id,
+        subject: `${randomQuestion.category === 'burnout' ? 'Check de Burnout' : 
                      randomQuestion.category === 'turnover' ? 'Check de Retención' : 
                      'Check de Satisfacción'} - ${new Date().toLocaleDateString()}`
-    }));
+      }));
+    }
   };
 
   return (
@@ -310,99 +350,18 @@ export const EmailCampaignManager = () => {
               <DialogHeader>
                 <DialogTitle>Crear Nueva Campaña de Email</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={generateRandomCampaign} className="flex-1">
-                    🎲 Generar Campaña Aleatoria
-                  </Button>
-                </div>
-                
-                <div>
-                  <Label htmlFor="name">Nombre de la Campaña</Label>
-                  <Input
-                    id="name"
-                    value={newCampaign.name}
-                    onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Ej: Check de Burnout Semanal"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="question">Pregunta</Label>
-                  <Select 
-                    value={newCampaign.question_id} 
-                    onValueChange={(value) => setNewCampaign(prev => ({ ...prev, question_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una pregunta" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {WELLNESS_QUESTIONS.map((question) => (
-                        <SelectItem key={question.id} value={question.id}>
-                          [{question.id}] {question.text.substring(0, 60)}...
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="subject">Asunto del Email</Label>
-                  <Input
-                    id="subject"
-                    value={newCampaign.subject}
-                    onChange={(e) => setNewCampaign(prev => ({ ...prev, subject: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="time">Hora de Envío Programada</Label>
-                  <Input
-                    id="time"
-                    type="time"
-                    value={newCampaign.scheduled_time}
-                    onChange={(e) => setNewCampaign(prev => ({ ...prev, scheduled_time: e.target.value }))}
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="active"
-                    checked={newCampaign.is_active}
-                    onCheckedChange={(checked) => setNewCampaign(prev => ({ ...prev, is_active: checked }))}
-                  />
-                  <Label htmlFor="active">Campaña Activa</Label>
-                </div>
-
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Enviar Email de Prueba</h4>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="email@ejemplo.com"
-                      value={testEmail}
-                      onChange={(e) => setTestEmail(e.target.value)}
-                      type="email"
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={() => sendTestEmail(newCampaign.question_id)}
-                      disabled={!newCampaign.question_id || !testEmail}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Probar
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={createCampaign} disabled={loading} className="flex-1">
-                    Crear Campaña
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
+              <EmailCampaignForm
+                newCampaign={newCampaign}
+                setNewCampaign={setNewCampaign}
+                questions={questions}
+                testEmail={testEmail}
+                setTestEmail={setTestEmail}
+                onCreateCampaign={createCampaign}
+                onSendTest={sendTestEmail}
+                onCancel={() => setShowCreateDialog(false)}
+                onGenerateRandom={generateRandomCampaign}
+                loading={loading}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -410,7 +369,7 @@ export const EmailCampaignManager = () => {
 
       <div className="grid gap-4">
         {campaigns.map((campaign) => {
-          const question = WELLNESS_QUESTIONS.find(q => q.id === campaign.question_id);
+          const question = questions.find(q => q.id === campaign.question_id);
           
           return (
             <Card key={campaign.id}>
@@ -444,7 +403,7 @@ export const EmailCampaignManager = () => {
                     <div>
                       <p className="text-sm font-medium">Pregunta:</p>
                       <p className="text-sm text-muted-foreground">
-                        [{campaign.question_id}] {question?.text}
+                        [{campaign.question_id}] {question?.text || 'Pregunta no encontrada'}
                       </p>
                     </div>
                     <div className="space-y-2">
