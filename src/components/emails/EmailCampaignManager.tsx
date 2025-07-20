@@ -4,14 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { WELLNESS_QUESTIONS, getRandomDailyQuestion } from '@/data/questions';
-import { Mail, Send, Clock, Users, CheckCircle, AlertCircle, Plus, Eye } from 'lucide-react';
+import { Mail, Send, Clock, Users, CheckCircle, Plus, Eye } from 'lucide-react';
 
 interface EmailCampaign {
   id: string;
@@ -93,6 +92,41 @@ export const EmailCampaignManager = () => {
         description: "Error al cargar logs: " + error.message,
         variant: "destructive"
       });
+    }
+  };
+
+  const sendDailyAutomatic = async () => {
+    setLoading(true);
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      const { data, error } = await supabase.functions.invoke('send-daily-question', {
+        body: {
+          autoDaily: true,
+          tenantId: profile?.tenant_id
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Éxito",
+        description: `Pregunta automática enviada: "${data.questionSent}" a ${data.totalSent} usuarios`
+      });
+
+      fetchCampaigns();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Error al enviar pregunta automática: " + error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -254,112 +288,124 @@ export const EmailCampaignManager = () => {
           <p className="text-muted-foreground">Envía preguntas de bienestar diarias a toda la organización</p>
         </div>
 
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Nueva Campaña
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Crear Nueva Campaña de Email</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={generateRandomCampaign} className="flex-1">
-                  🎲 Generar Campaña Aleatoria
-                </Button>
-              </div>
-              
-              <div>
-                <Label htmlFor="name">Nombre de la Campaña</Label>
-                <Input
-                  id="name"
-                  value={newCampaign.name}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ej: Check de Burnout Semanal"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="question">Pregunta</Label>
-                <Select 
-                  value={newCampaign.question_id} 
-                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, question_id: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una pregunta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WELLNESS_QUESTIONS.map((question) => (
-                      <SelectItem key={question.id} value={question.id}>
-                        [{question.id}] {question.text.substring(0, 60)}...
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="subject">Asunto del Email</Label>
-                <Input
-                  id="subject"
-                  value={newCampaign.subject}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, subject: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="time">Hora de Envío Programada</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={newCampaign.scheduled_time}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, scheduled_time: e.target.value }))}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="active"
-                  checked={newCampaign.is_active}
-                  onCheckedChange={(checked) => setNewCampaign(prev => ({ ...prev, is_active: checked }))}
-                />
-                <Label htmlFor="active">Campaña Activa</Label>
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Enviar Email de Prueba</h4>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={sendDailyAutomatic}
+            disabled={loading}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700"
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            Enviar Pregunta Automática Ahora
+          </Button>
+          
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Nueva Campaña
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Crear Nueva Campaña de Email</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
                 <div className="flex gap-2">
+                  <Button variant="outline" onClick={generateRandomCampaign} className="flex-1">
+                    🎲 Generar Campaña Aleatoria
+                  </Button>
+                </div>
+                
+                <div>
+                  <Label htmlFor="name">Nombre de la Campaña</Label>
                   <Input
-                    placeholder="email@ejemplo.com"
-                    value={testEmail}
-                    onChange={(e) => setTestEmail(e.target.value)}
-                    type="email"
+                    id="name"
+                    value={newCampaign.name}
+                    onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Ej: Check de Burnout Semanal"
                   />
-                  <Button 
-                    variant="outline" 
-                    onClick={() => sendTestEmail(newCampaign.question_id)}
-                    disabled={!newCampaign.question_id || !testEmail}
+                </div>
+
+                <div>
+                  <Label htmlFor="question">Pregunta</Label>
+                  <Select 
+                    value={newCampaign.question_id} 
+                    onValueChange={(value) => setNewCampaign(prev => ({ ...prev, question_id: value }))}
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    Probar
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una pregunta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WELLNESS_QUESTIONS.map((question) => (
+                        <SelectItem key={question.id} value={question.id}>
+                          [{question.id}] {question.text.substring(0, 60)}...
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="subject">Asunto del Email</Label>
+                  <Input
+                    id="subject"
+                    value={newCampaign.subject}
+                    onChange={(e) => setNewCampaign(prev => ({ ...prev, subject: e.target.value }))}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="time">Hora de Envío Programada</Label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={newCampaign.scheduled_time}
+                    onChange={(e) => setNewCampaign(prev => ({ ...prev, scheduled_time: e.target.value }))}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="active"
+                    checked={newCampaign.is_active}
+                    onCheckedChange={(checked) => setNewCampaign(prev => ({ ...prev, is_active: checked }))}
+                  />
+                  <Label htmlFor="active">Campaña Activa</Label>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Enviar Email de Prueba</h4>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="email@ejemplo.com"
+                      value={testEmail}
+                      onChange={(e) => setTestEmail(e.target.value)}
+                      type="email"
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => sendTestEmail(newCampaign.question_id)}
+                      disabled={!newCampaign.question_id || !testEmail}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Probar
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={createCampaign} disabled={loading} className="flex-1">
+                    Crear Campaña
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                    Cancelar
                   </Button>
                 </div>
               </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button onClick={createCampaign} disabled={loading} className="flex-1">
-                  Crear Campaña
-                </Button>
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4">
