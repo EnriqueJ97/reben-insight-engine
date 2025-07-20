@@ -9,9 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, TrendingUp, Users, AlertTriangle, Calendar, Target, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  
+  // If user is a manager, show the enhanced manager dashboard
+  if (user?.role === 'MANAGER') {
+    return <ManagerDashboard />;
+  }
+  
   const { getCheckinStats } = useCheckins();
   const { alerts, getAlertStats } = useAlerts();
   const { getTeamOverview } = useProfiles();
@@ -31,8 +38,6 @@ const Dashboard = () => {
     try {
       if (user.role === 'EMPLOYEE') {
         await loadEmployeeMetrics();
-      } else if (user.role === 'MANAGER') {
-        await loadManagerMetrics();
       } else if (user.role === 'HR_ADMIN') {
         await loadHRMetrics();
       }
@@ -85,50 +90,6 @@ const Dashboard = () => {
     ]);
   };
 
-  const loadManagerMetrics = async () => {
-    const [alertStats, teamData] = await Promise.all([
-      getAlertStats(),
-      getTeamOverview()
-    ]);
-
-    setTeamOverview(teamData);
-
-    const teamWellness = teamData?.averageTeamMood ? Math.round((teamData.averageTeamMood / 5) * 100) : 0;
-    const highRiskMembers = teamData?.memberStats?.filter((m: any) => 
-      m.stats?.averageMood && m.stats.averageMood <= 2
-    ).length || 0;
-
-    setMetrics([
-      { 
-        title: 'Bienestar del Equipo', 
-        value: teamWellness, 
-        trend: 'stable',
-        status: teamWellness >= 70 ? 'good' : teamWellness >= 50 ? 'warning' : 'critical',
-        description: `${teamData?.totalMembers || 0} miembros` 
-      },
-      { 
-        title: 'Miembros en Riesgo', 
-        value: highRiskMembers, 
-        trend: 'stable',
-        status: highRiskMembers === 0 ? 'good' : highRiskMembers <= 2 ? 'warning' : 'critical',
-        description: 'Necesitan atención' 
-      },
-      { 
-        title: 'Alertas del Equipo', 
-        value: alertStats.unresolved, 
-        trend: 'stable',
-        status: alertStats.unresolved === 0 ? 'good' : alertStats.unresolved <= 3 ? 'warning' : 'critical',
-        description: 'Sin resolver' 
-      },
-      { 
-        title: 'Participación', 
-        value: 78, 
-        trend: 'up',
-        status: 'good',
-        description: 'Check-ins completados' 
-      }
-    ]);
-  };
 
   const loadHRMetrics = async () => {
     const [alertStats, teamData] = await Promise.all([
@@ -180,11 +141,6 @@ const Dashboard = () => {
           { label: 'Completar Check-in', href: '/dashboard/checkin', icon: Heart, urgent: true },
           { label: 'Ver mi Progreso', href: '/dashboard/reports', icon: TrendingUp, urgent: false },
         ];
-      case 'MANAGER':
-        return [
-          { label: 'Ver mi Equipo', href: '/dashboard/team', icon: Users, urgent: true },
-          { label: 'Revisar Alertas', href: '/dashboard/reports', icon: AlertTriangle, urgent: true },
-        ];
       case 'HR_ADMIN':
         return [
           { label: 'Ver Todos los Equipos', href: '/dashboard/teams', icon: Users, urgent: false },
@@ -229,7 +185,6 @@ const Dashboard = () => {
         </h1>
         <p className="text-muted-foreground mt-1">
           {user?.role === 'EMPLOYEE' && 'Revisa tu bienestar y completa tu check-in diario'}
-          {user?.role === 'MANAGER' && 'Monitorea el bienestar de tu equipo'}
           {user?.role === 'HR_ADMIN' && 'Panel ejecutivo de bienestar organizacional'}
         </p>
       </div>
@@ -316,35 +271,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Role-specific additional content */}
-      {user?.role === 'MANAGER' && teamOverview && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumen del Equipo</CardTitle>
-            <CardDescription>
-              Vista rápida del estado de tu equipo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{teamOverview.totalMembers}</div>
-                <div className="text-sm text-muted-foreground">Miembros del equipo</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {Math.round((teamOverview.averageTeamMood / 5) * 100)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Bienestar promedio</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">{teamOverview.totalTeamAlerts}</div>
-                <div className="text-sm text-muted-foreground">Alertas totales</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Footer */}
       <Card className="bg-muted/50">
