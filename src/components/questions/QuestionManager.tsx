@@ -98,31 +98,23 @@ export const QuestionManager = () => {
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
 
-      // Usar query raw para la tabla custom_questions
-      const { data: customQuestions, error } = await supabase
-        .rpc('get_custom_questions', { p_tenant_id: profile?.tenant_id })
-        .then(async () => {
-          // Fallback: usar query directa
-          const { data, error } = await supabase
-            .from('custom_questions' as any)
-            .select('*')
-            .eq('tenant_id', profile?.tenant_id)
-            .order('created_at', { ascending: false });
-          return { data, error };
-        })
-        .catch(async () => {
-          // Si falla, intentar query directa
-          const { data, error } = await supabase
-            .from('custom_questions' as any)
-            .select('*')
-            .eq('tenant_id', profile?.tenant_id)
-            .order('created_at', { ascending: false });
-          return { data, error };
-        });
+      // Load custom questions directly from the table
+      let customQuestions: CustomQuestionDB[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('custom_questions' as any)
+          .select('*')
+          .eq('tenant_id', profile?.tenant_id)
+          .order('created_at', { ascending: false });
 
-      const customQuestionsTyped = (customQuestions as CustomQuestionDB[]) || [];
+        if (!error && data) {
+          customQuestions = data as CustomQuestionDB[];
+        }
+      } catch (error) {
+        console.log('Custom questions not available yet:', error);
+      }
 
-      // Combinar preguntas predefinidas con personalizadas
+      // Combine predefined questions with personalized ones
       const predefinedQuestions: CustomQuestion[] = WELLNESS_QUESTIONS.map(q => ({
         ...q,
         is_active: true,
@@ -131,7 +123,7 @@ export const QuestionManager = () => {
 
       const allQuestions = [
         ...predefinedQuestions,
-        ...customQuestionsTyped.map(q => ({
+        ...customQuestions.map(q => ({
           id: q.id,
           text: q.text,
           category: q.category as 'burnout' | 'turnover' | 'satisfaction' | 'extra',
@@ -151,7 +143,7 @@ export const QuestionManager = () => {
         description: "Error al cargar preguntas: " + error.message,
         variant: "destructive"
       });
-      // Fallback a preguntas predefinidas
+      // Fallback to predefined questions
       setQuestions(WELLNESS_QUESTIONS.map(q => ({ ...q, is_active: true })));
     } finally {
       setLoading(false);
@@ -192,7 +184,7 @@ export const QuestionManager = () => {
         .single();
 
       if (editingQuestion && !WELLNESS_QUESTIONS.find(q => q.id === editingQuestion.id)) {
-        // Actualizar pregunta personalizada existente
+        // Update existing custom question
         const { error } = await supabase
           .from('custom_questions' as any)
           .update({
@@ -211,7 +203,7 @@ export const QuestionManager = () => {
           description: "Pregunta actualizada correctamente"
         });
       } else {
-        // Crear nueva pregunta personalizada
+        // Create new custom question
         const questionId = data.id || generateQuestionId(data.category);
         
         const { error } = await supabase

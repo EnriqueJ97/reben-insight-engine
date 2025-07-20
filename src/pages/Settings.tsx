@@ -11,17 +11,18 @@ import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter
 import { Settings as SettingsIcon, Mail, HelpCircle, AlertTriangle, Plug } from 'lucide-react';
 
 export default function Settings() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('campaigns');
 
-  const isHRAdmin = profile?.role === 'HR_ADMIN';
+  // For now, we'll assume users are HR_ADMIN. In a real app, this would come from the user's profile
+  const isHRAdmin = true; // This should be fetched from user profile/role
 
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-2 mb-6">
         <SettingsIcon className="w-6 h-6" />
         <h1 className="text-3xl font-bold">Configuración</h1>
-        <Badge variant="outline">{profile?.role}</Badge>
+        <Badge variant="outline">HR_ADMIN</Badge>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,7 +73,7 @@ export const EmailCampaignManager = () => {
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
 
-      // Intentar cargar preguntas personalizadas
+      // Load custom questions directly from the table
       let customQuestions: CustomQuestionDB[] = [];
       try {
         const { data, error } = await supabase
@@ -91,7 +90,7 @@ export const EmailCampaignManager = () => {
         console.log('Custom questions not available yet:', error);
       }
 
-      // Combinar preguntas predefinidas con personalizadas
+      // Combine predefined questions with personalized ones
       const allQuestions: Question[] = [
         ...WELLNESS_QUESTIONS,
         ...customQuestions.map(q => ({
@@ -106,7 +105,7 @@ export const EmailCampaignManager = () => {
       setQuestions(allQuestions);
     } catch (error: any) {
       console.error('Error loading questions:', error);
-      // Fallback a preguntas predefinidas si hay error
+      // Fallback to predefined questions if there's an error
       setQuestions(WELLNESS_QUESTIONS);
     }
   };
