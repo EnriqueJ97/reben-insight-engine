@@ -15,7 +15,7 @@ import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
-import EmployeeImport from '@/components/EmployeeImport';
+import EmployeeImport from '@/components/EmployeeImport.tsx';
 
 const queryClient = new QueryClient();
 
