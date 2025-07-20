@@ -100,6 +100,53 @@ export type Database = {
           },
         ]
       }
+      custom_questions: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          scale_description: string
+          subcategory: string
+          tenant_id: string
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          id: string
+          is_active?: boolean
+          scale_description?: string
+          subcategory: string
+          tenant_id: string
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          scale_description?: string
+          subcategory?: string
+          tenant_id?: string
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_questions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_campaigns: {
         Row: {
           created_at: string

@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { WELLNESS_QUESTIONS } from '@/data/questions';
 import { Question } from '@/types/wellness';
-import { Plus, Edit2, Trash2, Filter, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 
@@ -22,6 +22,19 @@ interface CustomQuestion extends Question {
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+interface CustomQuestionDB {
+  id: string;
+  tenant_id: string;
+  text: string;
+  category: string;
+  subcategory: string;
+  scale_description: string;
+  is_active: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface QuestionFormData {
@@ -85,14 +98,29 @@ export const QuestionManager = () => {
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
 
-      // Cargar preguntas personalizadas de la base de datos
+      // Usar query raw para la tabla custom_questions
       const { data: customQuestions, error } = await supabase
-        .from('custom_questions')
-        .select('*')
-        .eq('tenant_id', profile?.tenant_id)
-        .order('created_at', { ascending: false });
+        .rpc('get_custom_questions', { p_tenant_id: profile?.tenant_id })
+        .then(async () => {
+          // Fallback: usar query directa
+          const { data, error } = await supabase
+            .from('custom_questions' as any)
+            .select('*')
+            .eq('tenant_id', profile?.tenant_id)
+            .order('created_at', { ascending: false });
+          return { data, error };
+        })
+        .catch(async () => {
+          // Si falla, intentar query directa
+          const { data, error } = await supabase
+            .from('custom_questions' as any)
+            .select('*')
+            .eq('tenant_id', profile?.tenant_id)
+            .order('created_at', { ascending: false });
+          return { data, error };
+        });
 
-      if (error) throw error;
+      const customQuestionsTyped = (customQuestions as CustomQuestionDB[]) || [];
 
       // Combinar preguntas predefinidas con personalizadas
       const predefinedQuestions: CustomQuestion[] = WELLNESS_QUESTIONS.map(q => ({
@@ -103,7 +131,7 @@ export const QuestionManager = () => {
 
       const allQuestions = [
         ...predefinedQuestions,
-        ...(customQuestions || []).map(q => ({
+        ...customQuestionsTyped.map(q => ({
           id: q.id,
           text: q.text,
           category: q.category as 'burnout' | 'turnover' | 'satisfaction' | 'extra',
@@ -117,11 +145,14 @@ export const QuestionManager = () => {
 
       setQuestions(allQuestions);
     } catch (error: any) {
+      console.error('Error loading questions:', error);
       toast({
         title: "Error",
         description: "Error al cargar preguntas: " + error.message,
         variant: "destructive"
       });
+      // Fallback a preguntas predefinidas
+      setQuestions(WELLNESS_QUESTIONS.map(q => ({ ...q, is_active: true })));
     } finally {
       setLoading(false);
     }
@@ -163,7 +194,7 @@ export const QuestionManager = () => {
       if (editingQuestion && !WELLNESS_QUESTIONS.find(q => q.id === editingQuestion.id)) {
         // Actualizar pregunta personalizada existente
         const { error } = await supabase
-          .from('custom_questions')
+          .from('custom_questions' as any)
           .update({
             text: data.text,
             category: data.category,
@@ -184,7 +215,7 @@ export const QuestionManager = () => {
         const questionId = data.id || generateQuestionId(data.category);
         
         const { error } = await supabase
-          .from('custom_questions')
+          .from('custom_questions' as any)
           .insert({
             id: questionId,
             tenant_id: profile?.tenant_id,
@@ -261,7 +292,7 @@ export const QuestionManager = () => {
 
     try {
       const { error } = await supabase
-        .from('custom_questions')
+        .from('custom_questions' as any)
         .delete()
         .eq('id', questionId);
 

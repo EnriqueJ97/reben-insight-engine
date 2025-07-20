@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +30,15 @@ interface EmailLog {
   email: string;
   sent_at: string;
   delivery_status: string;
+}
+
+interface CustomQuestionDB {
+  id: string;
+  text: string;
+  category: string;
+  subcategory: string;
+  scale_description: string;
+  is_active: boolean;
 }
 
 export const EmailCampaignManager = () => {
@@ -63,20 +74,27 @@ export const EmailCampaignManager = () => {
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
 
-      // Cargar preguntas personalizadas de la base de datos
-      const { data: customQuestions, error } = await supabase
-        .from('custom_questions')
-        .select('*')
-        .eq('tenant_id', profile?.tenant_id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+      // Intentar cargar preguntas personalizadas
+      let customQuestions: CustomQuestionDB[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('custom_questions' as any)
+          .select('*')
+          .eq('tenant_id', profile?.tenant_id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
+        if (!error && data) {
+          customQuestions = data as CustomQuestionDB[];
+        }
+      } catch (error) {
+        console.log('Custom questions not available yet:', error);
+      }
 
       // Combinar preguntas predefinidas con personalizadas
       const allQuestions: Question[] = [
         ...WELLNESS_QUESTIONS,
-        ...(customQuestions || []).map(q => ({
+        ...customQuestions.map(q => ({
           id: q.id,
           text: q.text,
           category: q.category as 'burnout' | 'turnover' | 'satisfaction' | 'extra',
