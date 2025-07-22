@@ -39,42 +39,45 @@ const Team = () => {
       if (overview) {
         setTeamStats(overview);
         
-        // Calculate team metrics from real data using memberStats
+        // Calculate team metrics ONLY from real data
         const memberStats = overview.memberStats || [];
-        const avgWellness = memberStats.length > 0 
-          ? Math.round(memberStats.reduce((sum: number, m: any) => sum + (m.stats?.averageMood || 0), 0) / memberStats.length * 10)
-          : 0;
+        const membersWithData = memberStats.filter((m: any) => m.stats?.totalCheckins > 0);
         
-        const highRiskCount = memberStats.filter((m: any) => (m.stats?.averageMood || 0) < 6).length || 0;
-        const highRiskPercentage = memberStats.length > 0 
-          ? Math.round((highRiskCount / memberStats.length) * 100)
-          : 0;
+        // Solo calcular métricas si hay datos reales
+        const avgWellness = membersWithData.length > 0 
+          ? Math.round(membersWithData.reduce((sum: number, m: any) => sum + m.stats.averageMood, 0) / membersWithData.length * 10)
+          : null;
+        
+        const highRiskCount = membersWithData.filter((m: any) => m.stats.averageMood < 6).length;
+        const highRiskPercentage = membersWithData.length > 0 
+          ? Math.round((highRiskCount / membersWithData.length) * 100)
+          : null;
         
         const participationRate = memberStats.length > 0
-          ? Math.round((memberStats.filter((m: any) => (m.stats?.totalCheckins || 0) > 0).length / memberStats.length) * 100)
+          ? Math.round((membersWithData.length / memberStats.length) * 100)
           : 0;
 
         setTeamMetrics([
           { 
             title: 'Bienestar Promedio', 
-            value: avgWellness, 
-            trend: avgWellness >= 70 ? 'up' as const : avgWellness >= 50 ? 'stable' as const : 'down' as const, 
-            status: avgWellness >= 70 ? 'good' as const : avgWellness >= 50 ? 'warning' as const : 'critical' as const, 
-            description: `${memberStats.length || 0} miembros` 
+            value: avgWellness ?? 0, 
+            trend: avgWellness ? (avgWellness >= 70 ? 'up' as const : avgWellness >= 50 ? 'stable' as const : 'down' as const) : 'stable' as const, 
+            status: avgWellness ? (avgWellness >= 70 ? 'good' as const : avgWellness >= 50 ? 'warning' as const : 'critical' as const) : 'warning' as const, 
+            description: avgWellness ? `${membersWithData.length} con datos` : 'Sin datos disponibles'
           },
           { 
             title: 'Riesgo Alto', 
-            value: highRiskPercentage, 
-            trend: highRiskPercentage <= 20 ? 'down' as const : 'up' as const, 
-            status: highRiskPercentage <= 20 ? 'good' as const : highRiskPercentage <= 40 ? 'warning' as const : 'critical' as const, 
-            description: `${highRiskCount} persona${highRiskCount !== 1 ? 's' : ''}` 
+            value: highRiskPercentage ?? 0, 
+            trend: highRiskPercentage ? (highRiskPercentage <= 20 ? 'down' as const : 'up' as const) : 'stable' as const, 
+            status: highRiskPercentage ? (highRiskPercentage <= 20 ? 'good' as const : highRiskPercentage <= 40 ? 'warning' as const : 'critical' as const) : 'warning' as const, 
+            description: highRiskPercentage ? `${highRiskCount} persona${highRiskCount !== 1 ? 's' : ''}` : 'Sin datos disponibles'
           },
           { 
             title: 'Participación', 
             value: participationRate, 
             trend: participationRate >= 80 ? 'up' as const : 'stable' as const, 
             status: participationRate >= 80 ? 'good' as const : participationRate >= 60 ? 'warning' as const : 'critical' as const, 
-            description: 'Últimos 7 días' 
+            description: `${membersWithData.length}/${memberStats.length} participando`
           },
           { 
             title: 'Alertas Activas', 
@@ -111,11 +114,13 @@ const Team = () => {
   };
 
   const getWellnessScore = (member: any) => {
-    if (!member.stats?.averageMood) return 0;
+    // Solo calcular si hay check-ins reales
+    if (!member.stats?.averageMood || member.stats?.totalCheckins === 0) return null;
     return Math.round(member.stats.averageMood * 10);
   };
 
-  const getRiskLevel = (score: number) => {
+  const getRiskLevel = (score: number | null) => {
+    if (score === null) return 'unknown';
     if (score >= 70) return 'low';
     if (score >= 50) return 'medium';
     return 'high';
@@ -126,7 +131,7 @@ const Team = () => {
   };
 
   const getLastCheckinText = (member: any) => {
-    if (!member.stats?.lastCheckin) return 'Sin check-ins';
+    if (!member.stats?.lastCheckin || member.stats?.totalCheckins === 0) return 'Sin check-ins';
     const lastCheckin = new Date(member.stats.lastCheckin);
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - lastCheckin.getTime()) / (1000 * 60 * 60));
@@ -152,6 +157,7 @@ const Team = () => {
       case 'low': return 'text-success';
       case 'medium': return 'text-warning';
       case 'high': return 'text-destructive';
+      case 'unknown': return 'text-muted-foreground';
       default: return 'text-muted-foreground';
     }
   };
@@ -161,6 +167,7 @@ const Team = () => {
       case 'low': return 'bg-success/10';
       case 'medium': return 'bg-warning/10';
       case 'high': return 'bg-destructive/10';
+      case 'unknown': return 'bg-muted/10';
       default: return 'bg-muted';
     }
   };
@@ -234,7 +241,8 @@ const Team = () => {
                           {/* Semáforo indicator */}
                           <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background ${
                             riskLevel === 'low' ? 'bg-success' : 
-                            riskLevel === 'medium' ? 'bg-warning' : 'bg-destructive'
+                            riskLevel === 'medium' ? 'bg-warning' : 
+                            riskLevel === 'high' ? 'bg-destructive' : 'bg-muted'
                           }`} />
                         </div>
                         <div>
@@ -250,7 +258,7 @@ const Team = () => {
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
                           <div className={`text-lg font-bold ${getRiskColor(riskLevel)}`}>
-                            {wellnessScore}%
+                            {wellnessScore ? `${wellnessScore}%` : 'Sin datos'}
                           </div>
                           <Badge 
                             variant="secondary" 
@@ -259,6 +267,7 @@ const Team = () => {
                             {riskLevel === 'low' && 'Bajo Riesgo'}
                             {riskLevel === 'medium' && 'Riesgo Medio'}
                             {riskLevel === 'high' && 'Alto Riesgo'}
+                            {riskLevel === 'unknown' && 'Sin check-ins'}
                           </Badge>
                         </div>
                         
