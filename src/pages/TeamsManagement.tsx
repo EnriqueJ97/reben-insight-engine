@@ -29,11 +29,6 @@ const TeamsManagement = () => {
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [selectedTeamForAssignment, setSelectedTeamForAssignment] = useState('');
 
-  // Debug info
-  console.log('TeamsManagement - User:', user);
-  console.log('TeamsManagement - Profiles:', profiles);
-  console.log('TeamsManagement - Profiles length:', profiles.length);
-
   // Filter profiles to get potential managers (MANAGER role) and all employees
   const managers = profiles.filter(p => p.role === 'MANAGER');
   const unassignedEmployees = profiles.filter(p => !p.team_id);

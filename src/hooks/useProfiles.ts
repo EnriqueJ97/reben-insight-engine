@@ -14,11 +14,7 @@ export const useProfiles = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchTeamMembers = async (teamId?: string) => {
-    console.log('useProfiles - fetchTeamMembers called with user:', user);
-    console.log('useProfiles - teamId:', teamId);
-    
     if (!user) {
-      console.log('useProfiles - No user, returning');
       return;
     }
     
@@ -29,27 +25,17 @@ export const useProfiles = () => {
         .select('*')
         .eq('tenant_id', user.tenant_id);
 
-      console.log('useProfiles - User role:', user.role);
-      console.log('useProfiles - User tenant_id:', user.tenant_id);
-
       // Filter based on user role and teamId
       if (user.role === 'MANAGER' && teamId) {
-        console.log('useProfiles - Filtering for MANAGER with specific teamId');
         query = query.eq('team_id', teamId);
       } else if (user.role === 'MANAGER' && user.team_id) {
-        console.log('useProfiles - Filtering for MANAGER with user team_id');
         query = query.eq('team_id', user.team_id);
       }
       // HR_ADMIN can see all profiles in tenant (no additional filter needed)
       
-      console.log('useProfiles - About to execute query');
       const { data, error } = await query.order('full_name');
 
-      console.log('useProfiles - Query result:', { data, error });
-      console.log('useProfiles - Raw error details:', error);
-
       if (error) {
-        console.error('useProfiles - Detailed error:', error);
         throw error;
       }
       
@@ -59,11 +45,9 @@ export const useProfiles = () => {
         avatar: getAvatarForRole(profile.role)
       }));
       
-      console.log('useProfiles - Enhanced profiles:', enhancedProfiles);
       setProfiles(enhancedProfiles);
     } catch (error) {
       console.error('useProfiles - Catch block error:', error);
-      console.error('useProfiles - Error details:', JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
@@ -108,12 +92,13 @@ export const useProfiles = () => {
     if (!targetProfileId) return null;
 
     try {
-      // Get checkin stats
+      // Get checkin stats (most recent first)
       const { data: checkins, error: checkinsError } = await supabase
         .from('checkins')
         .select('mood, created_at')
         .eq('user_id', targetProfileId)
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false });
 
       if (checkinsError) throw checkinsError;
 
@@ -152,7 +137,10 @@ export const useProfiles = () => {
     }
 
     try {
-      const teamMembers = await fetchTeamMembers();
+      // Fetch fresh team members data
+      await fetchTeamMembers();
+      
+      // Get stats for all team members
       const stats = await Promise.all(
         profiles.map(async (member) => {
           const memberStats = await getProfileStats(member.id);
@@ -166,7 +154,7 @@ export const useProfiles = () => {
       return {
         totalMembers: profiles.length,
         memberStats: stats,
-        averageTeamMood: stats.reduce((sum, s) => sum + (s.stats?.averageMood || 0), 0) / stats.length,
+        averageTeamMood: stats.length > 0 ? stats.reduce((sum, s) => sum + (s.stats?.averageMood || 0), 0) / stats.length : 0,
         totalTeamAlerts: stats.reduce((sum, s) => sum + (s.stats?.totalAlerts || 0), 0)
       };
     } catch (error) {
