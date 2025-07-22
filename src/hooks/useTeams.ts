@@ -16,6 +16,7 @@ export interface Team {
     email: string;
   };
   member_count?: number;
+  invite_code?: string;
 }
 
 export const useTeams = () => {
@@ -41,7 +42,10 @@ export const useTeams = () => {
         .eq('tenant_id', user.tenant_id)
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching teams:', error);
+        throw error;
+      }
 
       // Get member counts for each team
       const teamsWithCounts = await Promise.all(
@@ -61,6 +65,7 @@ export const useTeams = () => {
       setTeams(teamsWithCounts);
     } catch (error) {
       console.error('Error fetching teams:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -70,17 +75,24 @@ export const useTeams = () => {
     if (!user) throw new Error('No user logged in');
 
     try {
+      // Generate a unique invite code
+      const inviteCode = `team-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+
       const { data, error } = await supabase
         .from('teams')
         .insert({
           name,
           manager_id: managerId,
-          tenant_id: user.tenant_id
+          tenant_id: user.tenant_id,
+          invite_code: inviteCode
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating team:', error);
+        throw error;
+      }
       
       await fetchTeams(); // Refresh teams list
       return data;
@@ -97,7 +109,10 @@ export const useTeams = () => {
         .update(updates)
         .eq('id', teamId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating team:', error);
+        throw error;
+      }
       
       await fetchTeams(); // Refresh teams list
     } catch (error) {
@@ -120,7 +135,10 @@ export const useTeams = () => {
         .delete()
         .eq('id', teamId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting team:', error);
+        throw error;
+      }
       
       await fetchTeams(); // Refresh teams list
     } catch (error) {
@@ -136,12 +154,39 @@ export const useTeams = () => {
         .update({ team_id: teamId })
         .eq('id', employeeId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error assigning employee to team:', error);
+        throw error;
+      }
       
       await fetchTeams(); // Refresh teams list
     } catch (error) {
       console.error('Error assigning employee to team:', error);
       throw error;
+    }
+  };
+
+  const generateInviteLink = (teamId: string) => {
+    const team = teams.find(t => t.id === teamId);
+    if (!team?.invite_code) return null;
+    
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/join-team/${team.invite_code}`;
+  };
+
+  const getTeamByInviteCode = async (inviteCode: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('invite_code', inviteCode)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error getting team by invite code:', error);
+      return null;
     }
   };
 
@@ -158,6 +203,8 @@ export const useTeams = () => {
     createTeam,
     updateTeam,
     deleteTeam,
-    assignEmployeeToTeam
+    assignEmployeeToTeam,
+    generateInviteLink,
+    getTeamByInviteCode
   };
 };

@@ -11,18 +11,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Users, Plus, Settings, Trash2, UserPlus, Shield } from 'lucide-react';
+import { Users, Plus, Settings, Trash2, UserPlus, Shield, Link, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const TeamsManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { teams, loading, createTeam, updateTeam, deleteTeam, assignEmployeeToTeam } = useTeams();
+  const { teams, loading, createTeam, updateTeam, deleteTeam, assignEmployeeToTeam, generateInviteLink } = useTeams();
   const { profiles } = useProfiles();
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '', managerId: '' });
   const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -42,6 +43,7 @@ const TeamsManagement = () => {
       setIsCreateDialogOpen(false);
       setFormData({ name: '', managerId: '' });
     } catch (error) {
+      console.error('Error creating team:', error);
       toast({
         title: "Error",
         description: "No se pudo crear el equipo. Intenta nuevamente.",
@@ -121,6 +123,22 @@ const TeamsManagement = () => {
       managerId: team.manager_id || 'no-manager'
     });
     setIsEditDialogOpen(true);
+  };
+
+  const openInviteDialog = (team: any) => {
+    setSelectedTeam(team);
+    setIsInviteDialogOpen(true);
+  };
+
+  const copyInviteLink = (teamId: string) => {
+    const link = generateInviteLink(teamId);
+    if (link) {
+      navigator.clipboard.writeText(link);
+      toast({
+        title: "Enlace copiado",
+        description: "El enlace de invitación ha sido copiado al portapapeles."
+      });
+    }
   };
 
   if (user?.role !== 'HR_ADMIN') {
@@ -269,6 +287,14 @@ const TeamsManagement = () => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => openInviteDialog(team)}
+                    title="Generar enlace de invitación"
+                  >
+                    <Link className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => openEditDialog(team)}
                   >
                     <Settings className="h-4 w-4" />
@@ -357,6 +383,39 @@ const TeamsManagement = () => {
             <Button onClick={handleUpdateTeam} disabled={!formData.name} className="w-full">
               Guardar Cambios
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Dialog */}
+      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invitar al Equipo: {selectedTeam?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Comparte este enlace para que las personas se registren directamente en el equipo:
+            </p>
+            <div className="flex items-center space-x-2">
+              <Input
+                value={generateInviteLink(selectedTeam?.id) || ''}
+                readOnly
+                className="flex-1"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyInviteLink(selectedTeam?.id)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <Alert>
+              <AlertDescription>
+                Las personas que usen este enlace se registrarán automáticamente como empleados y se asignarán a este equipo.
+              </AlertDescription>
+            </Alert>
           </div>
         </DialogContent>
       </Dialog>
