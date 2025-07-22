@@ -118,12 +118,14 @@ export const useProfiles = () => {
       const totalAlerts = alerts?.length || 0;
       const unresolvedAlerts = alerts?.filter(a => !a.resolved).length || 0;
 
+      const lastCheckin = checkins && checkins.length > 0 ? checkins[0].created_at : null;
+      
       return {
         totalCheckins: checkins?.length || 0,
         averageMood,
         totalAlerts,
         unresolvedAlerts,
-        lastCheckin: checkins?.[0]?.created_at || null
+        lastCheckin
       };
     } catch (error) {
       console.error('Error getting profile stats:', error);
