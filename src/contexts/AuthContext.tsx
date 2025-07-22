@@ -144,7 +144,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailRedirectTo: redirectUrl,
           data: {
             full_name: userData?.fullName || email,
-            role: userData?.role || 'EMPLOYEE'
+            role: userData?.role || 'EMPLOYEE',
+            team_id: userData?.teamId || null
           }
         }
       });
