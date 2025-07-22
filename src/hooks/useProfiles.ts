@@ -133,7 +133,7 @@ export const useProfiles = () => {
         lastCheckin
       };
       
-      console.log('getProfileStats - final stats for', targetProfileId, ':', stats);
+      console.log('getProfileStats - final stats for', targetProfileId, ':', JSON.stringify(stats, null, 2));
       return stats;
     } catch (error) {
       console.error('Error getting profile stats:', error);
