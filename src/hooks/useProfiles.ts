@@ -14,7 +14,13 @@ export const useProfiles = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchTeamMembers = async (teamId?: string) => {
-    if (!user) return;
+    console.log('useProfiles - fetchTeamMembers called with user:', user);
+    console.log('useProfiles - teamId:', teamId);
+    
+    if (!user) {
+      console.log('useProfiles - No user, returning');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -28,15 +34,23 @@ export const useProfiles = () => {
         `)
         .eq('tenant_id', user.tenant_id);
 
+      console.log('useProfiles - User role:', user.role);
+      console.log('useProfiles - User tenant_id:', user.tenant_id);
+
       // Filter based on user role and teamId
       if (user.role === 'MANAGER' && teamId) {
+        console.log('useProfiles - Filtering for MANAGER with specific teamId');
         query = query.eq('team_id', teamId);
       } else if (user.role === 'MANAGER' && user.team_id) {
+        console.log('useProfiles - Filtering for MANAGER with user team_id');
         query = query.eq('team_id', user.team_id);
       }
       // HR_ADMIN can see all profiles in tenant (no additional filter needed)
-
+      
+      console.log('useProfiles - About to execute query');
       const { data, error } = await query.order('full_name');
+
+      console.log('useProfiles - Query result:', { data, error });
 
       if (error) throw error;
       
@@ -46,6 +60,7 @@ export const useProfiles = () => {
         avatar: getAvatarForRole(profile.role)
       }));
       
+      console.log('useProfiles - Enhanced profiles:', enhancedProfiles);
       setProfiles(enhancedProfiles);
     } catch (error) {
       console.error('Error fetching team members:', error);
