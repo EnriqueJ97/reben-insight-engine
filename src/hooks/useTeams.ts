@@ -6,17 +6,29 @@ import { useAuth } from '@/contexts/AuthContext';
 export interface Team {
   id: string;
   name: string;
-  manager_id?: string;
+  manager_id?: string | null;
   tenant_id: string;
   created_at: string;
   updated_at: string;
+  invite_code?: string | null;
   manager?: {
     id: string;
-    full_name?: string;
+    full_name?: string | null;
     email: string;
-  };
+  } | null;
   member_count?: number;
-  invite_code?: string;
+}
+
+interface TeamInsert {
+  name: string;
+  manager_id?: string | null;
+  tenant_id: string;
+  invite_code: string;
+}
+
+interface TeamUpdate {
+  name?: string;
+  manager_id?: string | null;
 }
 
 export const useTeams = () => {
@@ -58,7 +70,7 @@ export const useTeams = () => {
           return {
             ...team,
             member_count: count || 0
-          };
+          } as Team;
         })
       );
 
@@ -78,14 +90,16 @@ export const useTeams = () => {
       // Generate a unique invite code
       const inviteCode = `team-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
 
+      const teamData: TeamInsert = {
+        name,
+        manager_id: managerId || null,
+        tenant_id: user.tenant_id,
+        invite_code: inviteCode
+      };
+
       const { data, error } = await supabase
         .from('teams')
-        .insert({
-          name,
-          manager_id: managerId,
-          tenant_id: user.tenant_id,
-          invite_code: inviteCode
-        })
+        .insert(teamData)
         .select()
         .single();
 
@@ -102,7 +116,7 @@ export const useTeams = () => {
     }
   };
 
-  const updateTeam = async (teamId: string, updates: { name?: string; manager_id?: string }) => {
+  const updateTeam = async (teamId: string, updates: TeamUpdate) => {
     try {
       const { error } = await supabase
         .from('teams')
@@ -166,7 +180,7 @@ export const useTeams = () => {
     }
   };
 
-  const generateInviteLink = (teamId: string) => {
+  const generateInviteLink = (teamId: string): string | null => {
     const team = teams.find(t => t.id === teamId);
     if (!team?.invite_code) return null;
     
@@ -174,7 +188,7 @@ export const useTeams = () => {
     return `${baseUrl}/join-team/${team.invite_code}`;
   };
 
-  const getTeamByInviteCode = async (inviteCode: string) => {
+  const getTeamByInviteCode = async (inviteCode: string): Promise<Team | null> => {
     try {
       const { data, error } = await supabase
         .from('teams')
@@ -183,7 +197,7 @@ export const useTeams = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Team;
     } catch (error) {
       console.error('Error getting team by invite code:', error);
       return null;
