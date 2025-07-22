@@ -91,7 +91,6 @@ export const useProfiles = () => {
     const targetProfileId = profileId || user?.id;
     if (!targetProfileId) return null;
 
-    console.log('getProfileStats - targetProfileId:', targetProfileId);
     try {
       // Get checkin stats (most recent first)
       const { data: checkins, error: checkinsError } = await supabase
@@ -101,11 +100,7 @@ export const useProfiles = () => {
         .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false });
 
-      console.log('getProfileStats - checkins for', targetProfileId, ':', checkins);
-      if (checkinsError) {
-        console.error('getProfileStats - checkins error:', checkinsError);
-        throw checkinsError;
-      }
+      if (checkinsError) throw checkinsError;
 
       // Get alert stats
       const { data: alerts, error: alertsError } = await supabase
@@ -125,16 +120,13 @@ export const useProfiles = () => {
 
       const lastCheckin = checkins && checkins.length > 0 ? checkins[0].created_at : null;
       
-      const stats = {
+      return {
         totalCheckins: checkins?.length || 0,
         averageMood,
         totalAlerts,
         unresolvedAlerts,
         lastCheckin
       };
-      
-      console.log('getProfileStats - final stats for', targetProfileId, ':', JSON.stringify(stats, null, 2));
-      return stats;
     } catch (error) {
       console.error('Error getting profile stats:', error);
       return null;

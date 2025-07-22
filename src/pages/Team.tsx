@@ -115,7 +115,7 @@ const Team = () => {
 
   const getWellnessScore = (member: any) => {
     // Solo calcular si hay check-ins reales
-    if (!member.stats?.averageMood || member.stats?.totalCheckins === 0) return null;
+    if (!member.stats || member.stats.totalCheckins === 0) return null;
     return Math.round(member.stats.averageMood * 10);
   };
 
@@ -131,7 +131,7 @@ const Team = () => {
   };
 
   const getLastCheckinText = (member: any) => {
-    if (!member.stats?.lastCheckin || member.stats?.totalCheckins === 0) return 'Sin check-ins';
+    if (!member.stats || member.stats.totalCheckins === 0 || !member.stats.lastCheckin) return 'Sin check-ins';
     const lastCheckin = new Date(member.stats.lastCheckin);
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - lastCheckin.getTime()) / (1000 * 60 * 60));
