@@ -26,12 +26,7 @@ export const useProfiles = () => {
     try {
       let query = supabase
         .from('profiles')
-        .select(`
-          *,
-          teams (
-            name
-          )
-        `)
+        .select('*')
         .eq('tenant_id', user.tenant_id);
 
       console.log('useProfiles - User role:', user.role);
@@ -51,8 +46,12 @@ export const useProfiles = () => {
       const { data, error } = await query.order('full_name');
 
       console.log('useProfiles - Query result:', { data, error });
+      console.log('useProfiles - Raw error details:', error);
 
-      if (error) throw error;
+      if (error) {
+        console.error('useProfiles - Detailed error:', error);
+        throw error;
+      }
       
       const enhancedProfiles = (data || []).map(profile => ({
         ...profile,
@@ -63,7 +62,8 @@ export const useProfiles = () => {
       console.log('useProfiles - Enhanced profiles:', enhancedProfiles);
       setProfiles(enhancedProfiles);
     } catch (error) {
-      console.error('Error fetching team members:', error);
+      console.error('useProfiles - Catch block error:', error);
+      console.error('useProfiles - Error details:', JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
