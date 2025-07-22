@@ -34,7 +34,7 @@ const TeamsManagement = () => {
 
   const handleCreateTeam = async () => {
     try {
-      await createTeam(formData.name, formData.managerId || undefined);
+      await createTeam(formData.name, formData.managerId === 'no-manager' ? undefined : formData.managerId);
       toast({
         title: "Equipo creado",
         description: "El equipo ha sido creado exitosamente."
@@ -56,7 +56,7 @@ const TeamsManagement = () => {
     try {
       await updateTeam(selectedTeam.id, {
         name: formData.name,
-        manager_id: formData.managerId || undefined
+        manager_id: formData.managerId === 'no-manager' ? undefined : formData.managerId
       });
       toast({
         title: "Equipo actualizado",
@@ -118,7 +118,7 @@ const TeamsManagement = () => {
     setSelectedTeam(team);
     setFormData({
       name: team.name,
-      managerId: team.manager_id || ''
+      managerId: team.manager_id || 'no-manager'
     });
     setIsEditDialogOpen(true);
   };
@@ -240,7 +240,7 @@ const TeamsManagement = () => {
                       <SelectValue placeholder="Selecciona un manager" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sin manager</SelectItem>
+                      <SelectItem value="no-manager">Sin manager</SelectItem>
                       {managers.map((manager) => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.full_name || manager.email}
@@ -345,7 +345,7 @@ const TeamsManagement = () => {
                   <SelectValue placeholder="Selecciona un manager" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin manager</SelectItem>
+                  <SelectItem value="no-manager">Sin manager</SelectItem>
                   {managers.map((manager) => (
                     <SelectItem key={manager.id} value={manager.id}>
                       {manager.full_name || manager.email}
