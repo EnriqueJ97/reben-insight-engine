@@ -139,12 +139,31 @@ export const useProfiles = () => {
     }
 
     try {
-      // Fetch fresh team members data
+      // Fetch fresh team members data and wait for it to complete
       await fetchTeamMembers();
       
-      // Get stats for all team members
+      // Fetch profiles again to ensure we have the latest data
+      let query = supabase
+        .from('profiles')
+        .select('*')
+        .eq('tenant_id', user.tenant_id);
+
+      if (user.role === 'MANAGER' && user.team_id) {
+        query = query.eq('team_id', user.team_id);
+      }
+      
+      const { data: currentProfiles, error } = await query.order('full_name');
+      if (error) throw error;
+
+      const enhancedProfiles = (currentProfiles || []).map(profile => ({
+        ...profile,
+        name: profile.full_name || profile.email,
+        avatar: getAvatarForRole(profile.role)
+      }));
+      
+      // Get stats for all team members using the fresh profiles data
       const stats = await Promise.all(
-        profiles.map(async (member) => {
+        enhancedProfiles.map(async (member) => {
           const memberStats = await getProfileStats(member.id);
           return {
             ...member,
@@ -154,7 +173,7 @@ export const useProfiles = () => {
       );
 
       return {
-        totalMembers: profiles.length,
+        totalMembers: enhancedProfiles.length,
         memberStats: stats,
         averageTeamMood: stats.length > 0 ? stats.reduce((sum, s) => sum + (s.stats?.averageMood || 0), 0) / stats.length : 0,
         totalTeamAlerts: stats.reduce((sum, s) => sum + (s.stats?.totalAlerts || 0), 0)
