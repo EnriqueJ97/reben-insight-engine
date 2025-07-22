@@ -194,10 +194,20 @@ export const useTeams = () => {
         .from('teams')
         .select('*')
         .eq('invite_code', inviteCode)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data as Team;
+      if (!data) return null;
+      
+      return {
+        id: data.id,
+        name: data.name,
+        manager_id: data.manager_id,
+        tenant_id: data.tenant_id,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        invite_code: data.invite_code
+      };
     } catch (error) {
       console.error('Error getting team by invite code:', error);
       return null;
