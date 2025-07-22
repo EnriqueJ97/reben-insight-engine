@@ -199,15 +199,18 @@ export const useTeams = () => {
       if (error) throw error;
       if (!data) return null;
       
-      return {
+      // Explicitly map the data to avoid type conflicts
+      const team: Team = {
         id: data.id,
         name: data.name,
         manager_id: data.manager_id,
         tenant_id: data.tenant_id,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        invite_code: data.invite_code
+        invite_code: data.invite_code || null
       };
+      
+      return team;
     } catch (error) {
       console.error('Error getting team by invite code:', error);
       return null;
