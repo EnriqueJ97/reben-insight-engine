@@ -14,6 +14,7 @@ import TeamsManagement from "@/pages/TeamsManagement";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
+import JoinTeam from "@/pages/JoinTeam";
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import EmployeeImport from '@/components/EmployeeImport.tsx';
@@ -49,6 +50,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/join-team/:inviteCode" element={<JoinTeam />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
         path="/dashboard"
