@@ -3,156 +3,109 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
-  LayoutDashboard, 
+  Home, 
   Heart, 
-  Settings, 
   Users, 
+  AlertTriangle, 
   BarChart3, 
+  Settings, 
+  Upload,
+  Plug,
   LogOut,
   Menu,
-  X,
-  Bell,
-  Plug
+  X
 } from 'lucide-react';
 import { useState } from 'react';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const getNavItems = () => {
-    const baseItems = [
-      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' }
-    ];
+  const navigationItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN'] },
+    { name: 'Check-in', href: '/dashboard/checkin', icon: Heart, roles: ['EMPLOYEE'] },
+    { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
+    { name: 'Equipos', href: '/dashboard/teams', icon: Users, roles: ['HR_ADMIN'] },
+    { name: 'Gestión de Equipos', href: '/dashboard/teams/manage', icon: Settings, roles: ['HR_ADMIN'] },
+    { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN'] },
+    { name: 'Integraciones', href: '/dashboard/integrations', icon: Plug, roles: ['HR_ADMIN'] },
+    { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN'] },
+    { name: 'Configuración', href: '/dashboard/settings', icon: Settings, roles: ['HR_ADMIN'] },
+    { name: 'Importar Empleados', href: '/dashboard/employees/import', icon: Upload, roles: ['HR_ADMIN'] },
+  ];
 
-    if (user?.role === 'EMPLOYEE') {
-      return [
-        ...baseItems,
-        { href: '/dashboard/checkin', icon: Heart, label: 'Check-in Diario' },
-        { href: '/dashboard/alerts', icon: Bell, label: 'Mis Alertas' }
-      ];
-    }
-
-    if (user?.role === 'MANAGER') {
-      return [
-        ...baseItems,
-        { href: '/dashboard/team', icon: Users, label: 'Mi Equipo' },
-        { href: '/dashboard/alerts', icon: Bell, label: 'Alertas del Equipo' },
-        { href: '/dashboard/reports', icon: BarChart3, label: 'Informes' }
-      ];
-    }
-
-    if (user?.role === 'HR_ADMIN') {
-      return [
-        ...baseItems,
-        { href: '/dashboard/teams', icon: Users, label: 'Equipos' },
-        { href: '/dashboard/alerts', icon: Bell, label: 'Centro de Alertas' },
-        { href: '/dashboard/integrations', icon: Plug, label: 'Integraciones' },
-        { href: '/dashboard/reports', icon: BarChart3, label: 'Informes' },
-        { href: '/dashboard/settings', icon: Settings, label: 'Configuración' }
-      ];
-    }
-
-    return baseItems;
-  };
-
-  const navItems = getNavItems();
-
-  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className={`${mobile ? 'fixed inset-0 z-50 lg:hidden' : 'hidden lg:flex'} bg-card border-r`}>
-      {mobile && (
-        <div className="fixed inset-0 bg-black/80" onClick={() => setSidebarOpen(false)} />
-      )}
-      <div className={`${mobile ? 'fixed left-0 top-0 h-full w-64 bg-card' : 'w-64'} flex flex-col`}>
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Heart className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-primary">REBEN</span>
-            </div>
-            {mobile && (
-              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={mobile ? () => setSidebarOpen(false) : undefined}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'hover:bg-muted'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t">
-          <div className="flex items-center space-x-3 mb-4">
-            <Avatar>
-              <AvatarFallback>{user?.avatar || user?.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 minimum-w-0">
-              <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-muted-foreground">{user?.role}</p>
-            </div>
-          </div>
-          <Button variant="outline" onClick={logout} className="w-full">
-            <LogOut className="h-4 w-4 mr-2" />
-            Cerrar Sesión
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+  const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <Sidebar mobile />
+    <div className="flex h-screen bg-gray-100 text-gray-700">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 text-gray-600 hover:text-gray-800 focus:outline-none"
+      >
+        {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
 
-      <div className="flex-1 flex flex-col">
-        <header className="bg-card border-b px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}
+      {/* Sidebar */}
+      <aside
+        className={`bg-white w-64 flex-shrink-0 border-r border-gray-200 overflow-y-auto fixed lg:static top-0 left-0 h-full z-40 transform transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0`}
+      >
+        <div className="p-4">
+          {/* Logo and App Title */}
+          <Link to="/dashboard" className="flex items-center space-x-2 font-semibold text-gray-800">
+            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            <span>REBEN</span>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="mt-6">
+          {filteredNavigationItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={`flex items-center py-2 px-4 space-x-2 hover:bg-gray-100 ${location.pathname === item.href ? 'bg-gray-100 font-medium' : ''}`}
+              onClick={() => setIsMenuOpen(false)} // Close menu on item click
             >
-              <Menu className="h-4 w-4" />
-            </Button>
-            <h1 className="text-xl font-semibold">Bienestar Laboral</h1>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-muted-foreground hidden sm:inline">
-                {user?.name}
-              </span>
+              <item.icon className="w-4 h-4" />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 mt-auto">
+          <Button variant="ghost" className="w-full justify-start space-x-2" onClick={logout}>
+            <LogOut className="w-4 h-4" />
+            <span>Cerrar Sesión</span>
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 lg:ml-64">
+        {/* Top Bar */}
+        <header className="flex items-center justify-end py-4">
+          {user && (
+            <div className="flex items-center space-x-4">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">
-                  {user?.avatar || user?.name?.charAt(0)}
-                </AvatarFallback>
+                <AvatarFallback>{user.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
+              <span className="text-sm">{user.full_name || user.email}</span>
             </div>
-          </div>
+          )}
         </header>
 
-        <main className="flex-1 p-6 min-h-0">
+        {/* Page Content */}
+        <div className="container mx-auto">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,6 +10,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import CheckIn from "@/pages/CheckIn";
 import Team from "@/pages/Team";
+import TeamsManagement from "@/pages/TeamsManagement";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
@@ -82,6 +82,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <Team />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="teams/manage"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <TeamsManagement />
             </RoleProtectedRoute>
           }
         />
