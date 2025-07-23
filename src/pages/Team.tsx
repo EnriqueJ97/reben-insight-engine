@@ -224,7 +224,7 @@ const Team = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {teamMembers.map((member) => {
+                {teamStats?.memberStats?.map((member) => {
                   const wellnessScore = getWellnessScore(member);
                   const riskLevel = getRiskLevel(wellnessScore);
                   const memberAlerts = getMemberAlerts(member.id);
