@@ -11,10 +11,12 @@ import { useProfiles } from '@/hooks/useProfiles';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useCheckins } from '@/hooks/useCheckins';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const Team = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { profiles: teamMembers, loading: profilesLoading, fetchTeamMembers, getTeamOverview } = useProfiles();
   const { alerts, loading: alertsLoading, resolveAlert, fetchAlerts } = useAlerts();
@@ -405,7 +407,12 @@ const Team = () => {
                   <p className="text-xs text-muted-foreground mb-2">
                     Genera reporte de tendencias y recomendaciones personalizadas
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => navigate('/reports')}
+                  >
                     <Activity className="h-3 w-3 mr-2" />
                     Ver Análisis
                   </Button>
