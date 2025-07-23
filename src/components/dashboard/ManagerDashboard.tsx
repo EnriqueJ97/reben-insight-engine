@@ -53,7 +53,7 @@ const ManagerDashboard = () => {
 
   useEffect(() => {
     loadManagerData();
-  }, [user, profiles]);
+  }, [user]);
 
   const loadManagerData = async () => {
     if (!user || user.role !== 'MANAGER') return;
