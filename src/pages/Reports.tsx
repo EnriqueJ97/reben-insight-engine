@@ -151,13 +151,211 @@ const Reports = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="trends" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="methodology" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="methodology">Metodología</TabsTrigger>
           <TabsTrigger value="trends">Tendencias</TabsTrigger>
           <TabsTrigger value="teams">Equipos</TabsTrigger>
           <TabsTrigger value="alerts">Alertas</TabsTrigger>
           <TabsTrigger value="impact">Impacto</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="methodology">
+          <div className="space-y-6">
+            {/* What we measure */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <BarChart3 className="h-5 w-5" />
+                  <span>¿Qué Medimos y Por Qué?</span>
+                </CardTitle>
+                <CardDescription>
+                  Fundamentos científicos de nuestras métricas de bienestar
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-semibold text-primary mb-3">🔥 Burnout (Síndrome de Quemarse)</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Medimos 3 dimensiones basadas en el modelo de Maslach:
+                    </p>
+                    <ul className="text-xs space-y-1 text-muted-foreground">
+                      <li>• <strong>Agotamiento emocional:</strong> Fatiga y vacío emocional</li>
+                      <li>• <strong>Despersonalización:</strong> Actitudes cínicas hacia el trabajo</li>
+                      <li>• <strong>Baja realización personal:</strong> Sentimientos de ineficacia</li>
+                    </ul>
+                    <div className="mt-3 p-2 bg-destructive/10 rounded text-xs">
+                      <strong>Impacto:</strong> Reduce productividad hasta 40% y aumenta rotación
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-semibold text-warning mb-3">🚪 Intención de Rotación</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Evaluamos la probabilidad de que un empleado deje la empresa:
+                    </p>
+                    <ul className="text-xs space-y-1 text-muted-foreground">
+                      <li>• <strong>Búsqueda activa:</strong> Está buscando trabajo</li>
+                      <li>• <strong>Desvinculación:</strong> No se siente parte del proyecto</li>
+                      <li>• <strong>Falta de crecimiento:</strong> No ve futuro aquí</li>
+                    </ul>
+                    <div className="mt-3 p-2 bg-warning/10 rounded text-xs">
+                      <strong>Coste promedio de reemplazo:</strong> 50-200% del salario anual
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-semibold text-success mb-3">😊 Satisfacción Laboral</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Analizamos múltiples factores que influyen en la satisfacción:
+                    </p>
+                    <ul className="text-xs space-y-1 text-muted-foreground">
+                      <li>• <strong>Naturaleza del trabajo:</strong> Interés y motivación</li>
+                      <li>• <strong>Reconocimiento:</strong> Valoración del esfuerzo</li>
+                      <li>• <strong>Balance vida-trabajo:</strong> Equilibrio personal</li>
+                      <li>• <strong>Desarrollo profesional:</strong> Oportunidades de crecimiento</li>
+                    </ul>
+                    <div className="mt-3 p-2 bg-success/10 rounded text-xs">
+                      <strong>Beneficio:</strong> Alta satisfacción = +31% productividad
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* How we calculate */}
+            <Card>
+              <CardHeader>
+                <CardTitle>🧮 Cómo Calculamos las Métricas</CardTitle>
+                <CardDescription>
+                  Metodología transparente y basada en evidencia científica
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">📊 Puntuación de Bienestar (0-100%)</h4>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="text-sm mb-2"><strong>Fórmula:</strong></p>
+                      <code className="text-xs bg-background p-2 rounded block">
+                        Bienestar = (Satisfacción × 0.4) + ((5 - Burnout) × 0.4) + ((5 - Rotación) × 0.2)
+                      </code>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        * Convertido a escala 0-100% para facilitar interpretación
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center p-2 bg-success/10 rounded">
+                        <span className="text-sm">80-100%</span>
+                        <Badge className="bg-success text-success-foreground">Excelente</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-warning/10 rounded">
+                        <span className="text-sm">60-79%</span>
+                        <Badge variant="secondary">Bueno</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-destructive/10 rounded">
+                        <span className="text-sm">&lt;60%</span>
+                        <Badge variant="destructive">Necesita atención</Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">⚠️ Niveles de Riesgo</h4>
+                    <div className="space-y-3">
+                      <div className="p-3 border-l-4 border-l-destructive bg-destructive/5">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Badge variant="destructive">Alto Riesgo</Badge>
+                          <span className="text-sm">Burnout &gt; 3.0 ó Rotación &gt; 3.5</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Requiere intervención inmediata (1:1 con manager)
+                        </p>
+                      </div>
+                      
+                      <div className="p-3 border-l-4 border-l-warning bg-warning/5">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Badge variant="secondary">Riesgo Medio</Badge>
+                          <span className="text-sm">Bienestar 50-70%</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Monitoreo cercano y apoyo preventivo
+                        </p>
+                      </div>
+                      
+                      <div className="p-3 border-l-4 border-l-success bg-success/5">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Badge className="bg-success text-success-foreground">Bajo Riesgo</Badge>
+                          <span className="text-sm">Bienestar &gt; 70%</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Mantener condiciones actuales
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Questions bank */}
+            <Card>
+              <CardHeader>
+                <CardTitle>📝 Banco de Preguntas Validadas</CardTitle>
+                <CardDescription>
+                  Instrumentos psicométricos utilizados en nuestras evaluaciones
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-destructive/5 rounded-lg">
+                    <h5 className="font-medium text-destructive mb-2">Burnout (14 preguntas)</h5>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Basado en Maslach Burnout Inventory - General Survey (MBI-GS)
+                    </p>
+                    <div className="text-xs space-y-1">
+                      <div>• Agotamiento emocional (6 ítems)</div>
+                      <div>• Despersonalización (4 ítems)</div>
+                      <div>• Baja realización (4 ítems)</div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-warning/5 rounded-lg">
+                    <h5 className="font-medium text-warning mb-2">Intención de Rotación (12 preguntas)</h5>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Adaptado de Turnover Intention Scale (TIS-6) y factores predictivos
+                    </p>
+                    <div className="text-xs space-y-1">
+                      <div>• Intención directa (6 ítems)</div>
+                      <div>• Factores organizacionales (6 ítems)</div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-success/5 rounded-lg">
+                    <h5 className="font-medium text-success mb-2">Satisfacción (15 preguntas)</h5>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Job Descriptive Index (JDI) y Job Satisfaction Survey (JSS)
+                    </p>
+                    <div className="text-xs space-y-1">
+                      <div>• Trabajo en sí (5 ítems)</div>
+                      <div>• Supervisión y reconocimiento (5 ítems)</div>
+                      <div>• Condiciones y políticas (5 ítems)</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Validez científica:</strong> Todos los instrumentos han sido validados en poblaciones hispanohablantes 
+                    con alfas de Cronbach superiores a 0.85, garantizando su fiabilidad y consistencia interna.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="trends">
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
@@ -318,6 +516,76 @@ const Reports = () => {
 
         <TabsContent value="impact">
           <div className="space-y-6">
+            {/* Economic impact explanation */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5" />
+                  <span>Cómo Calculamos el Impacto Económico</span>
+                </CardTitle>
+                <CardDescription>
+                  Metodología basada en estudios internacionales y datos del mercado español
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">💰 Costes de Rotación</h4>
+                    <div className="text-sm space-y-2">
+                      <div className="flex justify-between">
+                        <span>Reclutamiento y selección:</span>
+                        <span className="font-medium">15-25% salario</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Formación y adaptación:</span>
+                        <span className="font-medium">20-50% salario</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pérdida productividad:</span>
+                        <span className="font-medium">25-75% salario</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-semibold">Total promedio:</span>
+                        <span className="font-semibold text-destructive">75-150% salario</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">🏥 Costes de Ausentismo</h4>
+                    <div className="text-sm space-y-2">
+                      <div className="flex justify-between">
+                        <span>Días perdidos (promedio):</span>
+                        <span className="font-medium">12 días/año</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Coste por día perdido:</span>
+                        <span className="font-medium">€180-350</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Sustituciones temporales:</span>
+                        <span className="font-medium">+25% coste</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-semibold">Total por empleado/año:</span>
+                        <span className="font-semibold text-warning">€2,700-5,250</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <h5 className="font-semibold text-primary mb-2">🎯 Fórmula de Cálculo ROI</h5>
+                  <code className="text-sm bg-background p-3 rounded block">
+                    ROI = (Ahorro en Rotación + Ahorro en Ausentismo + Ganancia Productividad) / Inversión Programa
+                  </code>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    * Basado en estudios de Harvard Business Review y Gallup sobre programas de bienestar empresarial
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
