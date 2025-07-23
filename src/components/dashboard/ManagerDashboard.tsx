@@ -86,8 +86,9 @@ const ManagerDashboard = () => {
         );
         
         const memberCheckinStats = await getCheckinStats(member.id);
+        // Convert mood scale (1-5) to percentage (20%-100%)
         const wellnessScore = member.stats?.averageMood && member.stats.totalCheckins > 0 ? 
-          Math.round(member.stats.averageMood * 10) : 0;
+          Math.round((member.stats.averageMood / 5) * 100) : 0;
         
         const daysSinceLastCheckin = member.stats?.lastCheckin ? 
           Math.floor((Date.now() - new Date(member.stats.lastCheckin).getTime()) / (1000 * 60 * 60 * 24)) : 
@@ -96,8 +97,9 @@ const ManagerDashboard = () => {
         const riskLevel = wellnessScore < 40 ? 'high' : 
                          wellnessScore < 70 ? 'medium' : 'low';
 
+        // Participation rate based on last 30 days, rounded to integer
         const participationRate = memberCheckinStats?.total > 0 ? 
-          Math.min(100, (memberCheckinStats.total / 30) * 100) : 0;
+          Math.round(Math.min(100, (memberCheckinStats.total / 30) * 100)) : 0;
 
         return {
           id: member.id,
@@ -123,8 +125,9 @@ const ManagerDashboard = () => {
   };
 
   const loadManagerMetrics = async (alertStats: any, teamData: any) => {
+    // Convert team mood scale (1-5) to percentage (20%-100%)
     const teamWellness = teamData?.averageTeamMood ? 
-      Math.round(teamData.averageTeamMood * 10) : 0;
+      Math.round((teamData.averageTeamMood / 5) * 100) : 0;
     
     const highRiskMembers = teamDetails.filter(m => m.riskLevel === 'high').length;
     const mediumRiskMembers = teamDetails.filter(m => m.riskLevel === 'medium').length;
@@ -260,7 +263,7 @@ const ManagerDashboard = () => {
                 <span>Estado del Equipo</span>
               </CardTitle>
               <CardDescription>
-                Vista detallada de cada miembro del equipo
+                📊 Bienestar: Promedio de estado de ánimo (1-5) • 🎯 Participación: % de check-ins completados (últimos 30 días)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -307,6 +310,7 @@ const ManagerDashboard = () => {
                       <div className="text-center">
                         <div className="text-sm font-medium">{member.participationRate}%</div>
                         <Progress value={member.participationRate} className="w-16 h-2 mt-1" />
+                        <div className="text-xs text-muted-foreground">Participación</div>
                       </div>
                       
                       {member.alertCount > 0 && (
@@ -315,11 +319,9 @@ const ManagerDashboard = () => {
                         </Badge>
                       )}
                       
-                      <Link to={`/dashboard/team/${member.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <Button variant="ghost" size="sm" disabled title="Vista detallada del empleado (próximamente)">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
