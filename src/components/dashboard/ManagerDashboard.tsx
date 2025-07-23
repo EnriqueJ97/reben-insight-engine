@@ -86,8 +86,8 @@ const ManagerDashboard = () => {
         );
         
         const memberCheckinStats = await getCheckinStats(member.id);
-        const wellnessScore = memberCheckinStats?.average_mood ? 
-          Math.round((memberCheckinStats.average_mood / 5) * 100) : 0;
+        const wellnessScore = member.stats?.averageMood && member.stats.totalCheckins > 0 ? 
+          Math.round(member.stats.averageMood * 10) : 0;
         
         const daysSinceLastCheckin = member.stats?.lastCheckin ? 
           Math.floor((Date.now() - new Date(member.stats.lastCheckin).getTime()) / (1000 * 60 * 60 * 24)) : 
@@ -124,7 +124,7 @@ const ManagerDashboard = () => {
 
   const loadManagerMetrics = async (alertStats: any, teamData: any) => {
     const teamWellness = teamData?.averageTeamMood ? 
-      Math.round((teamData.averageTeamMood / 5) * 100) : 0;
+      Math.round(teamData.averageTeamMood * 10) : 0;
     
     const highRiskMembers = teamDetails.filter(m => m.riskLevel === 'high').length;
     const mediumRiskMembers = teamDetails.filter(m => m.riskLevel === 'medium').length;

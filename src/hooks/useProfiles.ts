@@ -26,10 +26,26 @@ export const useProfiles = () => {
         .eq('tenant_id', user.tenant_id);
 
       // Filter based on user role and teamId
-      if (user.role === 'MANAGER' && teamId) {
-        query = query.eq('team_id', teamId);
-      } else if (user.role === 'MANAGER' && user.team_id) {
-        query = query.eq('team_id', user.team_id);
+      if (user.role === 'MANAGER') {
+        if (teamId) {
+          query = query.eq('team_id', teamId);
+        } else if (user.team_id) {
+          query = query.eq('team_id', user.team_id);
+        } else {
+          // If manager doesn't have team_id, find their team through teams table
+          const { data: managerTeams } = await supabase
+            .from('teams')
+            .select('id')
+            .eq('manager_id', user.id);
+          
+          if (managerTeams && managerTeams.length > 0) {
+            query = query.eq('team_id', managerTeams[0].id);
+          } else {
+            // Manager has no team assigned, return empty
+            setProfiles([]);
+            return;
+          }
+        }
       }
       // HR_ADMIN can see all profiles in tenant (no additional filter needed)
       
@@ -142,14 +158,34 @@ export const useProfiles = () => {
       // Fetch fresh team members data and wait for it to complete
       await fetchTeamMembers();
       
-      // Fetch profiles again to ensure we have the latest data
+      // Fetch profiles again to ensure we have the latest data with proper filtering
       let query = supabase
         .from('profiles')
         .select('*')
         .eq('tenant_id', user.tenant_id);
 
-      if (user.role === 'MANAGER' && user.team_id) {
-        query = query.eq('team_id', user.team_id);
+      if (user.role === 'MANAGER') {
+        if (user.team_id) {
+          query = query.eq('team_id', user.team_id);
+        } else {
+          // If manager doesn't have team_id, find their team through teams table
+          const { data: managerTeams } = await supabase
+            .from('teams')
+            .select('id')
+            .eq('manager_id', user.id);
+          
+          if (managerTeams && managerTeams.length > 0) {
+            query = query.eq('team_id', managerTeams[0].id);
+          } else {
+            // Manager has no team assigned, return empty
+            return {
+              totalMembers: 0,
+              memberStats: [],
+              averageTeamMood: 0,
+              totalTeamAlerts: 0
+            };
+          }
+        }
       }
       
       const { data: currentProfiles, error } = await query.order('full_name');
