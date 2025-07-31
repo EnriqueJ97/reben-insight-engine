@@ -5,6 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { 
   AlertTriangle, 
   Bell, 
@@ -16,7 +20,14 @@ import {
   TrendingUp,
   Users,
   Eye,
-  Shield
+  Shield,
+  Phone,
+  Mail,
+  MessageSquare,
+  History,
+  ExternalLink,
+  Calendar,
+  User
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +42,10 @@ export const AlertsCenter = () => {
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [isResolving, setIsResolving] = useState<string | null>(null);
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+  const [selectedAlert, setSelectedAlert] = useState<any>(null);
+  const [resolveNotes, setResolveNotes] = useState('');
+  const [actionHistory, setActionHistory] = useState<Record<string, any[]>>({});
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter(alert => {
@@ -69,10 +84,19 @@ export const AlertsCenter = () => {
 
   const getSeverityBorder = (severity: string) => {
     switch (severity) {
-      case 'high': return 'border-l-destructive';
-      case 'medium': return 'border-l-warning';
-      case 'low': return 'border-l-muted';
+      case 'high': return 'border-l-red-500';
+      case 'medium': return 'border-l-yellow-500';
+      case 'low': return 'border-l-blue-500';
       default: return 'border-l-muted';
+    }
+  };
+
+  const getSeverityBg = (severity: string) => {
+    switch (severity) {
+      case 'high': return 'bg-red-50 dark:bg-red-950/20';
+      case 'medium': return 'bg-yellow-50 dark:bg-yellow-950/20';
+      case 'low': return 'bg-blue-50 dark:bg-blue-950/20';
+      default: return 'bg-muted/20';
     }
   };
 
@@ -88,15 +112,40 @@ export const AlertsCenter = () => {
     return labels[type] || type;
   };
 
-  const handleResolveAlert = async (alertId: string) => {
-    setIsResolving(alertId);
+  const openResolveDialog = (alert: any) => {
+    setSelectedAlert(alert);
+    setResolveDialogOpen(true);
+    setResolveNotes('');
+  };
+
+  const handleResolveAlert = async () => {
+    if (!selectedAlert) return;
+    
+    setIsResolving(selectedAlert.id);
     try {
-      await resolveAlert(alertId);
+      await resolveAlert(selectedAlert.id);
+      
+      // Agregar acción al historial
+      const newAction = {
+        type: 'resolved',
+        timestamp: new Date().toISOString(),
+        notes: resolveNotes,
+        user: user?.full_name || user?.email
+      };
+      
+      setActionHistory(prev => ({
+        ...prev,
+        [selectedAlert.id]: [...(prev[selectedAlert.id] || []), newAction]
+      }));
+
       toast({
         title: "Alerta resuelta",
         description: "La alerta ha sido marcada como resuelta exitosamente."
       });
-      fetchAlerts(); // Refresh alerts
+      
+      setResolveDialogOpen(false);
+      setSelectedAlert(null);
+      fetchAlerts();
     } catch (error) {
       toast({
         title: "Error",
@@ -108,6 +157,31 @@ export const AlertsCenter = () => {
     }
   };
 
+  const handleQuickAction = async (alert: any, actionType: 'call' | 'email' | 'note') => {
+    const newAction = {
+      type: actionType,
+      timestamp: new Date().toISOString(),
+      user: user?.full_name || user?.email
+    };
+
+    setActionHistory(prev => ({
+      ...prev,
+      [alert.id]: [...(prev[alert.id] || []), newAction]
+    }));
+
+    let actionText = '';
+    switch (actionType) {
+      case 'call': actionText = 'Llamada iniciada'; break;
+      case 'email': actionText = 'Email enviado'; break;
+      case 'note': actionText = 'Nota agregada'; break;
+    }
+
+    toast({
+      title: "Acción registrada",
+      description: `${actionText} para ${alert.profiles?.full_name || alert.profiles?.email}`
+    });
+  };
+
   const renderAlert = (alert: any) => {
     const timeAgo = new Date(alert.created_at).toLocaleDateString('es-ES', {
       month: 'short',
@@ -117,58 +191,136 @@ export const AlertsCenter = () => {
     });
 
     return (
-      <Card key={alert.id} className={`border-l-4 ${getSeverityBorder(alert.severity)}`}>
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              {getAlertIcon(alert.type)}
-              <h4 className="font-medium">{getAlertTypeLabel(alert.type)}</h4>
-              <Badge variant={getSeverityColor(alert.severity) as any} className="text-xs">
-                {alert.severity === 'high' ? 'Alto' : 
-                 alert.severity === 'medium' ? 'Medio' : 'Bajo'}
-              </Badge>
+      <Card key={alert.id} className={`border-l-4 ${getSeverityBorder(alert.severity)} ${getSeverityBg(alert.severity)} transition-all hover:shadow-md`}>
+        <CardContent className="p-6">
+          {/* Header con información principal */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className={`p-2 rounded-full ${
+                alert.severity === 'high' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' :
+                alert.severity === 'medium' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+              }`}>
+                {getAlertIcon(alert.type)}
+              </div>
+              <div>
+                <h4 className="font-semibold text-lg">{getAlertTypeLabel(alert.type)}</h4>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Badge variant={getSeverityColor(alert.severity) as any} className="text-xs font-medium">
+                    {alert.severity === 'high' ? 'CRÍTICO' : 
+                     alert.severity === 'medium' ? 'MEDIO' : 'BAJO'}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground flex items-center">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {timeAgo}
+                  </span>
+                </div>
+              </div>
             </div>
-            <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
 
+          {/* Información del empleado */}
           {user?.role !== 'EMPLOYEE' && alert.profiles && (
-            <div className="mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Empleado: {alert.profiles.full_name || alert.profiles.email}
-              </span>
+            <div className="mb-4 p-3 bg-background/50 rounded-lg border">
+              <div className="flex items-center space-x-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  {alert.profiles.full_name || alert.profiles.email}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  {alert.profiles.role}
+                </Badge>
+              </div>
             </div>
           )}
 
-          <p className="text-sm text-muted-foreground mb-3">{alert.message}</p>
+          {/* Mensaje de la alerta */}
+          <div className="mb-4 p-3 bg-muted/30 rounded-lg">
+            <p className="text-sm leading-relaxed">{alert.message}</p>
+          </div>
 
-          <div className="flex items-center justify-between">
+          {/* Historial de acciones */}
+          {actionHistory[alert.id] && actionHistory[alert.id].length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">Historial de acciones</span>
+              </div>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {actionHistory[alert.id].map((action, index) => (
+                  <div key={index} className="text-xs p-2 bg-background/50 rounded border-l-2 border-primary/20">
+                    <span className="font-medium">{action.type}</span> por {action.user} 
+                    <span className="text-muted-foreground ml-2">
+                      {new Date(action.timestamp).toLocaleString('es-ES')}
+                    </span>
+                    {action.notes && (
+                      <div className="mt-1 text-muted-foreground italic">"{action.notes}"</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Footer con estado y acciones */}
+          <div className="flex items-center justify-between pt-4 border-t">
             <div className="flex items-center space-x-2">
               {alert.resolved ? (
-                <div className="flex items-center space-x-1 text-success">
+                <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
                   <CheckCircle className="h-4 w-4" />
-                  <span className="text-xs">Resuelta</span>
+                  <span className="text-sm font-medium">Resuelta</span>
+                  {alert.resolved_at && (
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(alert.resolved_at).toLocaleDateString('es-ES')}
+                    </span>
+                  )}
                 </div>
               ) : (
-                <div className="flex items-center space-x-1 text-warning">
+                <div className="flex items-center space-x-2 text-orange-600 dark:text-orange-400">
                   <Clock className="h-4 w-4" />
-                  <span className="text-xs">Pendiente</span>
+                  <span className="text-sm font-medium">Pendiente</span>
                 </div>
               )}
             </div>
 
             {!alert.resolved && (user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleResolveAlert(alert.id)}
-                disabled={isResolving === alert.id}
-              >
-                {isResolving === alert.id ? (
-                  <div className="w-4 h-4 animate-spin rounded-full border border-current border-t-transparent" />
-                ) : (
-                  'Resolver'
-                )}
-              </Button>
+              <div className="flex items-center space-x-2">
+                {/* Acciones rápidas */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickAction(alert, 'call')}
+                  className="flex items-center space-x-1"
+                >
+                  <Phone className="h-3 w-3" />
+                  <span>Llamar</span>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickAction(alert, 'email')}
+                  className="flex items-center space-x-1"
+                >
+                  <Mail className="h-3 w-3" />
+                  <span>Email</span>
+                </Button>
+
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => openResolveDialog(alert)}
+                  disabled={isResolving === alert.id}
+                  className="flex items-center space-x-1"
+                >
+                  {isResolving === alert.id ? (
+                    <div className="w-3 h-3 animate-spin rounded-full border border-current border-t-transparent" />
+                  ) : (
+                    <CheckCircle className="h-3 w-3" />
+                  )}
+                  <span>Resolver</span>
+                </Button>
+              </div>
             )}
           </div>
         </CardContent>
@@ -311,6 +463,86 @@ export const AlertsCenter = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Modal de resolución de alertas */}
+      <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <span>Resolver Alerta</span>
+            </DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres marcar esta alerta como resuelta?
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedAlert && (
+            <div className="space-y-4">
+              {/* Información de la alerta */}
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  {getAlertIcon(selectedAlert.type)}
+                  <span className="font-medium">{getAlertTypeLabel(selectedAlert.type)}</span>
+                  <Badge variant={getSeverityColor(selectedAlert.severity) as any}>
+                    {selectedAlert.severity === 'high' ? 'CRÍTICO' : 
+                     selectedAlert.severity === 'medium' ? 'MEDIO' : 'BAJO'}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{selectedAlert.message}</p>
+                {selectedAlert.profiles && (
+                  <p className="text-sm mt-2">
+                    <span className="font-medium">Empleado: </span>
+                    {selectedAlert.profiles.full_name || selectedAlert.profiles.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Campo de notas */}
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notas de resolución (opcional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Describe las acciones tomadas para resolver esta alerta..."
+                  value={resolveNotes}
+                  onChange={(e) => setResolveNotes(e.target.value)}
+                  className="min-h-[100px]"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Estas notas se guardarán en el historial de la alerta.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setResolveDialogOpen(false)}
+              disabled={!!isResolving}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleResolveAlert}
+              disabled={!!isResolving || !selectedAlert}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isResolving ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 animate-spin rounded-full border border-current border-t-transparent" />
+                  <span>Resolviendo...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Confirmar Resolución</span>
+                </div>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
