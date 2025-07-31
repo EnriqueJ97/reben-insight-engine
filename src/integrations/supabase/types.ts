@@ -197,6 +197,63 @@ export type Database = {
           },
         ]
       }
+      email_queue: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          html_content: string
+          id: string
+          max_retries: number
+          metadata: Json | null
+          priority: string
+          retry_count: number
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          subject: string
+          template_type: string
+          tenant_id: string | null
+          to_email: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          html_content: string
+          id?: string
+          max_retries?: number
+          metadata?: Json | null
+          priority?: string
+          retry_count?: number
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_type: string
+          tenant_id?: string | null
+          to_email: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          html_content?: string
+          id?: string
+          max_retries?: number
+          metadata?: Json | null
+          priority?: string
+          retry_count?: number
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_type?: string
+          tenant_id?: string | null
+          to_email?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_sent_log: {
         Row: {
           campaign_id: string
@@ -237,6 +294,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          is_default: boolean
+          subject: string
+          tenant_id: string | null
+          type: string
+          updated_at: string
+          variables: string[]
+        }
+        Insert: {
+          created_at?: string
+          html_content: string
+          id?: string
+          is_default?: boolean
+          subject: string
+          tenant_id?: string | null
+          type: string
+          updated_at?: string
+          variables?: string[]
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_default?: boolean
+          subject?: string
+          tenant_id?: string | null
+          type?: string
+          updated_at?: string
+          variables?: string[]
+        }
+        Relationships: []
+      }
+      notification_configs: {
+        Row: {
+          created_at: string
+          email: string
+          enabled: boolean
+          frequency: string
+          id: string
+          last_sent: string | null
+          tenant_id: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          enabled?: boolean
+          frequency: string
+          id?: string
+          last_sent?: string | null
+          tenant_id: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          last_sent?: string | null
+          tenant_id?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
