@@ -38,24 +38,24 @@ const AppLayout = () => {
   const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));
 
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-700">
+    <div className="flex h-screen bg-background">
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 text-gray-600 hover:text-gray-800 focus:outline-none"
+        className="lg:hidden fixed top-4 left-4 z-50 text-muted-foreground hover:text-foreground focus:outline-none"
       >
         {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`bg-white w-64 flex-shrink-0 border-r border-gray-200 overflow-y-auto fixed lg:static top-0 left-0 h-full z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`bg-card w-64 flex-shrink-0 border-r border-border overflow-y-auto fixed lg:static top-0 left-0 h-full z-40 transform transition-transform duration-300 ease-in-out ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
         <div className="p-4">
           {/* Logo and App Title */}
-          <Link to="/dashboard" className="flex items-center space-x-2 font-semibold text-gray-800">
+          <Link to="/dashboard" className="flex items-center space-x-2 font-semibold text-foreground">
             <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
             </svg>
@@ -69,8 +69,10 @@ const AppLayout = () => {
             <Link
               key={item.name}
               to={item.href}
-              className={`flex items-center py-2 px-4 space-x-2 hover:bg-gray-100 ${location.pathname === item.href ? 'bg-gray-100 font-medium' : ''}`}
-              onClick={() => setIsMenuOpen(false)} // Close menu on item click
+              className={`flex items-center py-2 px-4 space-x-2 hover:bg-accent transition-colors ${
+                location.pathname === item.href ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              onClick={() => setIsMenuOpen(false)}
             >
               <item.icon className="w-4 h-4" />
               <span>{item.name}</span>
@@ -88,21 +90,21 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 lg:ml-64">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto">
         {/* Top Bar */}
-        <header className="flex items-center justify-end py-4">
+        <header className="flex items-center justify-end p-4 border-b border-border bg-card/50">
           {user && (
             <div className="flex items-center space-x-4">
               <Avatar className="h-8 w-8">
                 <AvatarFallback>{user.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
-              <span className="text-sm">{user.full_name || user.email}</span>
+              <span className="text-sm text-foreground">{user.full_name || user.email}</span>
             </div>
           )}
         </header>
 
         {/* Page Content */}
-        <div className="container mx-auto">
+        <div className="p-6">
           <Outlet />
         </div>
       </main>
