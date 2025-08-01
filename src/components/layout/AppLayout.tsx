@@ -13,7 +13,8 @@ import {
   Plug,
   LogOut,
   Menu,
-  X
+  X,
+  Brain
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,6 +29,7 @@ const AppLayout = () => {
     { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
     { name: 'Equipos', href: '/dashboard/teams', icon: Users, roles: ['HR_ADMIN'] },
     { name: 'Gestión de Equipos', href: '/dashboard/teams/manage', icon: Settings, roles: ['HR_ADMIN'] },
+    { name: 'Chat IA RRHH', href: '/dashboard/hr-chat', icon: Brain, roles: ['HR_ADMIN'] },
     { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Integraciones', href: '/dashboard/integrations', icon: Plug, roles: ['HR_ADMIN'] },
     { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },

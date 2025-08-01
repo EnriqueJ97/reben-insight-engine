@@ -14,6 +14,7 @@ import TeamsManagement from "@/pages/TeamsManagement";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import TeamAnalysis from "@/pages/TeamAnalysis";
+import HRChat from "@/pages/HRChat";
 import NotFound from "@/pages/NotFound";
 import JoinTeam from "@/pages/JoinTeam";
 import SuperAdmin from "@/pages/SuperAdmin";
@@ -112,6 +113,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
               <TeamAnalysis />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="hr-chat"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <HRChat />
             </RoleProtectedRoute>
           }
         />
