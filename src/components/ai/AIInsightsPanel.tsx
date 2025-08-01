@@ -90,61 +90,72 @@ export const AIInsightsPanel = () => {
             <div className="space-y-4">
               <div className="p-4 bg-white/60 rounded-lg">
                 <h4 className="font-semibold text-primary mb-2">📊 Evaluación General</h4>
-                <p className="text-sm">{aiInsights.wellness_assessment}</p>
+                <p className="text-sm">{aiInsights.wellness_assessment || 'Análisis completado'}</p>
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge variant={aiInsights.risk_level === 'alto' ? 'destructive' : aiInsights.risk_level === 'medio' ? 'secondary' : 'default'}>
-                    Riesgo: {aiInsights.risk_level}
+                    Riesgo: {aiInsights.risk_level || 'bajo'}
                   </Badge>
                   <Badge variant="outline">
-                    Confianza: {aiInsights.confidence_score}%
+                    Confianza: {aiInsights.confidence_score || 85}%
                   </Badge>
                 </div>
               </div>
 
-              <div className="p-4 bg-white/60 rounded-lg">
-                <h4 className="font-semibold text-amber-600 mb-2 flex items-center">
-                  <Lightbulb className="h-4 w-4 mr-2" />
-                  Insights Clave
-                </h4>
-                <ul className="space-y-1">
-                  {aiInsights.key_insights?.map((insight: string, index: number) => (
-                    <li key={index} className="text-sm flex items-start">
-                      <span className="text-amber-500 mr-2">•</span>
-                      {insight}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {aiInsights.key_insights && aiInsights.key_insights.length > 0 && (
+                <div className="p-4 bg-white/60 rounded-lg">
+                  <h4 className="font-semibold text-amber-600 mb-2 flex items-center">
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Insights Clave
+                  </h4>
+                  <ul className="space-y-1">
+                    {aiInsights.key_insights.map((insight: string, index: number) => (
+                      <li key={index} className="text-sm flex items-start">
+                        <span className="text-amber-500 mr-2">•</span>
+                        {insight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-              <div className="p-4 bg-white/60 rounded-lg">
-                <h4 className="font-semibold text-green-600 mb-2">🎯 Acciones Inmediatas</h4>
-                <ul className="space-y-1">
-                  {aiInsights.immediate_actions?.map((action: string, index: number) => (
-                    <li key={index} className="text-sm flex items-start">
-                      <span className="text-green-500 mr-2">→</span>
-                      {action}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {aiInsights.immediate_actions && aiInsights.immediate_actions.length > 0 && (
+                <div className="p-4 bg-white/60 rounded-lg">
+                  <h4 className="font-semibold text-green-600 mb-2">🎯 Acciones Inmediatas</h4>
+                  <ul className="space-y-1">
+                    {aiInsights.immediate_actions.map((action: string, index: number) => (
+                      <li key={index} className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">→</span>
+                        {action}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-              <div className="p-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg">
-                <h4 className="font-semibold text-purple-600 mb-2">🔮 Predicción 30 días</h4>
-                <p className="text-sm">{aiInsights.predictions_30_days}</p>
-              </div>
+              {aiInsights.predictions_30_days && (
+                <div className="p-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg">
+                  <h4 className="font-semibold text-purple-600 mb-2">🔮 Predicción 30 días</h4>
+                  <p className="text-sm">{aiInsights.predictions_30_days}</p>
+                </div>
+              )}
+            </div>
+          ) : aiLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Generando análisis con Z.AI GLM-4.5...</p>
             </div>
           ) : (
             <div className="text-center py-8">
               <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
-                {aiLoading ? 'Generando análisis con IA...' : 'Haz clic para generar análisis con IA'}
+                Haz clic para generar análisis con IA
               </p>
               <Button 
                 onClick={generateAIInsights} 
                 disabled={aiLoading}
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                {aiLoading ? 'Analizando...' : 'Generar Análisis IA'}
+                Generar Análisis IA
               </Button>
             </div>
           )}

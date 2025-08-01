@@ -16,40 +16,56 @@ interface AnalysisRequest {
   team_id?: string
 }
 
-async function callZAI(prompt: string, systemPrompt: string = "You are an expert HR analytics AI specialized in workplace wellness and burnout prevention.") {
-  try {
-    const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${ZAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'glm-4.5',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        top_p: 0.8
+async function callZAI(prompt: string, systemPrompt: string = "You are an expert HR analytics AI specialized in workplace wellness and burnout prevention.", retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${ZAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'glm-4.5',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          top_p: 0.8
+        })
       })
-    })
 
-    if (!response.ok) {
-      throw new Error(`Z.AI API error: ${response.status}`)
+      if (response.status === 429) {
+        const delay = Math.pow(2, i) * 1000; // Exponential backoff
+        console.log(`Rate limit hit, retrying in ${delay}ms (attempt ${i + 1}/${retries})`)
+        if (i < retries - 1) {
+          await new Promise(resolve => setTimeout(resolve, delay))
+          continue
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(`Z.AI API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.choices[0].message.content
+    } catch (error) {
+      if (i === retries - 1) {
+        console.error('Z.AI API final error:', error)
+        throw error
+      }
+      const delay = Math.pow(2, i) * 1000
+      console.log(`Request failed, retrying in ${delay}ms (attempt ${i + 1}/${retries}):`, error.message)
+      await new Promise(resolve => setTimeout(resolve, delay))
     }
-
-    const data = await response.json()
-    return data.choices[0].message.content
-  } catch (error) {
-    console.error('Z.AI API error:', error)
-    throw error
   }
 }
 

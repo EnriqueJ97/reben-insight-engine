@@ -196,12 +196,14 @@ const Dashboard = () => {
 
       {/* Main Dashboard with AI Insights */}
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${user?.role === 'HR_ADMIN' ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="ai-insights" className="flex items-center space-x-2">
-            <Brain className="h-4 w-4" />
-            <span>IA Insights</span>
-          </TabsTrigger>
+          {user?.role === 'HR_ADMIN' && (
+            <TabsTrigger value="ai-insights" className="flex items-center space-x-2">
+              <Brain className="h-4 w-4" />
+              <span>IA Insights</span>
+            </TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="dashboard" className="space-y-6">
@@ -296,9 +298,11 @@ const Dashboard = () => {
         </Card>
         </TabsContent>
 
-        <TabsContent value="ai-insights">
-          <AIInsightsPanel />
-        </TabsContent>
+        {user?.role === 'HR_ADMIN' && (
+          <TabsContent value="ai-insights">
+            <AIInsightsPanel />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
