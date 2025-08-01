@@ -59,7 +59,7 @@ export const AIInsightsPanel = () => {
         <Brain className="h-4 w-4" />
         <AlertDescription className="flex items-center justify-between">
           <span>
-            <strong>🤖 Z.AI GLM-4.5 activo</strong> - Generando insights inteligentes de bienestar
+            <strong>🤖 Google Gemini activo</strong> - Generando insights inteligentes de bienestar
           </span>
           <Button 
             onClick={generateAIInsights} 
@@ -82,7 +82,7 @@ export const AIInsightsPanel = () => {
             {aiLoading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />}
           </CardTitle>
           <CardDescription>
-            Insights automáticos generados por Z.AI GLM-4.5
+            Insights automáticos generados por Google Gemini
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -142,7 +142,7 @@ export const AIInsightsPanel = () => {
           ) : aiLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Generando análisis con Z.AI GLM-4.5...</p>
+              <p className="text-muted-foreground">Generando análisis con Google Gemini...</p>
             </div>
           ) : (
             <div className="text-center py-8">
@@ -211,8 +211,8 @@ export const AIInsightsPanel = () => {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-blue-600">GLM-4.5</div>
-              <div className="text-xs text-muted-foreground">Modelo Z.AI</div>
+              <div className="text-2xl font-bold text-blue-600">Gemini</div>
+              <div className="text-xs text-muted-foreground">Google Cloud</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-green-600">

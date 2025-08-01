@@ -6,7 +6,7 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 )
 
-const ZAI_API_KEY = Deno.env.get('ZAI_API_KEY')
+const GOOGLE_API_KEY = Deno.env.get('GOOGLE_CLOUD_API_KEY')
 
 interface AnalysisRequest {
   type: 'wellness_analysis' | 'burnout_prediction' | 'team_insights' | 'recommendations'
@@ -16,34 +16,30 @@ interface AnalysisRequest {
   team_id?: string
 }
 
-async function callZAI(prompt: string, systemPrompt: string = "You are an expert HR analytics AI specialized in workplace wellness and burnout prevention.", retries = 3) {
+async function callGemini(prompt: string, systemPrompt: string = "Eres un experto en análisis de RRHH especializado en bienestar laboral y prevención de burnout.", retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${ZAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'glm-4.5',
-          messages: [
-            {
-              role: 'system',
-              content: systemPrompt
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.7,
-          top_p: 0.8
+          contents: [{
+            parts: [{
+              text: `${systemPrompt}\n\n${prompt}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topP: 0.8,
+            maxOutputTokens: 2048,
+          }
         })
       })
 
       if (response.status === 429) {
-        const delay = Math.pow(2, i) * 1000; // Exponential backoff
+        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000; // Exponential backoff with jitter
         console.log(`Rate limit hit, retrying in ${delay}ms (attempt ${i + 1}/${retries})`)
         if (i < retries - 1) {
           await new Promise(resolve => setTimeout(resolve, delay))
@@ -52,17 +48,18 @@ async function callZAI(prompt: string, systemPrompt: string = "You are an expert
       }
 
       if (!response.ok) {
-        throw new Error(`Z.AI API error: ${response.status}`)
+        const errorText = await response.text()
+        throw new Error(`Gemini API error: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
-      return data.choices[0].message.content
+      return data.candidates[0].content.parts[0].text
     } catch (error) {
       if (i === retries - 1) {
-        console.error('Z.AI API final error:', error)
+        console.error('Gemini API final error:', error)
         throw error
       }
-      const delay = Math.pow(2, i) * 1000
+      const delay = Math.pow(2, i) * 1000 + Math.random() * 1000
       console.log(`Request failed, retrying in ${delay}ms (attempt ${i + 1}/${retries}):`, error.message)
       await new Promise(resolve => setTimeout(resolve, delay))
     }
@@ -95,7 +92,7 @@ RESPONDE EN FORMATO JSON:
 Tienes experiencia en prevención de burnout y mejora del clima laboral en empresas españolas.
 Responde SOLO en formato JSON válido, sin texto adicional.`
 
-  const response = await callZAI(prompt, systemPrompt)
+  const response = await callGemini(prompt, systemPrompt)
   
   try {
     return JSON.parse(response)
@@ -136,7 +133,7 @@ GENERA 5 RECOMENDACIONES ESPECÍFICAS Y ACCIONABLES en formato JSON:
 }
 `
 
-  const response = await callZAI(prompt)
+  const response = await callGemini(prompt)
   
   try {
     return JSON.parse(response)
@@ -176,7 +173,7 @@ Responde en formato JSON:
 }
 `
 
-  const response = await callZAI(prompt)
+  const response = await callGemini(prompt)
   
   try {
     return JSON.parse(response)
