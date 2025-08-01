@@ -23,16 +23,17 @@ const AppLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigationItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN'] },
+    { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Check-in', href: '/dashboard/checkin', icon: Heart, roles: ['EMPLOYEE'] },
     { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
     { name: 'Equipos', href: '/dashboard/teams', icon: Users, roles: ['HR_ADMIN'] },
     { name: 'Gestión de Equipos', href: '/dashboard/teams/manage', icon: Settings, roles: ['HR_ADMIN'] },
-    { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN'] },
+    { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Integraciones', href: '/dashboard/integrations', icon: Plug, roles: ['HR_ADMIN'] },
-    { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN'] },
+    { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Configuración', href: '/dashboard/settings', icon: Settings, roles: ['HR_ADMIN'] },
     { name: 'Importar Empleados', href: '/dashboard/employees/import', icon: Upload, roles: ['HR_ADMIN'] },
+    { name: 'Super Admin', href: '/dashboard/super-admin', icon: Settings, roles: ['SUPER_ADMIN'] },
   ];
 
   const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));

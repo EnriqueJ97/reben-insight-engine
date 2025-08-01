@@ -17,6 +17,10 @@ interface Tenant {
   id: string;
   name: string;
   domain?: string;
+  status: 'active' | 'suspended';
+  subscription_plan: 'basic' | 'premium' | 'enterprise';
+  subscription_status: 'active' | 'cancelled' | 'expired';
+  max_users: number;
   created_at: string;
   updated_at: string;
   settings: any;
@@ -59,7 +63,7 @@ export default function SuperAdmin() {
   });
 
   // Verificar que el usuario es SUPER_ADMIN
-  if (user?.role !== 'SUPER_ADMIN' as any) {
+  if (user?.role !== 'SUPER_ADMIN') {
     return (
       <div className="p-6">
         <Card>
@@ -119,6 +123,10 @@ export default function SuperAdmin() {
 
           return {
             ...tenant,
+            status: tenant.status as 'active' | 'suspended',
+            subscription_plan: tenant.subscription_plan as 'basic' | 'premium' | 'enterprise',
+            subscription_status: tenant.subscription_status as 'active' | 'cancelled' | 'expired',
+            max_users: tenant.max_users || 50,
             userCount: usersResult.count || 0,
             checkinCount: checkinsResult.count || 0,
             alertCount: alertsResult.count || 0,
@@ -160,6 +168,10 @@ export default function SuperAdmin() {
         .insert([{
           name: newTenant.name,
           domain: newTenant.domain || null,
+          status: 'active',
+          subscription_plan: newTenant.subscription_plan,
+          subscription_status: 'active',
+          max_users: newTenant.max_users,
           settings: {}
         }]);
 
@@ -181,6 +193,58 @@ export default function SuperAdmin() {
         variant: "destructive",
       });
     }
+  };
+
+  const updateTenantStatus = async (tenantId: string, status: 'active' | 'suspended') => {
+    try {
+      const { error } = await supabase
+        .from('tenants')
+        .update({ status })
+        .eq('id', tenantId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Éxito",
+        description: `Empresa ${status === 'active' ? 'activada' : 'suspendida'} exitosamente.`,
+      });
+
+      fetchData();
+    } catch (error) {
+      console.error('Error updating tenant status:', error);
+      toast({
+        title: "Error",
+        description: "Error al actualizar el estado de la empresa.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    return status === 'active' ? (
+      <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
+        <CheckCircle className="w-3 h-3 mr-1" />
+        Activa
+      </Badge>
+    ) : (
+      <Badge variant="destructive">
+        <Ban className="w-3 h-3 mr-1" />
+        Suspendida
+      </Badge>
+    );
+  };
+
+  const getPlanBadge = (plan: string) => {
+    const colors = {
+      basic: 'bg-blue-100 text-blue-800',
+      premium: 'bg-purple-100 text-purple-800',
+      enterprise: 'bg-orange-100 text-orange-800'
+    };
+    return (
+      <Badge variant="outline" className={colors[plan as keyof typeof colors]}>
+        {plan.charAt(0).toUpperCase() + plan.slice(1)}
+      </Badge>
+    );
   };
 
   if (loading) {
@@ -240,6 +304,33 @@ export default function SuperAdmin() {
                   value={newTenant.domain}
                   onChange={(e) => setNewTenant(prev => ({ ...prev, domain: e.target.value }))}
                   placeholder="empresa.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="plan">Plan de Suscripción</Label>
+                <Select 
+                  value={newTenant.subscription_plan} 
+                  onValueChange={(value: SubscriptionPlan) => 
+                    setNewTenant(prev => ({ ...prev, subscription_plan: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Básico</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="maxUsers">Máximo de Usuarios</Label>
+                <Input
+                  id="maxUsers"
+                  type="number"
+                  value={newTenant.max_users}
+                  onChange={(e) => setNewTenant(prev => ({ ...prev, max_users: parseInt(e.target.value) || 50 }))}
                 />
               </div>
               <div className="flex justify-end space-x-2">
@@ -318,6 +409,8 @@ export default function SuperAdmin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Empresa</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Plan</TableHead>
                     <TableHead>Usuarios</TableHead>
                     <TableHead>Check-ins</TableHead>
                     <TableHead>Alertas</TableHead>
@@ -336,7 +429,14 @@ export default function SuperAdmin() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-center">{tenant.userCount}</TableCell>
+                      <TableCell>{getStatusBadge(tenant.status)}</TableCell>
+                      <TableCell>{getPlanBadge(tenant.subscription_plan)}</TableCell>
+                      <TableCell>
+                        <div className="text-center">
+                          <div className="font-medium">{tenant.userCount}</div>
+                          <div className="text-xs text-muted-foreground">/ {tenant.max_users}</div>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-center">{tenant.checkinCount}</TableCell>
                       <TableCell className="text-center">{tenant.alertCount}</TableCell>
                       <TableCell>{new Date(tenant.created_at).toLocaleDateString('es-ES')}</TableCell>
@@ -345,6 +445,23 @@ export default function SuperAdmin() {
                           <Button variant="outline" size="sm">
                             <Edit className="w-3 h-3" />
                           </Button>
+                          {tenant.status === 'active' ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => updateTenantStatus(tenant.id, 'suspended')}
+                            >
+                              <Ban className="w-3 h-3" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => updateTenantStatus(tenant.id, 'active')}
+                            >
+                              <CheckCircle className="w-3 h-3" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
