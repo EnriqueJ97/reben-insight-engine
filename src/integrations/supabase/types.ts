@@ -468,24 +468,36 @@ export type Database = {
           created_at: string
           domain: string | null
           id: string
+          max_users: number | null
           name: string
           settings: Json | null
+          status: string | null
+          subscription_plan: string | null
+          subscription_status: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           domain?: string | null
           id?: string
+          max_users?: number | null
           name: string
           settings?: Json | null
+          status?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           domain?: string | null
           id?: string
+          max_users?: number | null
           name?: string
           settings?: Json | null
+          status?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
           updated_at?: string
         }
         Relationships: []
