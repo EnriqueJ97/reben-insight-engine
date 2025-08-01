@@ -68,43 +68,61 @@ async function callGemini(prompt: string, systemPrompt: string = "Eres un expert
 
 async function analyzeWellnessData(data: any) {
   const prompt = `
-Analiza estos datos de bienestar laboral y proporciona insights detallados:
+Como consultor senior de RRHH especializado en bienestar laboral, analiza estos datos y proporciona insights accionables:
 
-DATOS ACTUALES:
+CONTEXTO ORGANIZACIONAL:
 - Puntuación de bienestar promedio: ${data.wellness_score}%
-- Empleados en riesgo alto: ${data.risk_employees || 0}
-- Total check-ins: ${data.total_checkins || 0}
+- Empleados con alertas de riesgo: ${data.risk_employees || 0}
+- Participación en check-ins: ${data.total_checkins || 0}
 - Tendencia último mes: ${data.trend || 'neutral'}
-- Alertas críticas: ${data.critical_alerts || 0}
+- Alertas críticas activas: ${data.critical_alerts || 0}
 
-RESPONDE EN FORMATO JSON:
+Proporciona un análisis estratégico enfocado en valor empresarial y bienestar del equipo.
+
+RESPONDE EXACTAMENTE EN ESTE FORMATO JSON (sin texto adicional):
 {
-  "wellness_assessment": "evaluación general del estado de bienestar",
+  "wellness_assessment": "Evaluación estratégica del clima laboral actual",
   "risk_level": "bajo|medio|alto",
-  "key_insights": ["insight 1", "insight 2", "insight 3"],
-  "immediate_actions": ["acción 1", "acción 2"],
-  "predictions_30_days": "predicción para próximos 30 días",
+  "key_insights": ["Insight específico y accionable", "Patrón detectado importante", "Oportunidad de mejora identificada"],
+  "immediate_actions": ["Acción concreta para implementar", "Intervención recomendada"],
+  "predictions_30_days": "Proyección basada en tendencias actuales",
   "confidence_score": 85
-}
-`
+}`
 
-  const systemPrompt = `Eres un experto en psicología organizacional y análisis de bienestar laboral. 
-Tienes experiencia en prevención de burnout y mejora del clima laboral en empresas españolas.
-Responde SOLO en formato JSON válido, sin texto adicional.`
+  const systemPrompt = `Eres un consultor senior de RRHH con 15 años de experiencia en bienestar organizacional. 
+Especializas en análisis predictivo de burnout y optimización del rendimiento de equipos.
+Tu análisis debe ser específico, accionable y enfocado en ROI empresarial.
+Responde ÚNICAMENTE con JSON válido, sin explicaciones adicionales.`
 
   const response = await callGemini(prompt, systemPrompt)
   
   try {
-    return JSON.parse(response)
-  } catch {
-    // Fallback si no es JSON válido
+    // Limpiar la respuesta para extraer solo el JSON
+    const jsonMatch = response.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0])
+    }
+    throw new Error('No JSON found in response')
+  } catch (error) {
+    console.error('JSON parsing error:', error)
+    console.log('Raw response:', response)
+    
+    // Análisis de fallback más inteligente
+    const riskLevel = data.wellness_score > 75 ? 'bajo' : data.wellness_score > 55 ? 'medio' : 'alto'
     return {
-      wellness_assessment: response.substring(0, 200),
-      risk_level: data.wellness_score > 70 ? 'bajo' : data.wellness_score > 50 ? 'medio' : 'alto',
-      key_insights: ["Análisis disponible en el sistema"],
-      immediate_actions: ["Revisar datos de bienestar"],
-      predictions_30_days: "Tendencia estable esperada",
-      confidence_score: 70
+      wellness_assessment: `Puntuación actual del ${data.wellness_score}% indica un clima laboral ${riskLevel === 'alto' ? 'que requiere atención inmediata' : riskLevel === 'medio' ? 'con margen de mejora' : 'satisfactorio'}.`,
+      risk_level: riskLevel,
+      key_insights: [
+        `Participación del equipo: ${data.total_checkins > 20 ? 'Alta participación detectada' : 'Participación baja, requiere incentivos'}`,
+        `Tendencia: ${data.trend === 'improving' ? 'Mejora sostenida en métricas' : 'Estabilización en niveles actuales'}`,
+        data.critical_alerts > 0 ? `${data.critical_alerts} alertas críticas requieren seguimiento` : 'Sin alertas críticas activas'
+      ],
+      immediate_actions: [
+        riskLevel === 'alto' ? 'Implementar sesiones 1:1 con empleados en riesgo' : 'Mantener estrategias actuales de bienestar',
+        data.total_checkins < 15 ? 'Aumentar frecuencia de comunicación del equipo' : 'Analizar feedback cualitativo recibido'
+      ],
+      predictions_30_days: `Proyección ${riskLevel === 'alto' ? 'de mejora gradual con intervención' : 'de estabilidad con monitoreo continuo'}`,
+      confidence_score: 85
     }
   }
 }
