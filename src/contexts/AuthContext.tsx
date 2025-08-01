@@ -8,7 +8,7 @@ export interface UserProfile {
   team_id?: string;
   email: string;
   full_name?: string;
-  role: 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN';
+  role: 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN' | 'SUPER_ADMIN';
   created_at: string;
   updated_at: string;
   // Computed properties for backward compatibility

@@ -12,23 +12,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Users, Activity, AlertTriangle, Plus, Edit, Ban, CheckCircle, BarChart3 } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface Tenant {
   id: string;
   name: string;
   domain?: string;
-  status: 'active' | 'suspended';
-  subscription_plan: 'basic' | 'premium' | 'enterprise';
-  subscription_status: 'active' | 'cancelled' | 'expired';
-  max_users: number;
   created_at: string;
   updated_at: string;
+  settings: any;
 }
 
 interface PlatformMetrics {
   totalTenants: number;
-  activeTenants: number;
   totalUsers: number;
   totalCheckins: number;
   totalAlerts: number;
@@ -40,6 +35,15 @@ interface TenantWithMetrics extends Tenant {
   alertCount: number;
 }
 
+type SubscriptionPlan = 'basic' | 'premium' | 'enterprise';
+
+interface NewTenantForm {
+  name: string;
+  domain: string;
+  subscription_plan: SubscriptionPlan;
+  max_users: number;
+}
+
 export default function SuperAdmin() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -47,17 +51,15 @@ export default function SuperAdmin() {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-  const [newTenant, setNewTenant] = useState({
+  const [newTenant, setNewTenant] = useState<NewTenantForm>({
     name: '',
     domain: '',
-    subscription_plan: 'basic' as const,
+    subscription_plan: 'basic',
     max_users: 50
   });
 
   // Verificar que el usuario es SUPER_ADMIN
-  if (user?.role !== 'SUPER_ADMIN') {
+  if (user?.role !== 'SUPER_ADMIN' as any) {
     return (
       <div className="p-6">
         <Card>
@@ -94,48 +96,61 @@ export default function SuperAdmin() {
   };
 
   const fetchTenants = async () => {
-    const { data, error } = await supabase
-      .from('tenants')
-      .select(`
-        *,
-        profiles:profiles(count),
-        checkins:checkins(count),
-        alerts:alerts(count)
-      `);
+    try {
+      // Obtener tenants básicos
+      const { data: tenantsData, error: tenantsError } = await supabase
+        .from('tenants')
+        .select('*');
 
-    if (error) throw error;
+      if (tenantsError) throw tenantsError;
 
-    const tenantsWithMetrics = data?.map(tenant => ({
-      ...tenant,
-      userCount: tenant.profiles?.[0]?.count || 0,
-      checkinCount: tenant.checkins?.[0]?.count || 0,
-      alertCount: tenant.alerts?.[0]?.count || 0,
-    })) || [];
+      // Obtener métricas por tenant
+      const tenantsWithMetrics = await Promise.all(
+        (tenantsData || []).map(async (tenant) => {
+          const [usersResult, checkinsResult, alertsResult] = await Promise.all([
+            supabase.from('profiles').select('id', { count: 'exact' }).eq('tenant_id', tenant.id),
+            supabase.from('checkins').select('id', { count: 'exact' }).in('user_id', 
+              await supabase.from('profiles').select('id').eq('tenant_id', tenant.id).then(r => r.data?.map(p => p.id) || [])
+            ),
+            supabase.from('alerts').select('id', { count: 'exact' }).in('user_id',
+              await supabase.from('profiles').select('id').eq('tenant_id', tenant.id).then(r => r.data?.map(p => p.id) || [])
+            )
+          ]);
 
-    setTenants(tenantsWithMetrics);
+          return {
+            ...tenant,
+            userCount: usersResult.count || 0,
+            checkinCount: checkinsResult.count || 0,
+            alertCount: alertsResult.count || 0,
+          };
+        })
+      );
+
+      setTenants(tenantsWithMetrics);
+    } catch (error) {
+      console.error('Error fetching tenants:', error);
+      setTenants([]);
+    }
   };
 
   const fetchMetrics = async () => {
-    const [tenantsResult, usersResult, checkinsResult, alertsResult] = await Promise.all([
-      supabase.from('tenants').select('id, status'),
-      supabase.from('profiles').select('id'),
-      supabase.from('checkins').select('id'),
-      supabase.from('alerts').select('id')
-    ]);
+    try {
+      const [tenantsResult, usersResult, checkinsResult, alertsResult] = await Promise.all([
+        supabase.from('tenants').select('id', { count: 'exact' }),
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('checkins').select('id', { count: 'exact' }),
+        supabase.from('alerts').select('id', { count: 'exact' })
+      ]);
 
-    const totalTenants = tenantsResult.data?.length || 0;
-    const activeTenants = tenantsResult.data?.filter(t => t.status === 'active').length || 0;
-    const totalUsers = usersResult.data?.length || 0;
-    const totalCheckins = checkinsResult.data?.length || 0;
-    const totalAlerts = alertsResult.data?.length || 0;
-
-    setMetrics({
-      totalTenants,
-      activeTenants,
-      totalUsers,
-      totalCheckins,
-      totalAlerts
-    });
+      setMetrics({
+        totalTenants: tenantsResult.count || 0,
+        totalUsers: usersResult.count || 0,
+        totalCheckins: checkinsResult.count || 0,
+        totalAlerts: alertsResult.count || 0
+      });
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+    }
   };
 
   const createTenant = async () => {
@@ -145,10 +160,7 @@ export default function SuperAdmin() {
         .insert([{
           name: newTenant.name,
           domain: newTenant.domain || null,
-          subscription_plan: newTenant.subscription_plan,
-          max_users: newTenant.max_users,
-          status: 'active',
-          subscription_status: 'active'
+          settings: {}
         }]);
 
       if (error) throw error;
@@ -171,64 +183,12 @@ export default function SuperAdmin() {
     }
   };
 
-  const updateTenantStatus = async (tenantId: string, status: 'active' | 'suspended') => {
-    try {
-      const { error } = await supabase
-        .from('tenants')
-        .update({ status })
-        .eq('id', tenantId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Éxito",
-        description: `Empresa ${status === 'active' ? 'activada' : 'suspendida'} exitosamente.`,
-      });
-
-      fetchData();
-    } catch (error) {
-      console.error('Error updating tenant status:', error);
-      toast({
-        title: "Error",
-        description: "Error al actualizar el estado de la empresa.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    return status === 'active' ? (
-      <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
-        <CheckCircle className="w-3 h-3 mr-1" />
-        Activa
-      </Badge>
-    ) : (
-      <Badge variant="destructive">
-        <Ban className="w-3 h-3 mr-1" />
-        Suspendida
-      </Badge>
-    );
-  };
-
-  const getPlanBadge = (plan: string) => {
-    const colors = {
-      basic: 'bg-blue-100 text-blue-800',
-      premium: 'bg-purple-100 text-purple-800',
-      enterprise: 'bg-orange-100 text-orange-800'
-    };
-    return (
-      <Badge variant="outline" className={colors[plan as keyof typeof colors]}>
-        {plan.charAt(0).toUpperCase() + plan.slice(1)}
-      </Badge>
-    );
-  };
-
   if (loading) {
     return (
       <div className="p-6">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[...Array(5)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardContent className="p-6">
                   <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
@@ -282,33 +242,6 @@ export default function SuperAdmin() {
                   placeholder="empresa.com"
                 />
               </div>
-              <div>
-                <Label htmlFor="plan">Plan de Suscripción</Label>
-                <Select 
-                  value={newTenant.subscription_plan} 
-                  onValueChange={(value: 'basic' | 'premium' | 'enterprise') => 
-                    setNewTenant(prev => ({ ...prev, subscription_plan: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basic">Básico</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="maxUsers">Máximo de Usuarios</Label>
-                <Input
-                  id="maxUsers"
-                  type="number"
-                  value={newTenant.max_users}
-                  onChange={(e) => setNewTenant(prev => ({ ...prev, max_users: parseInt(e.target.value) || 50 }))}
-                />
-              </div>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancelar
@@ -324,7 +257,7 @@ export default function SuperAdmin() {
 
       {/* Métricas de la Plataforma */}
       {metrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
@@ -332,15 +265,6 @@ export default function SuperAdmin() {
                 <span className="text-sm font-medium">Total Empresas</span>
               </div>
               <div className="text-2xl font-bold">{metrics.totalTenants}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium">Empresas Activas</span>
-              </div>
-              <div className="text-2xl font-bold">{metrics.activeTenants}</div>
             </CardContent>
           </Card>
           <Card>
@@ -394,8 +318,6 @@ export default function SuperAdmin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Empresa</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Plan</TableHead>
                     <TableHead>Usuarios</TableHead>
                     <TableHead>Check-ins</TableHead>
                     <TableHead>Alertas</TableHead>
@@ -414,14 +336,7 @@ export default function SuperAdmin() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{getStatusBadge(tenant.status)}</TableCell>
-                      <TableCell>{getPlanBadge(tenant.subscription_plan)}</TableCell>
-                      <TableCell>
-                        <div className="text-center">
-                          <div className="font-medium">{tenant.userCount}</div>
-                          <div className="text-xs text-muted-foreground">/ {tenant.max_users}</div>
-                        </div>
-                      </TableCell>
+                      <TableCell className="text-center">{tenant.userCount}</TableCell>
                       <TableCell className="text-center">{tenant.checkinCount}</TableCell>
                       <TableCell className="text-center">{tenant.alertCount}</TableCell>
                       <TableCell>{new Date(tenant.created_at).toLocaleDateString('es-ES')}</TableCell>
@@ -430,37 +345,6 @@ export default function SuperAdmin() {
                           <Button variant="outline" size="sm">
                             <Edit className="w-3 h-3" />
                           </Button>
-                          {tenant.status === 'active' ? (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Ban className="w-3 h-3" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Suspender Empresa</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    ¿Estás seguro de que quieres suspender "{tenant.name}"? Los usuarios no podrán acceder hasta que se reactive.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => updateTenantStatus(tenant.id, 'suspended')}>
-                                    Suspender
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          ) : (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => updateTenantStatus(tenant.id, 'active')}
-                            >
-                              <CheckCircle className="w-3 h-3" />
-                            </Button>
-                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -15,6 +15,7 @@ import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
 import JoinTeam from "@/pages/JoinTeam";
+import SuperAdmin from "@/pages/SuperAdmin";
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import EmployeeImport from '@/components/EmployeeImport.tsx';
@@ -116,6 +117,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <EmployeeImport />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="super-admin"
+          element={
+            <RoleProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+              <SuperAdmin />
             </RoleProtectedRoute>
           }
         />
