@@ -13,6 +13,7 @@ import Team from "@/pages/Team";
 import TeamsManagement from "@/pages/TeamsManagement";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
+import TeamAnalysis from "@/pages/TeamAnalysis";
 import NotFound from "@/pages/NotFound";
 import JoinTeam from "@/pages/JoinTeam";
 import SuperAdmin from "@/pages/SuperAdmin";
@@ -103,6 +104,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
               <Reports />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="team-analysis"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <TeamAnalysis />
             </RoleProtectedRoute>
           }
         />

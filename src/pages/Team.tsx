@@ -411,7 +411,7 @@ const Team = () => {
                     variant="outline" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => navigate('/reports')}
+                    onClick={() => navigate('/team-analysis')}
                   >
                     <Activity className="h-3 w-3 mr-2" />
                     Ver Análisis
