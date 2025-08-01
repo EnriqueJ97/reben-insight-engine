@@ -18,9 +18,15 @@ interface ChatRequest {
 async function callGemini(messages: Array<{role: string, content: string}>, systemPrompt: string) {
   try {
     // Convert conversation to Gemini format
-    const geminiMessages = messages.map(msg => ({
-      parts: [{ text: msg.content }]
-    }))
+    const geminiMessages = []
+    
+    for (const msg of messages) {
+      const role = msg.role === 'assistant' ? 'model' : 'user'
+      geminiMessages.push({
+        role: role,
+        parts: [{ text: msg.content }]
+      })
+    }
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`, {
       method: 'POST',
@@ -42,10 +48,17 @@ async function callGemini(messages: Array<{role: string, content: string}>, syst
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('Gemini API Response:', errorText)
       throw new Error(`Gemini API error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
+    
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+      console.error('Unexpected Gemini response structure:', data)
+      throw new Error('Invalid response structure from Gemini')
+    }
+    
     return data.candidates[0].content.parts[0].text
   } catch (error) {
     console.error('Gemini API error:', error)
