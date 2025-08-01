@@ -10,6 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, TrendingUp, Users, AlertTriangle, Calendar, Target, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
+import { AIInsightsPanel } from '@/components/ai/AIInsightsPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Brain } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -191,6 +194,18 @@ const Dashboard = () => {
       {/* Metrics Overview */}
       <WellnessMetrics metrics={metrics} />
 
+      {/* Main Dashboard with AI Insights */}
+      <Tabs defaultValue="dashboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="ai-insights" className="flex items-center space-x-2">
+            <Brain className="h-4 w-4" />
+            <span>IA Insights</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="dashboard" className="space-y-6">
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
         <Card className="lg:col-span-2">
@@ -270,15 +285,21 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Footer */}
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>Última actualización: {new Date().toLocaleDateString()}</span>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Footer */}
+        <Card className="bg-muted/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Última actualización: {new Date().toLocaleDateString()}</span>
+            </div>
+          </CardContent>
+        </Card>
+        </TabsContent>
+
+        <TabsContent value="ai-insights">
+          <AIInsightsPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
