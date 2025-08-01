@@ -16,6 +16,7 @@ import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
 import JoinTeam from "@/pages/JoinTeam";
 import SuperAdmin from "@/pages/SuperAdmin";
+import Landing from "@/pages/Landing";
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import EmployeeImport from '@/components/EmployeeImport.tsx';
@@ -52,6 +53,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/join-team/:inviteCode" element={<JoinTeam />} />
+      <Route path="/landing" element={<Landing />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
         path="/dashboard"
