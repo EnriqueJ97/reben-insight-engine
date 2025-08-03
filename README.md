@@ -79,3 +79,5 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 <!-- Commit de prueba para forzar ejecución del workflow de Supabase -->
 
 <!-- Segundo commit de prueba para forzar ejecución del workflow de Supabase -->
+
+<!-- Tercer commit de prueba para forzar ejecución del workflow de Supabase -->
