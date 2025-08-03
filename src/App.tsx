@@ -4,7 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute, RoleProtectedRoute } from "@/components/routing/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -22,33 +23,11 @@ import Landing from "@/pages/Landing";
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import EmployeeImport from '@/components/EmployeeImport.tsx';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
+import InviteTeamMembers from '@/components/invitations/InviteTeamMembers';
+import OnboardingCheck from '@/components/onboarding/OnboardingCheck';
 
 const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) return <div>Cargando...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-  
-  return <>{children}</>;
-};
-
-const RoleProtectedRoute = ({ 
-  children, 
-  allowedRoles 
-}: { 
-  children: React.ReactNode;
-  allowedRoles: string[];
-}) => {
-  const { user } = useAuth();
-  
-  if (!user || !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <>{children}</>;
-};
 
 const AppRoutes = () => {
   return (
@@ -84,6 +63,8 @@ const AppRoutes = () => {
         />
         <Route path="alerts" element={<AlertsCenter />} />
         <Route path="integrations" element={<IntegrationsCenter />} />
+        <Route path="notifications" element={<NotificationCenter />} />
+        <Route path="invite" element={<InviteTeamMembers />} />
         <Route
           path="teams"
           element={
@@ -161,7 +142,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppRoutes />
+          <OnboardingCheck>
+            <AppRoutes />
+          </OnboardingCheck>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
