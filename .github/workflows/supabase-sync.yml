@@ -24,6 +24,11 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: List workspace files
+        run: |
+          pwd
+          ls -l
+          ls -l supabase || true
       - name: Install Supabase CLI
         run: |
           rm -rf supabase
