@@ -1,0 +1,111 @@
+name: Supabase Sync & Deploy
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  SUPABASE_URL: https://scjwymsygllanubzfbok.supabase.co
+
+jobs:
+  # Job para sincronizar con Supabase
+  supabase-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Supabase
+        run: |
+          echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
+          supabase link --project-ref scjwymsygllanubzfbok
+
+      - name: Run database migrations
+        run: supabase db push
+
+      - name: Generate TypeScript types
+        run: supabase gen types typescript --project-id scjwymsygllanubzfbok > src/types/supabase.ts
+
+      - name: Commit and push types
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/types/supabase.ts
+          git commit -m "🤖 Auto-update Supabase types" || exit 0
+          git push
+
+  # Job para build y test
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: supabase-sync
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run type-check
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+  # Job para deployment (opcional)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [supabase-sync, build-and-test]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod' 

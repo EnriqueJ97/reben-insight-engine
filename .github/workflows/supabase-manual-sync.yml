@@ -1,0 +1,74 @@
+name: Manual Supabase Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'sync'
+        type: choice
+        options:
+          - sync
+          - reset
+          - types
+          - status
+
+jobs:
+  supabase-manual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Setup Supabase
+        run: |
+          echo ${{ secrets.SUPABASE_ACCESS_TOKEN }} | supabase login
+          supabase link --project-ref scjwymsygllanubzfbok
+
+      - name: Check Supabase Status
+        if: inputs.action == 'status'
+        run: supabase status
+
+      - name: Run Database Migrations
+        if: inputs.action == 'sync'
+        run: supabase db push
+
+      - name: Reset Database
+        if: inputs.action == 'reset'
+        run: supabase db reset
+
+      - name: Generate TypeScript Types
+        if: inputs.action == 'types'
+        run: |
+          supabase gen types typescript --project-id scjwymsygllanubzfbok > src/types/supabase.ts
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/types/supabase.ts
+          git commit -m "🤖 Update Supabase types" || exit 0
+          git push
+
+      - name: Complete Sync
+        if: inputs.action == 'sync'
+        run: |
+          supabase gen types typescript --project-id scjwymsygllanubzfbok > src/types/supabase.ts
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/types/supabase.ts
+          git commit -m "🤖 Auto-update Supabase types" || exit 0
+          git push
+
+      - name: Show Results
+        run: |
+          echo "✅ Action completed: ${{ inputs.action }}"
+          echo "📊 Supabase project: scjwymsygllanubzfbok"
+          echo "🔗 URL: https://scjwymsygllanubzfbok.supabase.co" 
