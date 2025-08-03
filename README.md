@@ -75,3 +75,5 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 ---
 
 ✅ Se ha realizado una migración de prueba (test_column en tenants) para verificar la automatización con Supabase y GitHub Actions.
+
+<!-- Commit de prueba para forzar ejecución del workflow de Supabase -->
