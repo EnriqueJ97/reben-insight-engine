@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,60 +8,86 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, TrendingUp, TrendingDown, Users, AlertTriangle, Calendar, Download, DollarSign } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useReports, ReportData } from '@/hooks/useReports';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useToast } from '@/hooks/use-toast';
 
 const Reports = () => {
   const { user } = useAuth();
+  const { loading, generateReport, exportToPDF, exportToCSV, getQuickStats } = useReports();
+  const { toast } = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedTeam, setSelectedTeam] = useState('all');
+  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [quickStats, setQuickStats] = useState<any>(null);
 
-  // Mock data for charts
-  const wellnessTrendData = [
-    { date: '01/12', bienestar: 72, burnout: 28, satisfaccion: 68 },
-    { date: '05/12', bienestar: 74, burnout: 26, satisfaccion: 71 },
-    { date: '10/12', bienestar: 69, burnout: 31, satisfaccion: 65 },
-    { date: '15/12', bienestar: 76, burnout: 24, satisfaccion: 73 },
-    { date: '20/12', bienestar: 78, burnout: 22, satisfaccion: 75 },
-    { date: '25/12', bienestar: 75, burnout: 25, satisfaccion: 72 },
-    { date: '30/12', bienestar: 80, burnout: 20, satisfaccion: 78 }
-  ];
+  // Real data from reports
+  const wellnessTrendData = reportData?.trends?.map(trend => ({
+    date: new Date(trend.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }),
+    bienestar: trend.wellness_score,
+    burnout: 100 - trend.wellness_score,
+    satisfaccion: Math.max(0, trend.wellness_score - 5)
+  })) || [];
 
-  const teamComparisonData = [
-    { team: 'Desarrollo', bienestar: 82, miembros: 15 },
-    { team: 'Marketing', bienestar: 75, miembros: 8 },
-    { team: 'Ventas', bienestar: 68, miembros: 12 },
-    { team: 'RRHH', bienestar: 85, miembros: 4 },
-    { team: 'Operaciones', bienestar: 72, miembros: 10 }
-  ];
+  const teamComparisonData = reportData?.team_breakdown?.map(team => ({
+    team: `Equipo ${team.team_id.slice(0, 8)}`,
+    bienestar: team.wellness_score,
+    miembros: team.unique_employees
+  })) || [];
 
   const alertDistributionData = [
-    { name: 'Burnout Alto', value: 35, color: '#ef4444' },
-    { name: 'Fuga Talento', value: 25, color: '#f97316' },
-    { name: 'Insatisfacción', value: 20, color: '#eab308' },
-    { name: 'Baja Autoeficacia', value: 15, color: '#3b82f6' },
-    { name: 'Cinismo', value: 5, color: '#6b7280' }
-  ];
+    { name: 'Burnout Alto', value: reportData?.critical_alerts || 0, color: '#ef4444' },
+    { name: 'Riesgo Medio', value: Math.max(0, (reportData?.total_alerts || 0) - (reportData?.critical_alerts || 0)), color: '#f97316' },
+    { name: 'Bajo Riesgo', value: Math.max(0, (keyMetrics.totalEmployees || 0) - (reportData?.total_alerts || 0)), color: '#22c55e' }
+  ].filter(item => item.value > 0);
 
-  const costImpactData = [
-    { categoria: 'Rotación', costo_actual: 45000, costo_potencial: 78000 },
-    { categoria: 'Ausentismo', costo_actual: 12000, costo_potencial: 28000 },
-    { categoria: 'Productividad', costo_actual: 25000, costo_potencial: 52000 },
-    { categoria: 'Salud Mental', costo_actual: 8000, costo_potencial: 18000 }
-  ];
+  const costImpactData = reportData?.key_metrics ? [
+    { categoria: 'Ahorros Estimados', costo_actual: reportData.key_metrics.estimated_cost_savings || 0, costo_potencial: (reportData.key_metrics.estimated_cost_savings || 0) * 1.5 }
+  ] : [];
 
-  const keyMetrics = {
-    totalEmployees: user?.role === 'MANAGER' ? 12 : 150,
-    responseRate: 94,
-    riskEmployees: user?.role === 'MANAGER' ? 2 : 18,
-    avgWellness: user?.role === 'MANAGER' ? 78 : 75,
-    monthlyTrend: '+5%',
-    costSavings: '€45,000'
+  // Load initial data
+  useEffect(() => {
+    loadReportData();
+    loadQuickStats();
+  }, [selectedPeriod, selectedTeam]);
+
+  const loadReportData = async () => {
+    const data = await generateReport(
+      selectedPeriod, 
+      selectedTeam === 'all' ? undefined : selectedTeam,
+      'json',
+      'executive'
+    );
+    setReportData(data);
   };
 
-  const generatePDFReport = () => {
-    // Simulate PDF generation
-    setTimeout(() => {
-      alert('📋 Informe PDF generado y enviado por email');
-    }, 1000);
+  const loadQuickStats = async () => {
+    const stats = await getQuickStats(selectedPeriod);
+    setQuickStats(stats);
+  };
+
+  const handleExportPDF = async () => {
+    await exportToPDF(
+      selectedPeriod,
+      selectedTeam === 'all' ? undefined : selectedTeam,
+      'executive'
+    );
+  };
+
+  const handleExportCSV = async () => {
+    await exportToCSV(
+      selectedPeriod,
+      selectedTeam === 'all' ? undefined : selectedTeam
+    );
+  };
+
+  const keyMetrics = {
+    totalEmployees: reportData?.team_breakdown?.reduce((sum, team) => sum + team.unique_employees, 0) || 0,
+    responseRate: quickStats?.response_rate || 0,
+    riskEmployees: reportData?.critical_alerts || 0,
+    avgWellness: reportData?.wellness_score || 0,
+    monthlyTrend: reportData?.wellness_score > 70 ? '+5%' : reportData?.wellness_score > 50 ? '0%' : '-3%',
+    costSavings: reportData?.key_metrics?.estimated_cost_savings ? `€${reportData.key_metrics.estimated_cost_savings.toLocaleString()}` : '€0'
   };
 
   return (
@@ -92,10 +118,16 @@ const Reports = () => {
               <SelectItem value="1y">1 año</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={generatePDFReport}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar PDF
-          </Button>
+          <div className="flex space-x-2">
+            <Button onClick={handleExportPDF} disabled={loading}>
+              {loading ? <LoadingSpinner size="sm" /> : <Download className="h-4 w-4" />}
+              <span className="ml-2">PDF</span>
+            </Button>
+            <Button variant="outline" onClick={handleExportCSV} disabled={loading}>
+              {loading ? <LoadingSpinner size="sm" /> : <Download className="h-4 w-4" />}
+              <span className="ml-2">CSV</span>
+            </Button>
+          </div>
         </div>
       </div>
 
