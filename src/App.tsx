@@ -27,6 +27,8 @@ import NotificationCenter from '@/components/notifications/NotificationCenter';
 import InviteTeamMembers from '@/components/invitations/InviteTeamMembers';
 import OnboardingCheck from '@/components/onboarding/OnboardingCheck';
 import Operations from '@/pages/Operations';
+import MisTurnos from '@/pages/MisTurnos';
+import TrabajoFlexible from '@/pages/TrabajoFlexible';
 
 const queryClient = new QueryClient();
 
@@ -103,6 +105,22 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
               <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="mis-turnos"
+          element={
+            <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>
+              <MisTurnos />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="trabajo-flexible"
+          element={
+            <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>
+              <TrabajoFlexible />
             </RoleProtectedRoute>
           }
         />
