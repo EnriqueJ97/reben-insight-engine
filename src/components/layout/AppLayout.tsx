@@ -18,7 +18,8 @@ import {
   ChevronRight,
   Mail,
   HelpCircle,
-  Plug
+  Plug,
+  Upload
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,12 +30,14 @@ const AppLayout = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(() => 
     location.pathname.startsWith('/dashboard/settings')
   );
+  const [isTeamsOpen, setIsTeamsOpen] = useState(() => 
+    location.pathname.startsWith('/dashboard/teams')
+  );
 
   const navigationItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Check-in', href: '/dashboard/checkin', icon: Heart, roles: ['EMPLOYEE'] },
     { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
-    { name: 'Gestión de Equipos', href: '/dashboard/teams/manage', icon: Users, roles: ['HR_ADMIN'] },
     { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Super Admin', href: '/dashboard/super-admin', icon: Settings, roles: ['SUPER_ADMIN'] },
@@ -45,6 +48,11 @@ const AppLayout = () => {
     { name: 'Preguntas', href: '/dashboard/settings/questions', icon: HelpCircle },
     { name: 'Alertas', href: '/dashboard/settings/alerts', icon: AlertTriangle },
     { name: 'Integraciones', href: '/dashboard/settings/integrations', icon: Plug },
+  ];
+
+  const teamsSubItems = [
+    { name: 'Equipos', href: '/dashboard/teams/manage', icon: Users },
+    { name: 'Importar Empleados', href: '/dashboard/teams/import', icon: Upload },
   ];
 
   const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));
@@ -107,6 +115,38 @@ const AppLayout = () => {
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1">
                 {settingsSubItems.map((subItem) => (
+                  <Link
+                    key={subItem.name}
+                    to={subItem.href}
+                    className={`flex items-center py-2 pl-10 pr-4 space-x-2 hover:bg-accent transition-colors ${
+                      location.pathname === subItem.href ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <subItem.icon className="w-4 h-4" />
+                    <span>{subItem.name}</span>
+                  </Link>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          
+          {/* Teams Collapsible Section - Only for HR_ADMIN */}
+          {user?.role === 'HR_ADMIN' && (
+            <Collapsible open={isTeamsOpen} onOpenChange={setIsTeamsOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+                <div className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>Gestión de Equipos</span>
+                </div>
+                {isTeamsOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1">
+                {teamsSubItems.map((subItem) => (
                   <Link
                     key={subItem.name}
                     to={subItem.href}
