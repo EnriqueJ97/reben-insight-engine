@@ -1144,7 +1144,7 @@ export type Database = {
           is_active: boolean
           is_recommended: boolean
           name: string
-          tenant_id: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1156,7 +1156,7 @@ export type Database = {
           is_active?: boolean
           is_recommended?: boolean
           name: string
-          tenant_id: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1168,7 +1168,7 @@ export type Database = {
           is_active?: boolean
           is_recommended?: boolean
           name?: string
-          tenant_id?: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: []
