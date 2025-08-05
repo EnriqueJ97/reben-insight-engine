@@ -48,39 +48,29 @@ export default function Settings() {
   // For now, we'll assume users are HR_ADMIN. In a real app, this would come from the user's profile
   const isHRAdmin = true; // This should be fetched from user profile/role
 
-  return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <SettingsIcon className="w-6 h-6" />
-        <h1 className="text-3xl font-bold">Configuración</h1>
-        <Badge variant="outline">HR_ADMIN</Badge>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="campaigns" className="flex items-center gap-2">
-            <Mail className="w-4 h-4" />
-            Campañas
-          </TabsTrigger>
-          <TabsTrigger value="questions" className="flex items-center gap-2" disabled={!isHRAdmin}>
-            <HelpCircle className="w-4 h-4" />
-            Preguntas
-          </TabsTrigger>
-          <TabsTrigger value="alerts" className="flex items-center gap-2" disabled={!isHRAdmin}>
-            <AlertTriangle className="w-4 h-4" />
-            Alertas
-          </TabsTrigger>
-          <TabsTrigger value="integrations" className="flex items-center gap-2" disabled={!isHRAdmin}>
-            <Plug className="w-4 h-4" />
-            Integraciones
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="campaigns" className="space-y-6">
+  // Render specific content based on the current path
+  const renderContent = () => {
+    if (location.pathname.includes('/campaigns')) {
+      return (
+        <div className="container mx-auto py-8 space-y-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Mail className="w-6 h-6" />
+            <h1 className="text-3xl font-bold">Campañas de Email</h1>
+            <Badge variant="outline">HR_ADMIN</Badge>
+          </div>
           <EmailCampaignManager />
-        </TabsContent>
+        </div>
+      );
+    }
 
-        <TabsContent value="questions" className="space-y-6">
+    if (location.pathname.includes('/questions')) {
+      return (
+        <div className="container mx-auto py-8 space-y-6">
+          <div className="flex items-center gap-2 mb-6">
+            <HelpCircle className="w-6 h-6" />
+            <h1 className="text-3xl font-bold">Gestión de Preguntas</h1>
+            <Badge variant="outline">HR_ADMIN</Badge>
+          </div>
           {isHRAdmin ? (
             <QuestionManager />
           ) : (
@@ -94,9 +84,18 @@ export default function Settings() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
+        </div>
+      );
+    }
 
-        <TabsContent value="alerts" className="space-y-6">
+    if (location.pathname.includes('/alerts')) {
+      return (
+        <div className="container mx-auto py-8 space-y-6">
+          <div className="flex items-center gap-2 mb-6">
+            <AlertTriangle className="w-6 h-6" />
+            <h1 className="text-3xl font-bold">Centro de Alertas</h1>
+            <Badge variant="outline">HR_ADMIN</Badge>
+          </div>
           {isHRAdmin ? (
             <AlertsCenter />
           ) : (
@@ -110,9 +109,18 @@ export default function Settings() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
+        </div>
+      );
+    }
 
-        <TabsContent value="integrations" className="space-y-6">
+    if (location.pathname.includes('/integrations')) {
+      return (
+        <div className="container mx-auto py-8 space-y-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Plug className="w-6 h-6" />
+            <h1 className="text-3xl font-bold">Integraciones</h1>
+            <Badge variant="outline">HR_ADMIN</Badge>
+          </div>
           {isHRAdmin ? (
             <IntegrationsCenter />
           ) : (
@@ -126,8 +134,13 @@ export default function Settings() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+        </div>
+      );
+    }
+
+    // Default fallback - redirect to campaigns
+    return null;
+  };
+
+  return renderContent();
 }
