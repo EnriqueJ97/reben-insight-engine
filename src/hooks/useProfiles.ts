@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth, UserProfile } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserProfile } from '@/types/index';
 
 export interface TeamMember extends UserProfile {
   teams?: {

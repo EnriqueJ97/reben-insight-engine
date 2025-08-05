@@ -1,31 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { UserProfile, Tenant, UserRole } from '@/types/index';
 
-export interface UserProfile {
-  id: string;
-  tenant_id: string;
-  team_id?: string;
-  email: string;
-  full_name?: string;
-  role: 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN' | 'SUPER_ADMIN';
-  created_at: string;
-  updated_at: string;
-  // Computed properties for backward compatibility
-  name?: string;
-  avatar?: string;
-}
-
-export interface Tenant {
-  id: string;
-  name: string;
-  domain?: string;
-  settings: any;
-  created_at: string;
-  updated_at: string;
-}
-
-interface AuthContextType {
+export interface AuthContextType {
   user: UserProfile | null;
   session: Session | null;
   tenant: Tenant | null;
@@ -37,11 +15,13 @@ interface AuthContextType {
 }
 
 // Helper function to get avatar based on role
-const getAvatarForRole = (role: string): string => {
+const getAvatarForRole = (role: UserRole): string => {
   switch (role) {
     case 'HR_ADMIN': return '👩‍💼';
     case 'MANAGER': return '👨‍💼';
     case 'EMPLOYEE': return '👩‍💻';
+    case 'COMPLIANCE_OFFICER': return '🌱';
+    case 'SUPER_ADMIN': return '🔧';
     default: return '👤';
   }
 };
@@ -107,13 +87,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profile) {
         // Add computed properties for backward compatibility
-        const userProfile = {
+        const userProfile: UserProfile = {
           ...profile,
           name: profile.full_name || profile.email,
           avatar: getAvatarForRole(profile.role)
         };
         setUser(userProfile);
-        setTenant(profile.tenants);
+        
+        if (profile.tenants) {
+          const tenantData: Tenant = {
+            ...profile.tenants,
+            settings: (profile.tenants.settings as any) || { features: {}, branding: {} }
+          };
+          setTenant(tenantData);
+        }
       }
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);

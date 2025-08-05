@@ -21,7 +21,8 @@ import {
   Plug,
   Upload,
   Clock,
-  Calendar
+  Calendar,
+  Leaf
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -37,6 +38,9 @@ const AppLayout = () => {
   );
   const [isOperationsOpen, setIsOperationsOpen] = useState(() => 
     location.pathname.startsWith('/dashboard/operations')
+  );
+  const [isSustainabilityOpen, setIsSustainabilityOpen] = useState(() => 
+    location.pathname.startsWith('/dashboard/sustainability')
   );
 
   const navigationItems = [
@@ -65,6 +69,15 @@ const AppLayout = () => {
   const operationsSubItems = [
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
+  ];
+
+  const sustainabilitySubItems = [
+    { name: 'CSRD Dashboard', href: '/dashboard/sustainability/csrd', icon: Leaf },
+    { name: 'Diagnóstico', href: '/dashboard/sustainability/diagnostico', icon: HelpCircle },
+    { name: 'Materialidad', href: '/dashboard/sustainability/materialidad', icon: BarChart3 },
+    { name: 'Data Hub ESRS', href: '/dashboard/sustainability/data-hub', icon: Upload },
+    { name: 'Tareas', href: '/dashboard/sustainability/tareas', icon: AlertTriangle },
+    { name: 'Reportes', href: '/dashboard/sustainability/reportes', icon: Mail },
   ];
 
   const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));
@@ -191,6 +204,38 @@ const AppLayout = () => {
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1">
                 {operationsSubItems.map((subItem) => (
+                  <Link
+                    key={subItem.name}
+                    to={subItem.href}
+                    className={`flex items-center py-2 pl-10 pr-4 space-x-2 hover:bg-accent transition-colors ${
+                      location.pathname === subItem.href ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <subItem.icon className="w-4 h-4" />
+                    <span>{subItem.name}</span>
+                  </Link>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          
+          {/* Sustainability Collapsible Section - For HR_ADMIN and COMPLIANCE_OFFICER */}
+          {(user?.role === 'HR_ADMIN' || user?.role === 'COMPLIANCE_OFFICER') && (
+            <Collapsible open={isSustainabilityOpen} onOpenChange={setIsSustainabilityOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+                <div className="flex items-center space-x-2">
+                  <Leaf className="w-4 h-4" />
+                  <span>Sostenibilidad</span>
+                </div>
+                {isSustainabilityOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1">
+                {sustainabilitySubItems.map((subItem) => (
                   <Link
                     key={subItem.name}
                     to={subItem.href}

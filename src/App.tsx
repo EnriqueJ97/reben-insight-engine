@@ -29,6 +29,12 @@ import OnboardingCheck from '@/components/onboarding/OnboardingCheck';
 import Operations from '@/pages/Operations';
 import MisTurnos from '@/pages/MisTurnos';
 import TrabajoFlexible from '@/pages/TrabajoFlexible';
+import CSRDDashboard from '@/pages/sustainability/CSRDDashboard';
+import DiagnosticoCSRD from '@/pages/sustainability/DiagnosticoCSRD';
+import Materialidad from '@/pages/sustainability/Materialidad';
+import DataHubESRS from '@/pages/sustainability/DataHubESRS';
+import TareasCompliance from '@/pages/sustainability/TareasCompliance';
+import ReportesCSRD from '@/pages/sustainability/ReportesCSRD';
 
 const queryClient = new QueryClient();
 
@@ -121,6 +127,54 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>
               <TrabajoFlexible />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="sustainability/csrd"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'COMPLIANCE_OFFICER']}>
+              <CSRDDashboard />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="sustainability/diagnostico"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'COMPLIANCE_OFFICER']}>
+              <DiagnosticoCSRD />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="sustainability/materialidad"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'COMPLIANCE_OFFICER']}>
+              <Materialidad />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="sustainability/data-hub"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'COMPLIANCE_OFFICER']}>
+              <DataHubESRS />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="sustainability/tareas"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'COMPLIANCE_OFFICER']}>
+              <TareasCompliance />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="sustainability/reportes"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'COMPLIANCE_OFFICER']}>
+              <ReportesCSRD />
             </RoleProtectedRoute>
           }
         />

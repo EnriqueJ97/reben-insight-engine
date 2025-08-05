@@ -12,7 +12,7 @@ export interface UserProfile {
   avatar?: string;
 }
 
-export type UserRole = 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN' | 'SUPER_ADMIN';
+export type UserRole = 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN' | 'COMPLIANCE_OFFICER' | 'SUPER_ADMIN';
 
 export interface Tenant {
   id: string;

@@ -65,6 +65,103 @@ export type Database = {
           },
         ]
       }
+      assurance_reviews: {
+        Row: {
+          assurance_level: Database["public"]["Enums"]["assurance_level"]
+          created_at: string
+          digital_signature: string | null
+          findings: string | null
+          id: string
+          recommendations: string | null
+          report_version_id: string
+          review_status: string
+          reviewed_at: string | null
+          reviewer_id: string
+          tenant_id: string
+        }
+        Insert: {
+          assurance_level: Database["public"]["Enums"]["assurance_level"]
+          created_at?: string
+          digital_signature?: string | null
+          findings?: string | null
+          id?: string
+          recommendations?: string | null
+          report_version_id: string
+          review_status?: string
+          reviewed_at?: string | null
+          reviewer_id: string
+          tenant_id: string
+        }
+        Update: {
+          assurance_level?: Database["public"]["Enums"]["assurance_level"]
+          created_at?: string
+          digital_signature?: string | null
+          findings?: string | null
+          id?: string
+          recommendations?: string | null
+          report_version_id?: string
+          review_status?: string
+          reviewed_at?: string | null
+          reviewer_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_assurance_review_report"
+            columns: ["report_version_id"]
+            isOneToOne: false
+            referencedRelation: "report_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          assurance_review_id: string
+          entity_id: string
+          entity_type: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          performed_by: string
+          tenant_id: string
+          timestamp: string
+        }
+        Insert: {
+          action: string
+          assurance_review_id: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          performed_by: string
+          tenant_id: string
+          timestamp?: string
+        }
+        Update: {
+          action?: string
+          assurance_review_id?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          performed_by?: string
+          tenant_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_audit_log_review"
+            columns: ["assurance_review_id"]
+            isOneToOne: false
+            referencedRelation: "assurance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkins: {
         Row: {
           created_at: string
@@ -99,6 +196,110 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      compliance_tasks: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          data_point_id: string
+          description: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          id: string
+          priority: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          data_point_id: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          priority?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          data_point_id?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          priority?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_compliance_tasks_data_point"
+            columns: ["data_point_id"]
+            isOneToOne: false
+            referencedRelation: "esrs_data_points"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      csrd_profile: {
+        Row: {
+          assurance_level: Database["public"]["Enums"]["assurance_level"]
+          company_size: string
+          created_at: string
+          employee_count: number | null
+          id: string
+          is_eu_entity: boolean
+          net_turnover: number | null
+          sector: string
+          tenant_id: string
+          total_assets: number | null
+          updated_at: string
+          year_first_report: number | null
+        }
+        Insert: {
+          assurance_level?: Database["public"]["Enums"]["assurance_level"]
+          company_size: string
+          created_at?: string
+          employee_count?: number | null
+          id?: string
+          is_eu_entity?: boolean
+          net_turnover?: number | null
+          sector: string
+          tenant_id: string
+          total_assets?: number | null
+          updated_at?: string
+          year_first_report?: number | null
+        }
+        Update: {
+          assurance_level?: Database["public"]["Enums"]["assurance_level"]
+          company_size?: string
+          created_at?: string
+          employee_count?: number | null
+          id?: string
+          is_eu_entity?: boolean
+          net_turnover?: number | null
+          sector?: string
+          tenant_id?: string
+          total_assets?: number | null
+          updated_at?: string
+          year_first_report?: number | null
+        }
+        Relationships: []
       }
       custom_questions: {
         Row: {
@@ -372,6 +573,159 @@ export type Database = {
           },
         ]
       }
+      esrs_data_points: {
+        Row: {
+          code: string
+          created_at: string
+          data_type: string
+          description: string | null
+          esrs_standard: string
+          id: string
+          is_mandatory: boolean | null
+          owner_role: string | null
+          source_system: string | null
+          tenant_id: string
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          data_type: string
+          description?: string | null
+          esrs_standard: string
+          id?: string
+          is_mandatory?: boolean | null
+          owner_role?: string | null
+          source_system?: string | null
+          tenant_id: string
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          data_type?: string
+          description?: string | null
+          esrs_standard?: string
+          id?: string
+          is_mandatory?: boolean | null
+          owner_role?: string | null
+          source_system?: string | null
+          tenant_id?: string
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      esrs_values: {
+        Row: {
+          coverage_status: Database["public"]["Enums"]["coverage_status"]
+          created_at: string
+          data_point_id: string
+          evidence_file_id: string | null
+          id: string
+          last_updated_by: string | null
+          quality_score: number | null
+          reporting_period: number
+          source_description: string | null
+          tenant_id: string
+          updated_at: string
+          value_boolean: boolean | null
+          value_numeric: number | null
+          value_text: string | null
+        }
+        Insert: {
+          coverage_status?: Database["public"]["Enums"]["coverage_status"]
+          created_at?: string
+          data_point_id: string
+          evidence_file_id?: string | null
+          id?: string
+          last_updated_by?: string | null
+          quality_score?: number | null
+          reporting_period: number
+          source_description?: string | null
+          tenant_id: string
+          updated_at?: string
+          value_boolean?: boolean | null
+          value_numeric?: number | null
+          value_text?: string | null
+        }
+        Update: {
+          coverage_status?: Database["public"]["Enums"]["coverage_status"]
+          created_at?: string
+          data_point_id?: string
+          evidence_file_id?: string | null
+          id?: string
+          last_updated_by?: string | null
+          quality_score?: number | null
+          reporting_period?: number
+          source_description?: string | null
+          tenant_id?: string
+          updated_at?: string
+          value_boolean?: boolean | null
+          value_numeric?: number | null
+          value_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_esrs_values_data_point"
+            columns: ["data_point_id"]
+            isOneToOne: false
+            referencedRelation: "esrs_data_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_esrs_values_evidence"
+            columns: ["evidence_file_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_files: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          description: string | null
+          file_path: string
+          file_size: number | null
+          filename: string
+          id: string
+          mime_type: string | null
+          tenant_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          description?: string | null
+          file_path: string
+          file_size?: number | null
+          filename: string
+          id?: string
+          mime_type?: string | null
+          tenant_id: string
+          uploaded_by: string
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          file_size?: number | null
+          filename?: string
+          id?: string
+          mime_type?: string | null
+          tenant_id?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       flex_policies: {
         Row: {
           allowed_modes: string[]
@@ -566,6 +920,106 @@ export type Database = {
         }
         Relationships: []
       }
+      iro_catalog: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          likelihood: string | null
+          magnitude: string | null
+          materiality_id: string
+          tenant_id: string
+          time_horizon: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          likelihood?: string | null
+          magnitude?: string | null
+          materiality_id: string
+          tenant_id: string
+          time_horizon?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          likelihood?: string | null
+          magnitude?: string | null
+          materiality_id?: string
+          tenant_id?: string
+          time_horizon?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_iro_materiality"
+            columns: ["materiality_id"]
+            isOneToOne: false
+            referencedRelation: "materiality_matrix"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materiality_matrix: {
+        Row: {
+          created_at: string
+          csrd_profile_id: string
+          financial_score: number | null
+          id: string
+          impact_score: number | null
+          is_material: boolean | null
+          justification: string | null
+          quadrant: Database["public"]["Enums"]["materiality_quadrant"] | null
+          tenant_id: string
+          topic_code: string
+          topic_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          csrd_profile_id: string
+          financial_score?: number | null
+          id?: string
+          impact_score?: number | null
+          is_material?: boolean | null
+          justification?: string | null
+          quadrant?: Database["public"]["Enums"]["materiality_quadrant"] | null
+          tenant_id: string
+          topic_code: string
+          topic_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          csrd_profile_id?: string
+          financial_score?: number | null
+          id?: string
+          impact_score?: number | null
+          is_material?: boolean | null
+          justification?: string | null
+          quadrant?: Database["public"]["Enums"]["materiality_quadrant"] | null
+          tenant_id?: string
+          topic_code?: string
+          topic_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_materiality_csrd_profile"
+            columns: ["csrd_profile_id"]
+            isOneToOne: false
+            referencedRelation: "csrd_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_configs: {
         Row: {
           created_at: string
@@ -688,6 +1142,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      report_versions: {
+        Row: {
+          created_at: string
+          file_path: string | null
+          generated_by: string
+          id: string
+          metadata: Json | null
+          reporting_period: number
+          status: Database["public"]["Enums"]["compliance_status"]
+          tenant_id: string
+          updated_at: string
+          version_number: string
+          xhtml_content: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_path?: string | null
+          generated_by: string
+          id?: string
+          metadata?: Json | null
+          reporting_period: number
+          status?: Database["public"]["Enums"]["compliance_status"]
+          tenant_id: string
+          updated_at?: string
+          version_number: string
+          xhtml_content?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_path?: string | null
+          generated_by?: string
+          id?: string
+          metadata?: Json | null
+          reporting_period?: number
+          status?: Database["public"]["Enums"]["compliance_status"]
+          tenant_id?: string
+          updated_at?: string
+          version_number?: string
+          xhtml_content?: string | null
+        }
+        Relationships: []
       }
       rota_audit: {
         Row: {
@@ -817,6 +1313,86 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tag_map: {
+        Row: {
+          created_at: string
+          data_point_id: string
+          id: string
+          report_version_id: string
+          tag_value: string | null
+          tenant_id: string
+          xbrl_tag: string
+        }
+        Insert: {
+          created_at?: string
+          data_point_id: string
+          id?: string
+          report_version_id: string
+          tag_value?: string | null
+          tenant_id: string
+          xbrl_tag: string
+        }
+        Update: {
+          created_at?: string
+          data_point_id?: string
+          id?: string
+          report_version_id?: string
+          tag_value?: string | null
+          tenant_id?: string
+          xbrl_tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tag_map_data_point"
+            columns: ["data_point_id"]
+            isOneToOne: false
+            referencedRelation: "esrs_data_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tag_map_report"
+            columns: ["report_version_id"]
+            isOneToOne: false
+            referencedRelation: "report_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          task_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          task_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_task_comments_task"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -1067,7 +1643,17 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "EMPLOYEE" | "MANAGER" | "HR_ADMIN" | "SUPER_ADMIN"
+      assurance_level: "limited" | "reasonable"
+      compliance_status: "DRAFT" | "SUBMITTED" | "QA" | "FINAL"
+      coverage_status: "OK" | "MISSING" | "ESTIMATE"
+      materiality_quadrant: "high_high" | "high_low" | "low_high" | "low_low"
+      task_status: "TODO" | "IN_PROGRESS" | "READY" | "COMPLETED"
+      user_role:
+        | "EMPLOYEE"
+        | "MANAGER"
+        | "HR_ADMIN"
+        | "SUPER_ADMIN"
+        | "COMPLIANCE_OFFICER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1195,7 +1781,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["EMPLOYEE", "MANAGER", "HR_ADMIN", "SUPER_ADMIN"],
+      assurance_level: ["limited", "reasonable"],
+      compliance_status: ["DRAFT", "SUBMITTED", "QA", "FINAL"],
+      coverage_status: ["OK", "MISSING", "ESTIMATE"],
+      materiality_quadrant: ["high_high", "high_low", "low_high", "low_low"],
+      task_status: ["TODO", "IN_PROGRESS", "READY", "COMPLETED"],
+      user_role: [
+        "EMPLOYEE",
+        "MANAGER",
+        "HR_ADMIN",
+        "SUPER_ADMIN",
+        "COMPLIANCE_OFFICER",
+      ],
     },
   },
 } as const

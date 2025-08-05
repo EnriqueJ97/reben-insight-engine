@@ -4,7 +4,7 @@ export interface UserProfile {
   team_id?: string;
   email: string;
   full_name?: string;
-  role: 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN' | 'SUPER_ADMIN';
+  role: 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN' | 'COMPLIANCE_OFFICER' | 'SUPER_ADMIN';
   created_at: string;
   updated_at: string;
   // Computed properties for backward compatibility
