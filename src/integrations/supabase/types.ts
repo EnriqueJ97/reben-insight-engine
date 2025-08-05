@@ -619,6 +619,7 @@ export type Database = {
           id: string
           max_users: number | null
           name: string
+          onboarding_completed: boolean
           settings: Json | null
           status: string | null
           subscription_plan: string | null
@@ -631,6 +632,7 @@ export type Database = {
           id?: string
           max_users?: number | null
           name: string
+          onboarding_completed?: boolean
           settings?: Json | null
           status?: string | null
           subscription_plan?: string | null
@@ -643,6 +645,7 @@ export type Database = {
           id?: string
           max_users?: number | null
           name?: string
+          onboarding_completed?: boolean
           settings?: Json | null
           status?: string | null
           subscription_plan?: string | null
