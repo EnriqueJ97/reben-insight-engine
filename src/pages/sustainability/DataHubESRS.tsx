@@ -399,7 +399,7 @@ const DataHubESRS = () => {
                                      editingPoint.current_value?.value_text || 
                                      editingPoint.current_value?.value_boolean;
                     if (currentVal !== undefined) {
-                      actualizarValor(editingPoint.id, currentVal, value);
+                      actualizarValor(editingPoint.id, currentVal, value as 'OK' | 'MISSING' | 'ESTIMATE');
                     }
                   }}
                 >

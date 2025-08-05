@@ -52,16 +52,29 @@ const TareasCompliance = () => {
             code,
             title,
             esrs_standard
-          ),
-          assignee:profiles (
-            full_name,
-            email
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTasks(data || []);
+
+      // Fetch assignee info separately
+      const tasksWithAssignees = await Promise.all(
+        (data || []).map(async (task) => {
+          if (task.assigned_to) {
+            const { data: assigneeData } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', task.assigned_to)
+              .single();
+            
+            return { ...task, assignee: assigneeData };
+          }
+          return task;
+        })
+      );
+
+      setTasks(tasksWithAssignees);
     } catch (error) {
       console.error('Error cargando tareas:', error);
       toast.error('Error al cargar las tareas');
