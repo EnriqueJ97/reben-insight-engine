@@ -614,9 +614,12 @@ export type Database = {
       }
       tenants: {
         Row: {
+          company_size: string | null
           created_at: string
+          description: string | null
           domain: string | null
           id: string
+          industry: string | null
           max_users: number | null
           name: string
           onboarding_completed: boolean
@@ -624,12 +627,16 @@ export type Database = {
           status: string | null
           subscription_plan: string | null
           subscription_status: string | null
+          timezone: string | null
           updated_at: string
         }
         Insert: {
+          company_size?: string | null
           created_at?: string
+          description?: string | null
           domain?: string | null
           id?: string
+          industry?: string | null
           max_users?: number | null
           name: string
           onboarding_completed?: boolean
@@ -637,12 +644,16 @@ export type Database = {
           status?: string | null
           subscription_plan?: string | null
           subscription_status?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Update: {
+          company_size?: string | null
           created_at?: string
+          description?: string | null
           domain?: string | null
           id?: string
+          industry?: string | null
           max_users?: number | null
           name?: string
           onboarding_completed?: boolean
@@ -650,6 +661,7 @@ export type Database = {
           status?: string | null
           subscription_plan?: string | null
           subscription_status?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Relationships: []

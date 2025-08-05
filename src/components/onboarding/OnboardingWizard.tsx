@@ -100,10 +100,9 @@ const OnboardingWizard = () => {
         .update({
           name: companySetup.name,
           industry: companySetup.industry,
-          size: companySetup.size,
+          company_size: companySetup.size,
           timezone: companySetup.timezone,
           description: companySetup.description,
-        // onboarding_completed: true
         })
         .eq('id', user.tenant_id);
 
