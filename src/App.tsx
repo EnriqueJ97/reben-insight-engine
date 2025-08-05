@@ -114,6 +114,38 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="settings/campaigns"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <Settings />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="settings/questions"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <Settings />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="settings/alerts"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <Settings />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="settings/integrations"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <Settings />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
           path="employees/import"
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
