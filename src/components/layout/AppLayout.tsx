@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import FloatingChatWidget from '@/components/chat/FloatingChatWidget';
 import { 
   Home, 
   Heart, 
@@ -13,8 +14,7 @@ import {
   Plug,
   LogOut,
   Menu,
-  X,
-  Brain
+  X
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,7 +29,6 @@ const AppLayout = () => {
     { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
     { name: 'Equipos', href: '/dashboard/teams', icon: Users, roles: ['HR_ADMIN'] },
     { name: 'Gestión de Equipos', href: '/dashboard/teams/manage', icon: Settings, roles: ['HR_ADMIN'] },
-    { name: 'Chat IA RRHH', href: '/dashboard/hr-chat', icon: Brain, roles: ['HR_ADMIN'] },
     { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Integraciones', href: '/dashboard/integrations', icon: Plug, roles: ['HR_ADMIN'] },
     { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
@@ -111,6 +110,9 @@ const AppLayout = () => {
           <Outlet />
         </div>
       </main>
+
+      {/* Floating Chat Widget */}
+      <FloatingChatWidget />
     </div>
   );
 };

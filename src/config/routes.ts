@@ -7,7 +7,6 @@ import TeamsManagement from '@/pages/TeamsManagement';
 import Settings from '@/pages/Settings';
 import Reports from '@/pages/Reports';
 import TeamAnalysis from '@/pages/TeamAnalysis';
-import HRChat from '@/pages/HRChat';
 import NotFound from '@/pages/NotFound';
 import JoinTeam from '@/pages/JoinTeam';
 import SuperAdmin from '@/pages/SuperAdmin';
@@ -107,13 +106,6 @@ export const routes: RouteConfig[] = [
         protected: true,
         allowedRoles: ['MANAGER', 'HR_ADMIN'],
         title: 'Análisis de Equipo'
-      },
-      {
-        path: 'hr-chat',
-        element: HRChat,
-        protected: true,
-        allowedRoles: ['HR_ADMIN'],
-        title: 'Chat HR'
       },
       {
         path: 'settings',
