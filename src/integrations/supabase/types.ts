@@ -301,6 +301,45 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_policies: {
+        Row: {
+          category: string
+          created_at: string
+          creator_id: string
+          delta_json: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          creator_id: string
+          delta_json?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          creator_id?: string
+          delta_json?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       custom_questions: {
         Row: {
           category: string
@@ -1095,6 +1134,45 @@ export type Database = {
         }
         Relationships: []
       }
+      policy_templates: {
+        Row: {
+          category: string
+          created_at: string
+          default_delta_json: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          is_recommended: boolean
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          default_delta_json?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_recommended?: boolean
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          default_delta_json?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_recommended?: boolean
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1266,6 +1344,117 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scenario_outputs: {
+        Row: {
+          baseline: number | null
+          ci_high: number | null
+          ci_low: number | null
+          created_at: string
+          delta: number | null
+          id: string
+          metric_key: string
+          projected: number | null
+          scenario_id: string
+          tenant_id: string
+        }
+        Insert: {
+          baseline?: number | null
+          ci_high?: number | null
+          ci_low?: number | null
+          created_at?: string
+          delta?: number | null
+          id?: string
+          metric_key: string
+          projected?: number | null
+          scenario_id: string
+          tenant_id: string
+        }
+        Update: {
+          baseline?: number | null
+          ci_high?: number | null
+          ci_low?: number | null
+          created_at?: string
+          delta?: number | null
+          id?: string
+          metric_key?: string
+          projected?: number | null
+          scenario_id?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      scenario_params: {
+        Row: {
+          created_at: string
+          delta_type: string
+          delta_value: number
+          id: string
+          param_key: string
+          scenario_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta_type: string
+          delta_value: number
+          id?: string
+          param_key: string
+          scenario_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          delta_type?: string
+          delta_value?: number
+          id?: string
+          param_key?: string
+          scenario_id?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      scenarios: {
+        Row: {
+          baseline_period: string
+          created_at: string
+          creator_id: string
+          custom_policy_id: string | null
+          description: string | null
+          id: string
+          name: string
+          policy_template_id: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          baseline_period: string
+          created_at?: string
+          creator_id: string
+          custom_policy_id?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          policy_template_id?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          baseline_period?: string
+          created_at?: string
+          creator_id?: string
+          custom_policy_id?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          policy_template_id?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       shift_templates: {
         Row: {

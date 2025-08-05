@@ -35,6 +35,7 @@ import Materialidad from '@/pages/sustainability/Materialidad';
 import DataHubESRS from '@/pages/sustainability/DataHubESRS';
 import TareasCompliance from '@/pages/sustainability/TareasCompliance';
 import ReportesCSRD from '@/pages/sustainability/ReportesCSRD';
+import SimuladorWhatIf from '@/pages/SimuladorWhatIf';
 
 const queryClient = new QueryClient();
 
@@ -95,6 +96,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <TeamsManagement />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/simulador"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <SimuladorWhatIf />
             </RoleProtectedRoute>
           }
         />

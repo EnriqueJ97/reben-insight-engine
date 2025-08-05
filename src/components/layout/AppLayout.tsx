@@ -22,7 +22,8 @@ import {
   Upload,
   Clock,
   Calendar,
-  Leaf
+  Leaf,
+  TrendingUp
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -67,6 +68,7 @@ const AppLayout = () => {
   ];
 
   const operationsSubItems = [
+    { name: 'Simulador What-If', href: '/dashboard/operations/simulador', icon: TrendingUp },
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
   ];
