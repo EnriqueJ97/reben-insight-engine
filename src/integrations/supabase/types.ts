@@ -331,6 +331,128 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_shift_prefs: {
+        Row: {
+          blocked: boolean
+          created_at: string
+          employee_id: string
+          id: string
+          shift_template_id: string | null
+          updated_at: string
+          weekday: number
+          weight: number
+        }
+        Insert: {
+          blocked?: boolean
+          created_at?: string
+          employee_id: string
+          id?: string
+          shift_template_id?: string | null
+          updated_at?: string
+          weekday: number
+          weight?: number
+        }
+        Update: {
+          blocked?: boolean
+          created_at?: string
+          employee_id?: string
+          id?: string
+          shift_template_id?: string | null
+          updated_at?: string
+          weekday?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_shift_prefs_shift_template_id_fkey"
+            columns: ["shift_template_id"]
+            isOneToOne: false
+            referencedRelation: "shift_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flex_policies: {
+        Row: {
+          allowed_modes: string[]
+          core_hours: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          min_on_site_days: number
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_modes?: string[]
+          core_hours?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_on_site_days?: number
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_modes?: string[]
+          core_hours?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_on_site_days?: number
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      flex_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          date: string
+          employee_id: string
+          id: string
+          reason: string | null
+          rejection_reason: string | null
+          requested_hours: Json | null
+          requested_mode: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          date: string
+          employee_id: string
+          id?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          requested_hours?: Json | null
+          requested_mode: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          date?: string
+          employee_id?: string
+          id?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          requested_hours?: Json | null
+          requested_mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integration_logs: {
         Row: {
           action: string
@@ -567,6 +689,138 @@ export type Database = {
           },
         ]
       }
+      rota_audit: {
+        Row: {
+          action: string
+          changed_by: string
+          id: string
+          new_employee_id: string | null
+          notes: string | null
+          old_employee_id: string | null
+          rota_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          action: string
+          changed_by: string
+          id?: string
+          new_employee_id?: string | null
+          notes?: string | null
+          old_employee_id?: string | null
+          rota_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string
+          id?: string
+          new_employee_id?: string | null
+          notes?: string | null
+          old_employee_id?: string | null
+          rota_id?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rota_audit_rota_id_fkey"
+            columns: ["rota_id"]
+            isOneToOne: false
+            referencedRelation: "rotas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rotas: {
+        Row: {
+          created_at: string
+          day: string
+          employee_id: string
+          id: string
+          requested_swap_to: string | null
+          shift_template_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          employee_id: string
+          id?: string
+          requested_swap_to?: string | null
+          shift_template_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          employee_id?: string
+          id?: string
+          requested_swap_to?: string | null
+          shift_template_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rotas_shift_template_id_fkey"
+            columns: ["shift_template_id"]
+            isOneToOne: false
+            referencedRelation: "shift_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_templates: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          is_active: boolean
+          min_staff: number
+          name: string
+          skill_tags: string[]
+          start_time: string
+          team_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          is_active?: boolean
+          min_staff?: number
+          name: string
+          skill_tags?: string[]
+          start_time: string
+          team_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          min_staff?: number
+          name?: string
+          skill_tags?: string[]
+          start_time?: string
+          team_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_templates_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           created_at: string
@@ -757,6 +1011,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      work_mode_logs: {
+        Row: {
+          actual_hours: Json | null
+          actual_mode: string
+          check_in_time: string | null
+          check_out_time: string | null
+          created_at: string
+          date: string
+          employee_id: string
+          id: string
+          location: string | null
+        }
+        Insert: {
+          actual_hours?: Json | null
+          actual_mode: string
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date: string
+          employee_id: string
+          id?: string
+          location?: string | null
+        }
+        Update: {
+          actual_hours?: Json | null
+          actual_mode?: string
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          employee_id?: string
+          id?: string
+          location?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

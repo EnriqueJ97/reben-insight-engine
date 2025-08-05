@@ -19,7 +19,9 @@ import {
   Mail,
   HelpCircle,
   Plug,
-  Upload
+  Upload,
+  Clock,
+  Calendar
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -32,6 +34,9 @@ const AppLayout = () => {
   );
   const [isTeamsOpen, setIsTeamsOpen] = useState(() => 
     location.pathname.startsWith('/dashboard/teams')
+  );
+  const [isOperationsOpen, setIsOperationsOpen] = useState(() => 
+    location.pathname.startsWith('/dashboard/operations')
   );
 
   const navigationItems = [
@@ -53,6 +58,11 @@ const AppLayout = () => {
   const teamsSubItems = [
     { name: 'Equipos', href: '/dashboard/teams/manage', icon: Users },
     { name: 'Importar Empleados', href: '/dashboard/teams/import', icon: Upload },
+  ];
+
+  const operationsSubItems = [
+    { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
+    { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
   ];
 
   const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));
@@ -147,6 +157,38 @@ const AppLayout = () => {
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1">
                 {teamsSubItems.map((subItem) => (
+                  <Link
+                    key={subItem.name}
+                    to={subItem.href}
+                    className={`flex items-center py-2 pl-10 pr-4 space-x-2 hover:bg-accent transition-colors ${
+                      location.pathname === subItem.href ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <subItem.icon className="w-4 h-4" />
+                    <span>{subItem.name}</span>
+                  </Link>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          
+          {/* Operations Collapsible Section - For MANAGER and HR_ADMIN */}
+          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
+            <Collapsible open={isOperationsOpen} onOpenChange={setIsOperationsOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-4 h-4" />
+                  <span>Operaciones</span>
+                </div>
+                {isOperationsOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1">
+                {operationsSubItems.map((subItem) => (
                   <Link
                     key={subItem.name}
                     to={subItem.href}

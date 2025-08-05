@@ -26,6 +26,7 @@ import EmployeeImport from '@/components/EmployeeImport.tsx';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import InviteTeamMembers from '@/components/invitations/InviteTeamMembers';
 import OnboardingCheck from '@/components/onboarding/OnboardingCheck';
+import Operations from '@/pages/Operations';
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,22 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <TeamsManagement />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/shifts"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/flexible"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <Operations />
             </RoleProtectedRoute>
           }
         />
