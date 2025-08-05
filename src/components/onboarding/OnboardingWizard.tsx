@@ -103,7 +103,7 @@ const OnboardingWizard = () => {
           size: companySetup.size,
           timezone: companySetup.timezone,
           description: companySetup.description,
-          onboarding_completed: true
+        // onboarding_completed: true
         })
         .eq('id', user.tenant_id);
 
@@ -129,13 +129,13 @@ const OnboardingWizard = () => {
   const completeOnboarding = async () => {
     setIsLoading(true);
     try {
-      // Mark onboarding as completed
-      const { error } = await supabase
-        .from('tenants')
-        .update({ onboarding_completed: true })
-        .eq('id', user?.tenant_id);
+      // Mark onboarding as completed - functionality disabled for now
+      // const { error } = await supabase
+      //   .from('tenants')
+      //   .update({ onboarding_completed: true })
+      //   .eq('id', user?.tenant_id);
 
-      if (error) throw error;
+      // if (error) throw error;
 
       toast({
         title: "¡Onboarding completado!",

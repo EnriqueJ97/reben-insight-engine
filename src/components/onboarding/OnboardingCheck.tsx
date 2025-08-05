@@ -28,7 +28,7 @@ const OnboardingCheck: React.FC<{ children: React.ReactNode }> = ({ children }) 
       if (error) throw error;
 
       // Check if onboarding is completed
-      const isCompleted = data?.onboarding_completed || false;
+      const isCompleted = false; // data?.onboarding_completed || false;
       setNeedsOnboarding(!isCompleted);
     } catch (error) {
       console.error('Error checking onboarding status:', error);

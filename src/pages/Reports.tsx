@@ -35,6 +35,16 @@ const Reports = () => {
     miembros: team.unique_employees
   })) || [];
 
+  // Define keyMetrics first
+  const keyMetrics = {
+    totalEmployees: reportData?.team_breakdown?.reduce((sum, team) => sum + team.unique_employees, 0) || 0,
+    responseRate: quickStats?.response_rate || 0,
+    riskEmployees: reportData?.critical_alerts || 0,
+    avgWellness: reportData?.wellness_score || 0,
+    monthlyTrend: reportData?.wellness_score > 70 ? '+5%' : reportData?.wellness_score > 50 ? '0%' : '-3%',
+    costSavings: reportData?.key_metrics?.estimated_cost_savings ? `€${reportData.key_metrics.estimated_cost_savings.toLocaleString()}` : '€0'
+  };
+
   const alertDistributionData = [
     { name: 'Burnout Alto', value: reportData?.critical_alerts || 0, color: '#ef4444' },
     { name: 'Riesgo Medio', value: Math.max(0, (reportData?.total_alerts || 0) - (reportData?.critical_alerts || 0)), color: '#f97316' },
@@ -81,14 +91,6 @@ const Reports = () => {
     );
   };
 
-  const keyMetrics = {
-    totalEmployees: reportData?.team_breakdown?.reduce((sum, team) => sum + team.unique_employees, 0) || 0,
-    responseRate: quickStats?.response_rate || 0,
-    riskEmployees: reportData?.critical_alerts || 0,
-    avgWellness: reportData?.wellness_score || 0,
-    monthlyTrend: reportData?.wellness_score > 70 ? '+5%' : reportData?.wellness_score > 50 ? '0%' : '-3%',
-    costSavings: reportData?.key_metrics?.estimated_cost_savings ? `€${reportData.key_metrics.estimated_cost_savings.toLocaleString()}` : '€0'
-  };
 
   return (
     <div className="space-y-6 animate-slide-up">
