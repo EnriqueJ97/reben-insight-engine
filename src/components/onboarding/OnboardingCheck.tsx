@@ -9,8 +9,10 @@ const OnboardingCheck: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkOnboardingStatus();
-  }, [user, tenant]);
+    if (user?.tenant_id) {
+      checkOnboardingStatus();
+    }
+  }, [user?.tenant_id]); // Solo re-ejecutar cuando cambie el tenant_id
 
   const checkOnboardingStatus = async () => {
     if (!user?.tenant_id) {

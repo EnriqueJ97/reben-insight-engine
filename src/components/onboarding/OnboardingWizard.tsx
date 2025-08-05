@@ -126,15 +126,17 @@ const OnboardingWizard = () => {
   };
 
   const completeOnboarding = async () => {
+    if (!user?.tenant_id) return;
+    
     setIsLoading(true);
     try {
-      // Mark onboarding as completed - functionality disabled for now
-      // const { error } = await supabase
-      //   .from('tenants')
-      //   .update({ onboarding_completed: true })
-      //   .eq('id', user?.tenant_id);
+      // Mark onboarding as completed
+      const { error } = await supabase
+        .from('tenants')
+        .update({ onboarding_completed: true })
+        .eq('id', user.tenant_id);
 
-      // if (error) throw error;
+      if (error) throw error;
 
       toast({
         title: "¡Onboarding completado!",
