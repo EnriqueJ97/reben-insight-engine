@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeams } from '@/hooks/useTeams';
@@ -11,8 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Users, Plus, Settings, Trash2, UserPlus, Shield, Link, Copy } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Plus, Settings, Trash2, UserPlus, Shield, Link, Copy, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import EmployeeImport from '@/components/EmployeeImport';
 
 const TeamsManagement = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ const TeamsManagement = () => {
   const [formData, setFormData] = useState({ name: '', managerId: '' });
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [selectedTeamForAssignment, setSelectedTeamForAssignment] = useState('');
+  const [activeTab, setActiveTab] = useState('teams');
 
   // Filter profiles to get potential managers (MANAGER role) and all employees
   const managers = profiles.filter(p => p.role === 'MANAGER');
@@ -164,190 +166,208 @@ const TeamsManagement = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center space-x-2">
-            <Users className="h-8 w-8 text-primary" />
-            <span>Gestión de Equipos</span>
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Administra los equipos y asigna empleados y managers
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Asignar Empleado
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Asignar Empleado a Equipo</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Empleado</Label>
-                  <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un empleado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {profiles.map((profile) => (
-                        <SelectItem key={profile.id} value={profile.id}>
-                          {profile.full_name || profile.email} 
-                          {profile.team_id && <span className="text-muted-foreground"> (Ya asignado)</span>}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Equipo</Label>
-                  <Select value={selectedTeamForAssignment} onValueChange={setSelectedTeamForAssignment}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un equipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Sin equipo</SelectItem>
-                      {teams.map((team) => (
-                        <SelectItem key={team.id} value={team.id}>
-                          {team.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button 
-                  onClick={handleAssignEmployee} 
-                  disabled={!selectedEmployee || !selectedTeamForAssignment}
-                  className="w-full"
-                >
-                  Asignar
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Crear Equipo
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Crear Nuevo Equipo</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nombre del Equipo</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ej: Equipo de Desarrollo"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="manager">Manager (Opcional)</Label>
-                  <Select value={formData.managerId} onValueChange={(value) => setFormData({ ...formData, managerId: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un manager" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no-manager">Sin manager</SelectItem>
-                      {managers.map((manager) => (
-                        <SelectItem key={manager.id} value={manager.id}>
-                          {manager.full_name || manager.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={handleCreateTeam} disabled={!formData.name} className="w-full">
-                  Crear Equipo
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+      <div className="flex items-center gap-2 mb-6">
+        <Users className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold">Gestión de Equipos</h1>
       </div>
 
-      {/* Teams Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teams.map((team) => (
-          <Card key={team.id}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>{team.name}</span>
-                <div className="flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openInviteDialog(team)}
-                    title="Generar enlace de invitación"
-                  >
-                    <Link className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEditDialog(team)}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteTeam(team)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Manager:</span>
-                  <Badge variant={team.manager ? "default" : "secondary"}>
-                    {team.manager?.full_name || team.manager?.email || 'Sin asignar'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Miembros:</span>
-                  <Badge variant="outline">
-                    {team.member_count || 0} persona{(team.member_count || 0) !== 1 ? 's' : ''}
-                  </Badge>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Creado: {new Date(team.created_at).toLocaleDateString('es-ES')}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="teams" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Equipos
+          </TabsTrigger>
+          <TabsTrigger value="import" className="flex items-center gap-2">
+            <Upload className="w-4 h-4" />
+            Importar Empleados
+          </TabsTrigger>
+        </TabsList>
 
-      {teams.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No hay equipos creados</h3>
-            <p className="text-muted-foreground mb-4">
-              Crea tu primer equipo para comenzar a organizar a los empleados.
+        <TabsContent value="teams" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground">
+              Administra los equipos y asigna empleados y managers
             </p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primer Equipo
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+            <div className="flex space-x-2">
+              <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Asignar Empleado
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Asignar Empleado a Equipo</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Empleado</Label>
+                      <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un empleado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {profiles.map((profile) => (
+                            <SelectItem key={profile.id} value={profile.id}>
+                              {profile.full_name || profile.email} 
+                              {profile.team_id && <span className="text-muted-foreground"> (Ya asignado)</span>}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Equipo</Label>
+                      <Select value={selectedTeamForAssignment} onValueChange={setSelectedTeamForAssignment}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un equipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Sin equipo</SelectItem>
+                          {teams.map((team) => (
+                            <SelectItem key={team.id} value={team.id}>
+                              {team.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button 
+                      onClick={handleAssignEmployee} 
+                      disabled={!selectedEmployee || !selectedTeamForAssignment}
+                      className="w-full"
+                    >
+                      Asignar
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear Equipo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Crear Nuevo Equipo</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Nombre del Equipo</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Ej: Equipo de Desarrollo"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="manager">Manager (Opcional)</Label>
+                      <Select value={formData.managerId} onValueChange={(value) => setFormData({ ...formData, managerId: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un manager" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="no-manager">Sin manager</SelectItem>
+                          {managers.map((manager) => (
+                            <SelectItem key={manager.id} value={manager.id}>
+                              {manager.full_name || manager.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={handleCreateTeam} disabled={!formData.name} className="w-full">
+                      Crear Equipo
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          {/* Teams Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {teams.map((team) => (
+              <Card key={team.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{team.name}</span>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openInviteDialog(team)}
+                        title="Generar enlace de invitación"
+                      >
+                        <Link className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(team)}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteTeam(team)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Manager:</span>
+                      <Badge variant={team.manager ? "default" : "secondary"}>
+                        {team.manager?.full_name || team.manager?.email || 'Sin asignar'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Miembros:</span>
+                      <Badge variant="outline">
+                        {team.member_count || 0} persona{(team.member_count || 0) !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Creado: {new Date(team.created_at).toLocaleDateString('es-ES')}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {teams.length === 0 && (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No hay equipos creados</h3>
+                <p className="text-muted-foreground mb-4">
+                  Crea tu primer equipo para comenzar a organizar a los empleados.
+                </p>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear Primer Equipo
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="import" className="space-y-6">
+          <EmployeeImport />
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
