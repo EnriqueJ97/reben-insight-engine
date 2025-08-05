@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FloatingChatWidget from '@/components/chat/FloatingChatWidget';
 import { 
   Home, 
@@ -10,11 +11,14 @@ import {
   AlertTriangle, 
   BarChart3, 
   Settings, 
-  Upload,
-  Plug,
   LogOut,
   Menu,
-  X
+  X,
+  ChevronDown,
+  ChevronRight,
+  Mail,
+  HelpCircle,
+  Plug
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -22,6 +26,9 @@ const AppLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(() => 
+    location.pathname.startsWith('/dashboard/settings')
+  );
 
   const navigationItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
@@ -30,8 +37,14 @@ const AppLayout = () => {
     { name: 'Gestión de Equipos', href: '/dashboard/teams/manage', icon: Users, roles: ['HR_ADMIN'] },
     { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
-    { name: 'Configuración', href: '/dashboard/settings', icon: Settings, roles: ['HR_ADMIN'] },
     { name: 'Super Admin', href: '/dashboard/super-admin', icon: Settings, roles: ['SUPER_ADMIN'] },
+  ];
+
+  const settingsSubItems = [
+    { name: 'Campañas', href: '/dashboard/settings/campaigns', icon: Mail },
+    { name: 'Preguntas', href: '/dashboard/settings/questions', icon: HelpCircle },
+    { name: 'Alertas', href: '/dashboard/settings/alerts', icon: AlertTriangle },
+    { name: 'Integraciones', href: '/dashboard/settings/integrations', icon: Plug },
   ];
 
   const filteredNavigationItems = navigationItems.filter(item => item.roles.includes(user?.role || 'EMPLOYEE'));
@@ -77,6 +90,38 @@ const AppLayout = () => {
               <span>{item.name}</span>
             </Link>
           ))}
+          
+          {/* Settings Collapsible Section - Only for HR_ADMIN */}
+          {user?.role === 'HR_ADMIN' && (
+            <Collapsible open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-4 h-4" />
+                  <span>Configuración</span>
+                </div>
+                {isSettingsOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1">
+                {settingsSubItems.map((subItem) => (
+                  <Link
+                    key={subItem.name}
+                    to={subItem.href}
+                    className={`flex items-center py-2 pl-10 pr-4 space-x-2 hover:bg-accent transition-colors ${
+                      location.pathname === subItem.href ? 'bg-accent font-medium text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <subItem.icon className="w-4 h-4" />
+                    <span>{subItem.name}</span>
+                  </Link>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </nav>
 
         {/* Logout Button */}

@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,37 @@ import { Settings as SettingsIcon, Mail, HelpCircle, AlertTriangle, Plug } from 
 
 export default function Settings() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('campaigns');
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Extract the active tab from URL path
+  const getActiveTabFromPath = (path: string) => {
+    if (path.includes('/campaigns')) return 'campaigns';
+    if (path.includes('/questions')) return 'questions';
+    if (path.includes('/alerts')) return 'alerts';
+    if (path.includes('/integrations')) return 'integrations';
+    return 'campaigns'; // default
+  };
+
+  const [activeTab, setActiveTab] = useState(() => getActiveTabFromPath(location.pathname));
+
+  // Update tab when URL changes
+  useEffect(() => {
+    const newTab = getActiveTabFromPath(location.pathname);
+    setActiveTab(newTab);
+  }, [location.pathname]);
+
+  // Navigate to first tab if on base settings page
+  useEffect(() => {
+    if (location.pathname === '/dashboard/settings') {
+      navigate('/dashboard/settings/campaigns', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    navigate(`/dashboard/settings/${value}`);
+  };
 
   // For now, we'll assume users are HR_ADMIN. In a real app, this would come from the user's profile
   const isHRAdmin = true; // This should be fetched from user profile/role
@@ -25,7 +56,7 @@ export default function Settings() {
         <Badge variant="outline">HR_ADMIN</Badge>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="campaigns" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />

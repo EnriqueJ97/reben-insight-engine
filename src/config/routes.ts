@@ -112,7 +112,37 @@ export const routes: RouteConfig[] = [
         element: Settings,
         protected: true,
         allowedRoles: ['HR_ADMIN'],
-        title: 'Configuración'
+        title: 'Configuración',
+        children: [
+          {
+            path: 'campaigns',
+            element: Settings,
+            protected: true,
+            allowedRoles: ['HR_ADMIN'],
+            title: 'Campañas'
+          },
+          {
+            path: 'questions',
+            element: Settings,
+            protected: true,
+            allowedRoles: ['HR_ADMIN'],
+            title: 'Preguntas'
+          },
+          {
+            path: 'alerts',
+            element: Settings,
+            protected: true,
+            allowedRoles: ['HR_ADMIN'],
+            title: 'Alertas'
+          },
+          {
+            path: 'integrations',
+            element: Settings,
+            protected: true,
+            allowedRoles: ['HR_ADMIN'],
+            title: 'Integraciones'
+          }
+        ]
       },
       {
         path: 'employees/import',
