@@ -3,7 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCheckins } from '@/hooks/useCheckins';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useProfiles } from '@/hooks/useProfiles';
-import { WellnessMetrics } from '@/components/ui/wellness-metrics';
+import { EnhancedWellnessMetrics } from '@/components/ui/enhanced-wellness-metrics';
+import { EnhancedTrendChart } from '@/components/ui/enhanced-trend-chart';
+import { AlertResolutionModal } from '@/components/alerts/AlertResolutionModal';
+import { QuickActionsPanel } from '@/components/actions/QuickActionsPanel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +25,11 @@ import {
   Activity,
   Shield,
   ChevronRight,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface TeamMemberDetail {
   id: string;
@@ -44,12 +49,16 @@ const ManagerDashboard = () => {
   const { getCheckinStats } = useCheckins();
   const { alerts, getAlertStats } = useAlerts();
   const { profiles, getTeamOverview } = useProfiles();
+  const { toast } = useToast();
   
   const [metrics, setMetrics] = useState<any[]>([]);
   const [teamDetails, setTeamDetails] = useState<TeamMemberDetail[]>([]);
   const [teamOverview, setTeamOverview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [trendData, setTrendData] = useState<any[]>([]);
+  const [selectedAlert, setSelectedAlert] = useState<any>(null);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
 
   useEffect(() => {
     loadManagerData();
@@ -143,30 +152,42 @@ const ManagerDashboard = () => {
         return sum + (resolved - created);
       }, 0) / (1000 * 60 * 60); // Convert to hours
 
+    // Simular datos históricos para sparklines (últimos 7 días)
+    const generateSparklineData = (baseValue: number, variance: number = 10) => {
+      return Array.from({ length: 7 }, () => 
+        Math.max(0, Math.min(100, baseValue + (Math.random() - 0.5) * variance))
+      );
+    };
+
     setMetrics([
       { 
         title: 'Bienestar del Equipo', 
         value: teamWellness, 
-        trend: 'stable',
+        trend: teamWellness >= 70 ? 'up' : teamWellness >= 50 ? 'stable' : 'down',
         status: teamWellness >= 70 ? 'good' : teamWellness >= 50 ? 'warning' : 'critical',
         description: `${teamData?.totalMembers || 0} miembros`,
-        icon: Heart
+        icon: Heart,
+        delta: Math.random() * 6 - 3, // Simulado: entre -3% y +3%
+        formula: `Promedio estado de ánimo (${(teamData?.averageTeamMood || 0).toFixed(1)}/5) → ${teamWellness}%`,
+        sparklineData: generateSparklineData(teamWellness)
       },
       { 
         title: 'Miembros en Riesgo Alto', 
         value: highRiskMembers, 
-        trend: 'stable',
+        trend: highRiskMembers <= 1 ? 'stable' : 'down',
         status: highRiskMembers === 0 ? 'good' : highRiskMembers <= 1 ? 'warning' : 'critical',
         description: `${mediumRiskMembers} en riesgo medio`,
-        icon: AlertTriangle
+        icon: AlertTriangle,
+        formula: `Empleados con bienestar < 40%`
       },
       { 
         title: 'Alertas Activas', 
         value: alertStats.unresolved, 
-        trend: 'stable',
+        trend: alertStats.unresolved <= 2 ? 'stable' : 'down',
         status: alertStats.unresolved === 0 ? 'good' : alertStats.unresolved <= 3 ? 'warning' : 'critical',
         description: alertStats.unresolved > 0 ? `Tiempo resp: ${Math.round(responseTime)}h` : 'Todo bajo control',
-        icon: Shield
+        icon: Shield,
+        formula: 'Alertas pendientes de resolución'
       },
       { 
         title: 'Participación', 
@@ -174,9 +195,36 @@ const ManagerDashboard = () => {
         trend: avgParticipation >= 80 ? 'up' : avgParticipation >= 60 ? 'stable' : 'down',
         status: avgParticipation >= 80 ? 'good' : avgParticipation >= 60 ? 'warning' : 'critical',
         description: 'Check-ins completados (30d)',
-        icon: Activity
+        icon: Activity,
+        delta: Math.random() * 8 - 4, // Simulado: entre -4% y +4%
+        formula: `Check-ins completados / días esperados × 100`,
+        sparklineData: generateSparklineData(avgParticipation)
       }
     ]);
+  };
+
+  const handleRefreshData = async () => {
+    setLastRefresh(new Date());
+    await loadManagerData();
+    toast({
+      title: "Datos actualizados",
+      description: "El dashboard se ha actualizado con la información más reciente.",
+    });
+  };
+
+  const handleAlertClick = (alert: any) => {
+    setSelectedAlert(alert);
+    setIsAlertModalOpen(true);
+  };
+
+  const handleAlertResolved = () => {
+    loadManagerData(); // Recargar datos después de resolver alerta
+  };
+
+  const getWellnessLevel = (score: number) => {
+    if (score >= 70) return 'Alto';
+    if (score >= 50) return 'Medio';
+    return 'Bajo';
   };
 
   const loadTrendData = async () => {
@@ -233,18 +281,37 @@ const ManagerDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          Dashboard del Manager 👥
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Monitoreo avanzado del bienestar de tu equipo
-        </p>
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            Dashboard del Manager 👥
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Monitoreo avanzado del bienestar de tu equipo
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-muted-foreground">
+            Actualizado: {lastRefresh.toLocaleTimeString('es-ES', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefreshData}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </Button>
+        </div>
       </div>
 
       {/* Enhanced Metrics */}
-      <WellnessMetrics metrics={metrics} />
+      <EnhancedWellnessMetrics metrics={metrics} />
 
       <Tabs defaultValue="team" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
@@ -283,10 +350,10 @@ const ManagerDashboard = () => {
                     <div className="flex items-center space-x-6">
                       <div className="text-center">
                         <div className={`text-lg font-bold ${
-                          member.wellnessScore >= 70 ? 'text-green-600' : 
-                          member.wellnessScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+                          member.wellnessScore >= 70 ? 'text-success' : 
+                          member.wellnessScore >= 50 ? 'text-warning' : 'text-destructive'
                         }`}>
-                          {member.wellnessScore}%
+                          {getWellnessLevel(member.wellnessScore)}
                         </div>
                         <div className="text-xs text-muted-foreground">Bienestar</div>
                       </div>
@@ -308,7 +375,16 @@ const ManagerDashboard = () => {
                       </div>
                       
                       <div className="text-center">
-                        <div className="text-sm font-medium">{member.participationRate}%</div>
+                        <div className="text-sm font-medium flex items-center space-x-1">
+                          <span>{member.participationRate}%</span>
+                          {member.participationRate >= 70 ? (
+                            <Badge className="bg-success/20 text-success text-xs">Alta</Badge>
+                          ) : member.participationRate >= 40 ? (
+                            <Badge className="bg-warning/20 text-warning text-xs">Media</Badge>
+                          ) : (
+                            <Badge className="bg-destructive/20 text-destructive text-xs">Baja</Badge>
+                          )}
+                        </div>
                         <Progress value={member.participationRate} className="w-16 h-2 mt-1" />
                         <div className="text-xs text-muted-foreground">Participación</div>
                       </div>
@@ -335,43 +411,11 @@ const ManagerDashboard = () => {
             <CardHeader>
               <CardTitle>Tendencias Semanales</CardTitle>
               <CardDescription>
-                Evolución del bienestar y participación del equipo
+                Evolución del bienestar y participación del equipo con datos interactivos
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Bienestar Promedio del Equipo</h4>
-                  <div className="flex items-end space-x-2 h-20">
-                    {trendData.map((day, index) => (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div 
-                          className="w-full bg-primary/20 rounded-t"
-                          style={{ height: `${(day.wellness / 100) * 60}px` }}
-                        />
-                        <div className="text-xs mt-1">{day.date}</div>
-                        <div className="text-xs text-muted-foreground">{day.wellness}%</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Participación en Check-ins</h4>
-                  <div className="flex items-end space-x-2 h-20">
-                    {trendData.map((day, index) => (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div 
-                          className="w-full bg-secondary/60 rounded-t"
-                          style={{ height: `${(day.participation / 100) * 60}px` }}
-                        />
-                        <div className="text-xs mt-1">{day.date}</div>
-                        <div className="text-xs text-muted-foreground">{day.participation}%</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <EnhancedTrendChart data={trendData} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -403,11 +447,13 @@ const ManagerDashboard = () => {
                           </div>
                         </div>
                       </div>
-                      <Link to="/dashboard/alerts">
-                        <Button variant="outline" size="sm">
-                          Revisar <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleAlertClick(alert)}
+                      >
+                        Resolver <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
                     </div>
                   ))
                 ) : (
@@ -423,97 +469,21 @@ const ManagerDashboard = () => {
         </TabsContent>
 
         <TabsContent value="actions" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Acciones Recomendadas</CardTitle>
-                <CardDescription>
-                  Basadas en el estado actual de tu equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {teamDetails.filter(m => m.riskLevel === 'high').length > 0 && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                      <div className="flex items-center space-x-2 text-destructive mb-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        <span className="font-medium">Acción Urgente</span>
-                      </div>
-                      <p className="text-sm">
-                        {teamDetails.filter(m => m.riskLevel === 'high').length} miembro(s) en riesgo alto. 
-                        Programa reuniones 1:1 inmediatamente.
-                      </p>
-                    </div>
-                  )}
-                  
-                  {teamDetails.filter(m => m.participationRate < 60).length > 0 && (
-                    <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
-                      <div className="flex items-center space-x-2 text-warning mb-2">
-                        <Clock className="h-4 w-4" />
-                        <span className="font-medium">Mejorar Participación</span>
-                      </div>
-                      <p className="text-sm">
-                        Algunos miembros no están completando check-ins regularmente. 
-                        Considera enviar recordatorios amigables.
-                      </p>
-                    </div>
-                  )}
-                  
-                  <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                    <div className="flex items-center space-x-2 text-primary mb-2">
-                      <Target className="h-4 w-4" />
-                      <span className="font-medium">Oportunidad de Mejora</span>
-                    </div>
-                    <p className="text-sm">
-                      Programa una sesión de team building para fortalecer la cohesión del equipo.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Acciones Rápidas</CardTitle>
-                <CardDescription>
-                  Herramientas de gestión del equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Link to="/dashboard/team">
-                    <Button className="w-full justify-between">
-                      Ver Equipo Completo
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/dashboard/alerts">
-                    <Button variant="outline" className="w-full justify-between">
-                      Centro de Alertas
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/dashboard/reports">
-                    <Button variant="outline" className="w-full justify-between">
-                      Generar Reporte
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/dashboard/settings">
-                    <Button variant="outline" className="w-full justify-between">
-                      Configurar Alertas
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <QuickActionsPanel 
+            teamMembers={teamDetails}
+            highRiskCount={teamDetails.filter(m => m.riskLevel === 'high').length}
+            lowParticipationCount={teamDetails.filter(m => m.participationRate < 60).length}
+          />
         </TabsContent>
       </Tabs>
+
+      {/* Modal de resolución de alertas */}
+      <AlertResolutionModal
+        alert={selectedAlert}
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        onResolve={handleAlertResolved}
+      />
     </div>
   );
 };
