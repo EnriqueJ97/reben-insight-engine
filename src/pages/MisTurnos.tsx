@@ -3,10 +3,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Settings, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, RefreshCw, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CalendarView from '@/components/shifts/CalendarView';
+import ShiftPreferencesGrid from '@/components/shifts/ShiftPreferencesGrid';
 
 const MisTurnos = () => {
   const { user } = useAuth();
@@ -14,6 +15,7 @@ const MisTurnos = () => {
   const [preferencias, setPreferencias] = useState<any[]>([]);
   const [plantillasTurnos, setPlantillasTurnos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
 
   useEffect(() => {
     if (user) {
@@ -119,10 +121,6 @@ const MisTurnos = () => {
     }
   };
 
-  const diasSemana = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'
-  ];
-
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -134,112 +132,110 @@ const MisTurnos = () => {
     );
   }
 
+  const renderListView = () => (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          Turnos Asignados (Próximos 14 días)
+        </CardTitle>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setViewMode('calendar')}
+        >
+          <LayoutGrid className="w-4 h-4 mr-2" />
+          Vista Calendario
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {turnos.length > 0 ? (
+          <div className="grid gap-4">
+            {turnos.map((turno) => (
+              <div key={turno.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-1">
+                  <p className="font-medium">{formatearFecha(turno.day)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {turno.shift_templates?.name} • 
+                    {formatearHora(turno.shift_templates?.start_time)} - 
+                    {formatearHora(turno.shift_templates?.end_time)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded text-xs ${
+                    turno.status === 'AUTO' ? 'bg-green-100 text-green-800' :
+                    turno.status === 'MANUAL' ? 'bg-blue-100 text-blue-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {turno.status === 'AUTO' ? 'Automático' : 
+                     turno.status === 'MANUAL' ? 'Manual' : 
+                     'Intercambio Solicitado'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No tienes turnos asignados próximamente</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Clock className="w-6 h-6 text-primary" />
-        <h1 className="text-3xl font-bold">Mis Turnos</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Clock className="w-6 h-6 text-primary" />
+          <h1 className="text-3xl font-bold">Mis Turnos</h1>
+        </div>
+        
+        <Button
+          variant="outline"
+          onClick={cargarDatos}
+          disabled={loading}
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Actualizar
+        </Button>
       </div>
 
       <Tabs defaultValue="turnos" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="turnos">Próximos Turnos</TabsTrigger>
-          <TabsTrigger value="preferencias">Mis Preferencias</TabsTrigger>
+          <TabsTrigger value="turnos">Mis Turnos</TabsTrigger>
+          <TabsTrigger value="preferencias">Preferencias</TabsTrigger>
         </TabsList>
 
         <TabsContent value="turnos" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Turnos Asignados (Próximos 14 días)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {turnos.length > 0 ? (
-                <div className="grid gap-4">
-                  {turnos.map((turno) => (
-                    <div key={turno.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <p className="font-medium">{formatearFecha(turno.day)}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {turno.shift_templates?.name} • 
-                          {formatearHora(turno.shift_templates?.start_time)} - 
-                          {formatearHora(turno.shift_templates?.end_time)}
-                        </p>
-                      </div>
-                      <Badge variant={obtenerColorEstado(turno.status)}>
-                        {turno.status === 'AUTO' ? 'Automático' : 
-                         turno.status === 'MANUAL' ? 'Manual' : 
-                         'Intercambio Solicitado'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No tienes turnos asignados próximamente</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {viewMode === 'calendar' ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Calendario de Turnos</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="w-4 h-4 mr-2" />
+                  Vista Lista
+                </Button>
+              </div>
+              <CalendarView shifts={turnos} />
+            </div>
+          ) : (
+            renderListView()
+          )}
         </TabsContent>
 
         <TabsContent value="preferencias" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Configurar Preferencias de Turnos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {diasSemana.map((dia, index) => (
-                  <div key={index} className="space-y-3">
-                    <h4 className="font-medium">{dia}</h4>
-                    <div className="grid gap-2">
-                      {plantillasTurnos.map((plantilla) => {
-                        const preferenciaActual = preferencias.find(
-                          p => p.weekday === index && p.shift_template_id === plantilla.id
-                        );
-                        
-                        return (
-                          <div key={plantilla.id} className="flex items-center justify-between p-3 border rounded">
-                            <div>
-                              <p className="font-medium">{plantilla.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {formatearHora(plantilla.start_time)} - {formatearHora(plantilla.end_time)}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              {[0, 1, 2, 3, 4, 5].map((peso) => (
-                                <Button
-                                  key={peso}
-                                  size="sm"
-                                  variant={preferenciaActual?.weight === peso ? "default" : "outline"}
-                                  onClick={() => actualizarPreferencia(index, plantilla.id, peso)}
-                                >
-                                  {peso}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Sistema de Puntuación:</strong> 0 = No disponible, 1 = Muy baja preferencia, 
-                  5 = Máxima preferencia. El sistema usará estas preferencias para asignar turnos automáticamente.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ShiftPreferencesGrid
+            plantillasTurnos={plantillasTurnos}
+            preferencias={preferencias}
+            onUpdatePreference={actualizarPreferencia}
+          />
         </TabsContent>
       </Tabs>
     </div>
