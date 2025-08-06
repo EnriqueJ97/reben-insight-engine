@@ -50,7 +50,9 @@ const AppRoutes = () => {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <AppLayout />
+            <OnboardingCheck>
+              <AppLayout />
+            </OnboardingCheck>
           </ProtectedRoute>
         }
       >
@@ -280,9 +282,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <OnboardingCheck>
-            <AppRoutes />
-          </OnboardingCheck>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
