@@ -11,6 +11,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useReports, ReportData } from '@/hooks/useReports';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
+import { PremiumTrendChart } from '@/components/reports/PremiumTrendChart';
+import { EnhancedTeamsSection } from '@/components/reports/EnhancedTeamsSection';
+import { EnhancedAlertsSection } from '@/components/reports/EnhancedAlertsSection';
+import { EnhancedImpactSection } from '@/components/reports/EnhancedImpactSection';
 import { StoryTiles } from '@/components/reports/StoryTiles';
 import { RiskHeatMap } from '@/components/reports/RiskHeatMap';
 import { InterventionTimeline } from '@/components/reports/InterventionTimeline';
@@ -518,333 +522,71 @@ const Reports = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="trends">
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tendencia de Bienestar - Últimos 30 días</CardTitle>
-                <CardDescription>
-                  Evolución de las métricas principales de bienestar laboral
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={wellnessTrendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip 
-                      formatter={(value, name) => [`${value}%`, name === 'bienestar' ? 'Bienestar' : name === 'burnout' ? 'Riesgo Burnout' : 'Satisfacción']}
-                    />
-                    <Line type="monotone" dataKey="bienestar" stroke="#3b82f6" strokeWidth={3} name="bienestar" />
-                    <Line type="monotone" dataKey="burnout" stroke="#ef4444" strokeWidth={2} name="burnout" />
-                    <Line type="monotone" dataKey="satisfaccion" stroke="#10b981" strokeWidth={2} name="satisfaccion" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="trends" className="space-y-6">
+          <PremiumTrendChart 
+            data={wellnessTrendData.map(item => ({
+              date: item.date,
+              wellness: item.bienestar,
+              participation: 85,
+              alerts: Math.floor(Math.random() * 5),
+              burnout_risk: item.burnout,
+              satisfaction: item.satisfaccion,
+              productivity: Math.floor(Math.random() * 20) + 80
+            }))}
+            onDataPointClick={(data) => handleKPIClick('Trends', data.wellness || 0)}
+          />
         </TabsContent>
 
-        <TabsContent value="teams">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Comparación por Equipos</CardTitle>
-                <CardDescription>
-                  Nivel de bienestar promedio por equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={teamComparisonData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="team" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip formatter={(value) => [`${value}%`, 'Bienestar']} />
-                    <Bar dataKey="bienestar" fill="#3b82f6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Ranking de Equipos</CardTitle>
-                <CardDescription>
-                  Equipos ordenados por nivel de bienestar
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {teamComparisonData
-                    .sort((a, b) => b.bienestar - a.bienestar)
-                    .map((team, index) => (
-                      <div key={team.team} className="flex items-center justify-between p-3 rounded-lg border">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                            index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                            index === 1 ? 'bg-gray-100 text-gray-800' :
-                            index === 2 ? 'bg-orange-100 text-orange-800' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="font-medium">{team.team}</p>
-                            <p className="text-sm text-muted-foreground">{team.miembros} miembros</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-primary">{team.bienestar}%</div>
-                          <Badge variant={team.bienestar >= 80 ? "default" : team.bienestar >= 70 ? "secondary" : "destructive"}>
-                            {team.bienestar >= 80 ? 'Excelente' : team.bienestar >= 70 ? 'Bueno' : 'Necesita Atención'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="teams" className="space-y-6">
+          <EnhancedTeamsSection 
+            teamData={teamComparisonData.map(team => ({
+              id: team.team,
+              name: team.team,
+              wellness_score: team.bienestar,
+              participation_rate: Math.floor(Math.random() * 20) + 80,
+              member_count: team.miembros,
+              risk_level: team.bienestar >= 80 ? 'low' : team.bienestar >= 70 ? 'medium' : 'high' as 'low' | 'medium' | 'high',
+              trend: Math.floor(Math.random() * 10) - 5,
+              burnout_risk: Math.max(0, 100 - team.bienestar),
+              satisfaction: Math.max(0, team.bienestar - 5),
+              productivity: Math.floor(Math.random() * 20) + 75,
+              manager: 'Manager'
+            }))}
+            onTeamClick={(teamId) => handleKPIClick('Team', teamId.length)}
+          />
+          
+          <RiskHeatMap 
+            reportData={reportData} 
+            onCellClick={handleHeatMapClick}
+          />
         </TabsContent>
 
-        <TabsContent value="alerts">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribución de Alertas</CardTitle>
-                <CardDescription>
-                  Tipos de alertas más frecuentes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={alertDistributionData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {alertDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Alertas Críticas</CardTitle>
-                <CardDescription>
-                  Empleados que requieren atención inmediata
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { name: 'María Rodríguez', team: 'Desarrollo', alert: 'Burnout Alto', days: 5, severity: 'high' },
-                    { name: 'Carlos Méndez', team: 'Ventas', alert: 'Fuga Talento', days: 3, severity: 'medium' },
-                    { name: 'Ana Torres', team: 'Marketing', alert: 'Insatisfacción', days: 7, severity: 'medium' },
-                    { name: 'Luis García', team: 'Operaciones', alert: 'Baja Autoeficacia', days: 2, severity: 'low' }
-                  ].map((alert, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border-l-4 border-l-warning bg-warning/5">
-                      <div>
-                        <p className="font-medium">{alert.name}</p>
-                        <p className="text-sm text-muted-foreground">{alert.team}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'outline'}>
-                          {alert.alert}
-                        </Badge>
-                        <p className="text-xs text-muted-foreground mt-1">{alert.days} días</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="alerts" className="space-y-6">
+          <EnhancedAlertsSection 
+            alertData={[
+              { id: '1', type: 'burnout', severity: 'critical', employee_alias: 'EMP-A1B2', team: 'Desarrollo', created_at: '2024-01-15', resolved: false, impact_score: 8, trends: [] },
+              { id: '2', type: 'high_stress', severity: 'high', employee_alias: 'EMP-C3D4', team: 'Marketing', created_at: '2024-01-14', resolved: false, impact_score: 6, trends: [] },
+              { id: '3', type: 'low_engagement', severity: 'medium', employee_alias: 'EMP-E5F6', team: 'Ventas', created_at: '2024-01-13', resolved: true, resolution_time: 24, impact_score: 4, trends: [] },
+              { id: '4', type: 'absence_pattern', severity: 'low', employee_alias: 'EMP-G7H8', team: 'Operaciones', created_at: '2024-01-12', resolved: false, impact_score: 3, trends: [] }
+            ]} 
+            onAlertClick={(alertId) => handleKPIClick('Alert', alertId.length)}
+          />
+          
+          <InterventionTimeline period={selectedPeriod} />
         </TabsContent>
 
-        <TabsContent value="impact">
-          <div className="space-y-6">
-            {/* Economic impact explanation */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5" />
-                  <span>Cómo Calculamos el Impacto Económico</span>
-                </CardTitle>
-                <CardDescription>
-                  Metodología basada en estudios internacionales y datos del mercado español
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">💰 Costes de Rotación</h4>
-                    <div className="text-sm space-y-2">
-                      <div className="flex justify-between">
-                        <span>Reclutamiento y selección:</span>
-                        <span className="font-medium">15-25% salario</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Formación y adaptación:</span>
-                        <span className="font-medium">20-50% salario</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Pérdida productividad:</span>
-                        <span className="font-medium">25-75% salario</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="font-semibold">Total promedio:</span>
-                        <span className="font-semibold text-destructive">75-150% salario</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">🏥 Costes de Ausentismo</h4>
-                    <div className="text-sm space-y-2">
-                      <div className="flex justify-between">
-                        <span>Días perdidos (promedio):</span>
-                        <span className="font-medium">12 días/año</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Coste por día perdido:</span>
-                        <span className="font-medium">€180-350</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Sustituciones temporales:</span>
-                        <span className="font-medium">+25% coste</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="font-semibold">Total por empleado/año:</span>
-                        <span className="font-semibold text-warning">€2,700-5,250</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <h5 className="font-semibold text-primary mb-2">🎯 Fórmula de Cálculo ROI</h5>
-                  <code className="text-sm bg-background p-3 rounded block">
-                    ROI = (Ahorro en Rotación + Ahorro en Ausentismo + Ganancia Productividad) / Inversión Programa
-                  </code>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    * Basado en estudios de Harvard Business Review y Gallup sobre programas de bienestar empresarial
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5" />
-                  <span>Análisis de Impacto Económico</span>
-                </CardTitle>
-                <CardDescription>
-                  Costes actuales vs. costes potenciales sin programa de bienestar
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={costImpactData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="categoria" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`€${value.toLocaleString()}`, '']} />
-                    <Bar dataKey="costo_actual" fill="#10b981" name="Coste Actual" />
-                    <Bar dataKey="costo_potencial" fill="#ef4444" name="Coste Potencial" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-success/5 border-success/20">
-                <CardHeader>
-                  <CardTitle className="text-success flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>ROI del Programa</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-success mb-2">3.2:1</div>
-                  <p className="text-sm text-muted-foreground">
-                    Por cada €1 invertido en bienestar, se ahorran €3.2 en costes
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-primary/5 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-primary">Ahorro Anual</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-primary mb-2">€123,000</div>
-                  <p className="text-sm text-muted-foreground">
-                    Reducción en costes de rotación y ausentismo
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-accent/5 border-accent/20">
-                <CardHeader>
-                  <CardTitle className="text-accent">Productividad</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-accent mb-2">+18%</div>
-                  <p className="text-sm text-muted-foreground">
-                    Incremento en productividad del equipo
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>🎯 Recomendaciones Estratégicas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg bg-muted/50">
-                    <h4 className="font-medium mb-2">1. Intervención Inmediata</h4>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      5 empleados requieren sesiones 1:1 con sus managers esta semana
-                    </p>
-                    <Badge variant="destructive">Alta Prioridad</Badge>
-                  </div>
-                  
-                  <div className="p-4 rounded-lg bg-muted/50">
-                    <h4 className="font-medium mb-2">2. Programa de Pausas</h4>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Implementar pausas obligatorias de 15 min cada 2 horas
-                    </p>
-                    <Badge variant="secondary">Media Prioridad</Badge>
-                  </div>
-                  
-                  <div className="p-4 rounded-lg bg-muted/50">
-                    <h4 className="font-medium mb-2">3. Training Managers</h4>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Capacitar en detección temprana de burnout
-                    </p>
-                    <Badge variant="outline">Baja Prioridad</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="impact" className="space-y-6">
+          <EnhancedImpactSection 
+            impactData={{
+              total_employees: reportData?.team_breakdown?.reduce((acc, team) => acc + team.unique_employees, 0) || 50,
+              avg_wellness: reportData?.wellness_score || 75,
+              turnover_rate: 12,
+              absenteeism_rate: 4.2,
+              productivity_index: 85,
+              engagement_score: reportData?.avg_mood ? Math.round((reportData.avg_mood / 5) * 100) : 78
+            }}
+            period={selectedPeriod}
+          />
         </TabsContent>
       </Tabs>
     </div>
