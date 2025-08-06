@@ -20,15 +20,17 @@ interface CalendarViewProps {
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({ shifts }) => {
-  // Agrupar turnos por día
+  // Agrupar turnos por día - solo el último/más relevante por día
   const groupedShifts = shifts.reduce((acc, shift) => {
     const date = shift.day;
-    if (!acc[date]) {
-      acc[date] = [];
+    // Solo mantener un turno por día (el más reciente o manual tiene prioridad)
+    if (!acc[date] || 
+        shift.status === 'MANUAL' || 
+        (shift.status === 'SWAP_REQ' && acc[date].status !== 'MANUAL')) {
+      acc[date] = shift;
     }
-    acc[date].push(shift);
     return acc;
-  }, {} as Record<string, Shift[]>);
+  }, {} as Record<string, Shift>);
 
   // Generar los próximos 14 días
   const generateCalendarDays = () => {
@@ -45,7 +47,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts }) => {
         dayNumber: date.getDate(),
         month: date.toLocaleDateString('es-ES', { month: 'short' }),
         isToday: dateStr === today.toISOString().split('T')[0],
-        shifts: groupedShifts[dateStr] || []
+        shift: groupedShifts[dateStr] || null
       });
     }
     
@@ -99,7 +101,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts }) => {
           className={cn(
             "relative overflow-hidden transition-all duration-200 hover:shadow-md",
             day.isToday && "ring-2 ring-primary ring-offset-2",
-            day.shifts.length === 0 && "opacity-60"
+            !day.shift && "opacity-60"
           )}
         >
           <CardContent className="p-3">
@@ -116,34 +118,31 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts }) => {
               </span>
             </div>
 
-            {/* Turnos del día */}
+            {/* Turno del día */}
             <div className="space-y-2">
-              {day.shifts.length > 0 ? (
-                day.shifts.map((shift) => (
-                  <div
-                    key={shift.id}
-                    className={cn(
-                      "p-2 rounded-lg border transition-colors",
-                      getShiftColor(shift.shift_templates?.name || '', shift.status)
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-xs truncate">
-                        {shift.shift_templates?.name || 'Sin asignar'}
-                      </span>
-                      {getStatusBadge(shift.status)}
-                    </div>
-                    
-                    {shift.shift_templates && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <Clock className="w-3 h-3" />
-                        <span>
-                          {formatTime(shift.shift_templates.start_time)} - {formatTime(shift.shift_templates.end_time)}
-                        </span>
-                      </div>
-                    )}
+              {day.shift ? (
+                <div
+                  className={cn(
+                    "p-2 rounded-lg border transition-colors",
+                    getShiftColor(day.shift.shift_templates?.name || '', day.shift.status)
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-xs truncate">
+                      {day.shift.shift_templates?.name || 'Sin asignar'}
+                    </span>
+                    {getStatusBadge(day.shift.status)}
                   </div>
-                ))
+                  
+                  {day.shift.shift_templates && (
+                    <div className="flex items-center gap-1 text-xs">
+                      <Clock className="w-3 h-3" />
+                      <span>
+                        {formatTime(day.shift.shift_templates.start_time)} - {formatTime(day.shift.shift_templates.end_time)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-4 text-muted-foreground">
                   <CalendarIcon className="w-6 h-6 mb-1 opacity-50" />
