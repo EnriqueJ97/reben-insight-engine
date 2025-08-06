@@ -6,11 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart3, TrendingUp, TrendingDown, Users, AlertTriangle, Calendar, Download, DollarSign } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Users, AlertTriangle, Calendar, Download, DollarSign, ArrowLeft, Keyboard } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useReports, ReportData } from '@/hooks/useReports';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
+import { StoryTiles } from '@/components/reports/StoryTiles';
+import { RiskHeatMap } from '@/components/reports/RiskHeatMap';
+import { InterventionTimeline } from '@/components/reports/InterventionTimeline';
+import { BenchmarkChips } from '@/components/reports/BenchmarkChips';
+import { DataQualityCard } from '@/components/reports/DataQualityCard';
+import { InteractiveROI } from '@/components/reports/InteractiveROI';
 
 const Reports = () => {
   const { user } = useAuth();
@@ -20,6 +26,15 @@ const Reports = () => {
   const [selectedTeam, setSelectedTeam] = useState('all');
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [quickStats, setQuickStats] = useState<any>(null);
+  
+  // Drill-down state
+  const [activeTab, setActiveTab] = useState('methodology');
+  const [drillDownFilters, setDrillDownFilters] = useState<{
+    metric?: string;
+    teamId?: string;
+    riskLevel?: string;
+  }>({});
+  const [breadcrumbPath, setBreadcrumbPath] = useState<string[]>([]);
 
   // Real data from reports
   const wellnessTrendData = reportData?.trends?.map(trend => ({
@@ -91,22 +106,107 @@ const Reports = () => {
     );
   };
 
+  // Drill-down functionality
+  const handleKPIClick = (metric: string, value: number) => {
+    setDrillDownFilters({ metric, riskLevel: metric === 'Alto Riesgo' ? 'high' : undefined });
+    setBreadcrumbPath([`${metric}: ${value}`]);
+    setActiveTab('teams');
+  };
+
+  const handleHeatMapClick = (teamId: string, indicator: string) => {
+    setDrillDownFilters({ teamId, metric: indicator });
+    setBreadcrumbPath([...breadcrumbPath, `Equipo ${teamId.slice(0, 6)} - ${indicator}`]);
+    setActiveTab('alerts');
+  };
+
+  const handleBreadcrumbBack = () => {
+    if (breadcrumbPath.length > 1) {
+      setBreadcrumbPath(breadcrumbPath.slice(0, -1));
+      setActiveTab('teams');
+    } else {
+      setBreadcrumbPath([]);
+      setDrillDownFilters({});
+      setActiveTab('methodology');
+    }
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey) return; // Ignore cmd/ctrl combinations
+      
+      switch (e.key.toLowerCase()) {
+        case 'g':
+          setActiveTab('trends');
+          break;
+        case 'a':
+          setActiveTab('alerts');
+          break;
+        case 't':
+          setActiveTab('teams');
+          break;
+        case 'i':
+          setActiveTab('impact');
+          break;
+        case 'escape':
+          if (breadcrumbPath.length > 0) {
+            setBreadcrumbPath([]);
+            setDrillDownFilters({});
+            setActiveTab('methodology');
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [breadcrumbPath]);
+
+  // Privacy protection helper
+  const getPrivacyProtectedValue = (value: number, sampleSize: number) => {
+    return sampleSize < 5 ? '—' : value.toString();
+  };
+
 
   return (
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center space-x-2">
-            <BarChart3 className="h-8 w-8 text-primary" />
-            <span>Informes y Análisis</span>
-          </h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-3xl font-bold flex items-center space-x-2">
+              <BarChart3 className="h-8 w-8 text-primary" />
+              <span>Informes y Análisis</span>
+            </h1>
+            <Badge variant="outline" className="text-xs flex items-center space-x-1">
+              <Keyboard className="h-3 w-3" />
+              <span>G=Gráficas, A=Alertas, T=Equipos, I=Impacto</span>
+            </Badge>
+          </div>
           <p className="text-muted-foreground mt-1">
             {user?.role === 'MANAGER' 
               ? 'Análisis detallado del bienestar de tu equipo'
               : 'Dashboard ejecutivo de bienestar organizacional'
             }
           </p>
+          
+          {/* Breadcrumb */}
+          {breadcrumbPath.length > 0 && (
+            <div className="flex items-center space-x-2 mt-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBreadcrumbBack}
+                className="text-xs"
+              >
+                <ArrowLeft className="h-3 w-3 mr-1" />
+                Volver
+              </Button>
+              <div className="text-xs text-muted-foreground">
+                {breadcrumbPath.join(' > ')}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex space-x-2">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -133,65 +233,92 @@ const Reports = () => {
         </div>
       </div>
 
+      {/* Story Tiles */}
+      <StoryTiles reportData={reportData} period={selectedPeriod} />
+
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => handleKPIClick('Empleados', keyMetrics.totalEmployees)}
+        >
           <CardContent className="pt-6">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-primary">{keyMetrics.totalEmployees}</div>
               <p className="text-xs text-muted-foreground">Empleados</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => handleKPIClick('Participación', keyMetrics.responseRate)}
+        >
           <CardContent className="pt-6">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-success">{keyMetrics.responseRate}%</div>
               <p className="text-xs text-muted-foreground">Participación</p>
+              <BenchmarkChips metric="Participación" value={keyMetrics.responseRate} />
             </div>
           </CardContent>
         </Card>
-        <Card>
+        
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => handleKPIClick('Alto Riesgo', keyMetrics.riskEmployees)}
+        >
           <CardContent className="pt-6">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-warning">{keyMetrics.riskEmployees}</div>
               <p className="text-xs text-muted-foreground">Alto Riesgo</p>
+              <BenchmarkChips metric="Alto Riesgo" value={Math.round((keyMetrics.riskEmployees / keyMetrics.totalEmployees) * 100)} />
             </div>
           </CardContent>
         </Card>
-        <Card>
+        
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => handleKPIClick('Bienestar Prom.', keyMetrics.avgWellness)}
+        >
           <CardContent className="pt-6">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-primary">{keyMetrics.avgWellness}%</div>
               <p className="text-xs text-muted-foreground">Bienestar Prom.</p>
+              <BenchmarkChips metric="Bienestar Prom." value={keyMetrics.avgWellness} />
             </div>
           </CardContent>
         </Card>
+        
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-success">{keyMetrics.monthlyTrend}</div>
               <p className="text-xs text-muted-foreground">Tendencia</p>
             </div>
           </CardContent>
         </Card>
+        
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-accent">{keyMetrics.costSavings}</div>
               <p className="text-xs text-muted-foreground">Ahorro Est.</p>
+              <BenchmarkChips metric="Ahorro Est." value={parseInt(keyMetrics.costSavings.replace(/[€,]/g, '')) || 0} />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="methodology" className="space-y-6">
+      {/* Data Quality */}
+      <DataQualityCard reportData={reportData} period={selectedPeriod} />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="methodology">Metodología</TabsTrigger>
-          <TabsTrigger value="trends">Tendencias</TabsTrigger>
-          <TabsTrigger value="teams">Equipos</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas</TabsTrigger>
-          <TabsTrigger value="impact">Impacto</TabsTrigger>
+          <TabsTrigger value="trends">Tendencias (G)</TabsTrigger>
+          <TabsTrigger value="teams">Equipos (T)</TabsTrigger>
+          <TabsTrigger value="alerts">Alertas (A)</TabsTrigger>
+          <TabsTrigger value="impact">Impacto (I)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="methodology">
