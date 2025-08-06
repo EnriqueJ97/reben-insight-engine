@@ -571,6 +571,44 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_aliases: {
+        Row: {
+          alias_code: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          alias_code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          alias_code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_aliases_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_shift_prefs: {
         Row: {
           blocked: boolean
@@ -920,6 +958,70 @@ export type Database = {
         }
         Relationships: []
       }
+      intervention_messages: {
+        Row: {
+          alert_id: string
+          alias_id: string
+          consent_given: boolean | null
+          content: Json
+          created_by: string | null
+          id: string
+          message_type: string
+          responded_at: string | null
+          response: Json | null
+          sent_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          alert_id: string
+          alias_id: string
+          consent_given?: boolean | null
+          content: Json
+          created_by?: string | null
+          id?: string
+          message_type: string
+          responded_at?: string | null
+          response?: Json | null
+          sent_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          alert_id?: string
+          alias_id?: string
+          consent_given?: boolean | null
+          content?: Json
+          created_by?: string | null
+          id?: string
+          message_type?: string
+          responded_at?: string | null
+          response?: Json | null
+          sent_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intervention_messages_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intervention_messages_alias_id_fkey"
+            columns: ["alias_id"]
+            isOneToOne: false
+            referencedRelation: "employee_aliases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intervention_messages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           created_at: string
@@ -1172,6 +1274,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      privacy_audit_log: {
+        Row: {
+          action: string
+          affected_user_id: string | null
+          alias_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          tenant_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          affected_user_id?: string | null
+          alias_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          tenant_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          affected_user_id?: string | null
+          alias_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          tenant_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privacy_audit_log_alias_id_fkey"
+            columns: ["alias_id"]
+            isOneToOne: false
+            referencedRelation: "employee_aliases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "privacy_audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1818,12 +1968,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_aliases: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_employee_alias: {
+        Args: { employee_id: string }
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
       get_current_user_tenant_id: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      grant_identity_consent: {
+        Args: { message_uuid: string }
+        Returns: boolean
+      }
+      send_intervention_message: {
+        Args: {
+          employee_alias: string
+          alert_uuid: string
+          msg_type: string
+          msg_content: Json
+        }
         Returns: string
       }
       trigger_webhooks: {

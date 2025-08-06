@@ -167,39 +167,35 @@ export const EnhancedAlertsCenter = () => {
   };
 
   const getPrivacyCompliantEmployee = (alert: any, teamSize: number, userRole: string) => {
-    // RGPD Art. 9: Datos de salud mental requieren protección especial
+    // RGPD Art. 9: Datos de salud mental - NADIE puede ver nombres reales sin consentimiento explícito
     
-    // Managers solo ven nivel de riesgo, no identidad individual
-    if (userRole === 'MANAGER') {
+    // SISTEMA DE ALIAS TEMPORALES para TODOS los roles
+    if (userRole === 'MANAGER' || userRole === 'HR_ADMIN') {
       if (teamSize < 5) {
         return {
-          name: "Datos protegidos por confidencialidad",
+          name: "Datos protegidos por confidencialidad (equipo <5)",
           role: "Miembro del equipo",
-          showIdentity: false
+          showIdentity: false,
+          alias: null
         };
       }
-      // Incluso con equipos grandes, pseudonimizar para managers
+      
+      // TODOS ven solo alias temporal - incluso RRHH para intervenciones ciegas
+      const aliasCode = alert.alias_code || `ANON-${alert.id.slice(-4)}`;
       return {
-        name: `Empleado-${alert.id.slice(-4)}`,
-        role: alert.profiles?.role || "Empleado",
-        showIdentity: false
+        name: `${aliasCode}`,
+        role: "Empleado", // Rol genérico para proteger identidad
+        showIdentity: false,
+        alias: aliasCode
       };
     }
     
-    // Solo HR_ADMIN con rol clínico puede ver identidad completa
-    if (userRole === 'HR_ADMIN') {
-      return {
-        name: alert.profiles?.full_name || alert.profiles?.email,
-        role: alert.profiles?.role,
-        showIdentity: true
-      };
-    }
-    
-    // Empleados solo ven sus propias alertas
+    // Empleados solo ven sus propias alertas (con identidad real)
     return {
       name: alert.profiles?.full_name || alert.profiles?.email,
       role: alert.profiles?.role,
-      showIdentity: true
+      showIdentity: true,
+      alias: null
     };
   };
 
