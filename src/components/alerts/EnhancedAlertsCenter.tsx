@@ -539,8 +539,8 @@ export const EnhancedAlertsCenter = () => {
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-info mt-0.5" />
             <div className="space-y-2">
-              <h4 className="font-medium text-info-foreground">🔒 Cumplimiento RGPD - Datos de Salud Mental</h4>
-              <div className="text-sm text-info-foreground/80 space-y-1">
+              <h4 className="font-medium text-foreground">🔒 Cumplimiento RGPD - Datos de Salud Mental</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <p><strong>Art. 9 RGPD:</strong> Datos de bienestar son información sensible de salud.</p>
                 <p><strong>Managers:</strong> Solo ven nivel de riesgo pseudonimizado, no identidad real.</p>
                 <p><strong>RRHH:</strong> Acceso completo para función de prevención laboral.</p>
