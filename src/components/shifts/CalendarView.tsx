@@ -59,33 +59,27 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) =>
   const calendarDays = generateCalendarDays();
 
   const getShiftColor = (shiftName: string, status: string) => {
-    const colors = {
-      'Turno Mañana': 'bg-amber-100 border-amber-300 text-amber-800',
-      'Turno Tarde': 'bg-blue-100 border-blue-300 text-blue-800', 
-      'Turno Noche': 'bg-purple-100 border-purple-300 text-purple-800',
-      'Horario Flexible': 'bg-green-100 border-green-300 text-green-800'
-    };
-    
-    const baseColor = colors[shiftName as keyof typeof colors] || 'bg-gray-100 border-gray-300 text-gray-800';
-    
+    // Colores distintos según el estado del turno
     if (status === 'SWAP_REQ') {
-      return 'bg-red-100 border-red-300 text-red-800';
+      return 'bg-red-100 border-red-300 text-red-800'; // Rojo = pendiente intercambio
     }
     
-    return baseColor;
+    // Azul = asignado (todos los turnos asignados)
+    return 'bg-blue-100 border-blue-300 text-blue-800';
   };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'AUTO': { label: 'Auto', variant: 'secondary' as const },
-      'MANUAL': { label: 'Manual', variant: 'outline' as const },
-      'SWAP_REQ': { label: 'Intercambio', variant: 'destructive' as const }
+      'AUTO': { label: 'Asignado', variant: 'secondary' as const, icon: '✓' },
+      'MANUAL': { label: 'Asignado', variant: 'secondary' as const, icon: '✓' },
+      'SWAP_REQ': { label: 'Intercambio', variant: 'destructive' as const, icon: '⏳' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || { label: status, variant: 'outline' as const };
+    const config = statusConfig[status as keyof typeof statusConfig] || { label: status, variant: 'outline' as const, icon: '' };
     
     return (
-      <Badge variant={config.variant} className="text-xs">
+      <Badge variant={config.variant} className="text-xs flex items-center gap-1">
+        <span>{config.icon}</span>
         {config.label}
       </Badge>
     );
@@ -100,8 +94,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) =>
       {calendarDays.map((day) => (
         <Card 
           key={day.date} 
+          tabIndex={0}
+          role="button"
+          aria-label={`Turno del ${day.dayNumber} de ${day.month}: ${day.shift?.shift_templates?.name || 'Sin turnos'}`}
           className={cn(
-            "relative overflow-hidden transition-all duration-200 hover:shadow-md",
+            "relative overflow-hidden transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
             day.isToday && "ring-2 ring-primary ring-offset-2",
             !day.shift && "opacity-60"
           )}
@@ -129,7 +126,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) =>
                     getShiftColor(day.shift.shift_templates?.name || '', day.shift.status)
                   )}
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-xs truncate">
                       {day.shift.shift_templates?.name || 'Sin asignar'}
                     </span>
@@ -137,13 +134,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) =>
                   </div>
                   
                   {day.shift.shift_templates && (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Clock className="w-3 h-3" />
-                      <span>
+                    <div className="flex items-center justify-center mb-2">
+                      <Badge variant="outline" className="text-xs font-medium">
+                        <Clock className="w-3 h-3 mr-1" />
                         {formatTime(day.shift.shift_templates.start_time)} - {formatTime(day.shift.shift_templates.end_time)}
-                     </span>
-                   </div>
-                 )}
+                      </Badge>
+                    </div>
+                  )}
                  
                  {/* Botón de solicitar cambio - solo para turnos futuros y que no sean SWAP_REQ */}
                  {onRequestSwap && day.shift.status !== 'SWAP_REQ' && new Date(day.date) > new Date() && (

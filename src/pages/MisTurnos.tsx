@@ -3,8 +3,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, RefreshCw, LayoutGrid, List } from 'lucide-react';
+import { Calendar, Clock, RefreshCw, LayoutGrid, List, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CalendarView from '@/components/shifts/CalendarView';
 import ShiftPreferencesGrid from '@/components/shifts/ShiftPreferencesGrid';
@@ -16,6 +17,7 @@ const MisTurnos = () => {
   const [plantillasTurnos, setPlantillasTurnos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [preferencesDialogOpen, setPreferencesDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -31,6 +33,7 @@ const MisTurnos = () => {
         cargarPreferencias(),
         cargarPlantillasTurnos()
       ]);
+      toast.success('Turnos actualizados ✅');
     } catch (error) {
       console.error('Error cargando datos:', error);
       toast.error('Error al cargar los datos');
@@ -101,7 +104,9 @@ const MisTurnos = () => {
 
       if (error) throw error;
       
-      toast.success('Preferencia actualizada');
+      toast.success('Preferencia guardada ✅', {
+        description: 'Tu manager verá esto al planificar 📅'
+      });
       cargarPreferencias();
     } catch (error) {
       console.error('Error actualizando preferencia:', error);
@@ -257,12 +262,55 @@ const MisTurnos = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="preferencias" className="space-y-4">
-          <ShiftPreferencesGrid
-            plantillasTurnos={plantillasTurnos}
-            preferencias={preferencias}
-            onUpdatePreference={actualizarPreferencia}
-          />
+        <TabsContent value="preferencias" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">Mis Preferencias de Turnos</h3>
+              <p className="text-sm text-muted-foreground">
+                Configura tus preferencias para cada día y turno. Tu manager las tendrá en cuenta al asignar turnos.
+              </p>
+            </div>
+            <Dialog open={preferencesDialogOpen} onOpenChange={setPreferencesDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Crear/Editar Preferencias
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle>Configurar Preferencias de Turnos</DialogTitle>
+                </DialogHeader>
+                <ShiftPreferencesGrid
+                  plantillasTurnos={plantillasTurnos}
+                  preferencias={preferencias}
+                  onUpdatePreference={actualizarPreferencia}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {plantillasTurnos.map(turno => {
+              const prefsCount = preferencias.filter(p => p.shift_template_id === turno.id && p.weight > 0).length;
+              return (
+                <Card key={turno.id} className="p-4" tabIndex={0} role="button" aria-label={`Preferencias para ${turno.name}`}>
+                  <h4 className="font-medium mb-2">{turno.name}</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {formatearHora(turno.start_time)} - {formatearHora(turno.end_time)}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">
+                      {prefsCount > 3 ? '😍' : prefsCount > 0 ? '👍' : '😐'}
+                    </span>
+                    <span className="text-sm">
+                      {prefsCount} días configurados
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
