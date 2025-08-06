@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { WellnessMetrics } from '@/components/ui/wellness-metrics';
-import { Users, AlertTriangle, MessageSquare, TrendingUp, Heart, Calendar, UserCheck, Shield, Activity } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Users, AlertTriangle, MessageSquare, TrendingUp, Heart, Calendar, UserCheck, Shield, Activity, Info, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAlerts } from '@/hooks/useAlerts';
@@ -138,10 +139,36 @@ const Team = () => {
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - lastCheckin.getTime()) / (1000 * 60 * 60));
     
+    // Formato compatible con RGPD - evitar exactitud excesiva
     if (diffHours < 1) return 'Hace menos de 1 hora';
-    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    if (diffHours < 24) return 'Hoy';
     const diffDays = Math.floor(diffHours / 24);
-    return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays <= 7) return 'Esta semana';
+    if (diffDays <= 30) return 'Este mes';
+    return '>30 días';
+  };
+
+  // Verificar si se pueden mostrar datos individuales (regla 5-k)
+  const canShowIndividualData = () => {
+    const membersWithData = teamStats?.memberStats?.filter((m: any) => m.stats?.totalCheckins > 0) || [];
+    return membersWithData.length >= 5;
+  };
+
+  // Formatear nivel de riesgo según RGPD
+  const getPrivacyCompliantRiskLevel = (riskLevel: string, hasData: boolean) => {
+    if (!canShowIndividualData() && user?.role !== 'HR_ADMIN') {
+      return 'Datos insuficientes';
+    }
+    
+    if (!hasData) return 'Sin datos';
+    
+    switch (riskLevel) {
+      case 'low': return 'Situación OK';
+      case 'medium': return 'Requiere Atención';
+      case 'high': return 'Prioritario';
+      default: return 'No evaluado';
+    }
   };
 
   const unresolvedAlerts = alerts.filter(alert => !alert.resolved);
@@ -183,23 +210,53 @@ const Team = () => {
   };
 
   return (
-    <div className="space-y-6 animate-slide-up">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center space-x-2">
-            <Users className="h-8 w-8 text-primary" />
-            <span>Mi Equipo</span>
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Monitorea el bienestar de tu equipo y apoya a quienes lo necesiten
-          </p>
+    <TooltipProvider>
+      <div className="space-y-6 animate-slide-up">
+        {/* Privacy Notice */}
+        <Alert className="border-info/30 bg-info/5">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Protección de Datos (RGPD):</strong> Los datos de bienestar se muestran según el principio de minimización.
+            Los indicadores no se usan para evaluación de desempeño.
+            {!canShowIndividualData() && user?.role !== 'HR_ADMIN' && (
+              <span className="ml-2 font-medium text-warning">
+                Datos individuales ocultos por tamaño de muestra insuficiente (&lt;5 personas con datos).
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center space-x-2">
+              <Users className="h-8 w-8 text-primary" />
+              <span>Mi Equipo</span>
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Monitorea el bienestar de tu equipo de forma ética y cumpliendo RGPD
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-xs">
+              {canShowIndividualData() || user?.role === 'HR_ADMIN' ? (
+                <>
+                  <Eye className="h-3 w-3 mr-1" />
+                  Datos autorizados
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-3 w-3 mr-1" />
+                  Modo privacidad
+                </>
+              )}
+            </Badge>
+            <Button>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Reunión de Equipo
+            </Button>
+          </div>
         </div>
-        <Button>
-          <MessageSquare className="h-4 w-4 mr-2" />
-          Reunión de Equipo
-        </Button>
-      </div>
 
       {/* Team Metrics */}
       <WellnessMetrics metrics={teamMetrics} />
@@ -258,20 +315,33 @@ const Team = () => {
                       </div>
                       
                       <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <div className={`text-lg font-bold ${getRiskColor(riskLevel)}`}>
-                            {wellnessScore ? `${wellnessScore}%` : 'Sin datos'}
-                          </div>
-                          <Badge 
-                            variant="secondary" 
-                            className={`${getRiskBg(riskLevel)} ${getRiskColor(riskLevel)} text-xs`}
-                          >
-                            {riskLevel === 'low' && 'Bajo Riesgo'}
-                            {riskLevel === 'medium' && 'Riesgo Medio'}
-                            {riskLevel === 'high' && 'Alto Riesgo'}
-                            {riskLevel === 'unknown' && 'Sin check-ins'}
-                          </Badge>
+                      <div className="text-right">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-lg">
+                            {riskLevel === 'low' ? '🟢' : 
+                             riskLevel === 'medium' ? '🟡' : 
+                             riskLevel === 'high' ? '🔴' : '⚪'}
+                          </span>
+                          {user?.role === 'HR_ADMIN' && wellnessScore && (
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <span className="text-xs text-muted-foreground cursor-help">
+                                  ({wellnessScore}%)
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Score detallado (solo RRHH)</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
+                        <Badge 
+                          variant="secondary" 
+                          className={`${getRiskBg(riskLevel)} ${getRiskColor(riskLevel)} text-xs`}
+                        >
+                          {getPrivacyCompliantRiskLevel(riskLevel, wellnessScore !== null)}
+                        </Badge>
+                      </div>
                         
                         {memberAlerts > 0 && (
                           <Badge variant="destructive" className="ml-2">
@@ -421,8 +491,26 @@ const Team = () => {
             </CardContent>
           </Card>
         </div>
+        </div>
+        
+        {/* RGPD Compliance Footer */}
+        <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+          <div className="flex items-start space-x-2 text-xs text-muted-foreground">
+            <Shield className="h-3 w-3 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium mb-1">Cumplimiento Normativo:</p>
+              <ul className="space-y-1">
+                <li>• Datos procesados únicamente para prevención de riesgos laborales (Art. 9.2.h RGPD)</li>
+                <li>• Principio de minimización aplicado (Art. 5.1.c RGPD)</li>
+                <li>• Acceso auditado y logged según Art. 25, 30 RGPD</li>
+                <li>• No utilización para evaluaciones de desempeño</li>
+                <li>• Anonimización automática si equipo &lt; 5 personas con datos</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 

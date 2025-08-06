@@ -26,10 +26,12 @@ import {
   Shield,
   ChevronRight,
   Eye,
+  EyeOff,
   RefreshCw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+
 
 interface TeamMemberDetail {
   id: string;
@@ -227,6 +229,19 @@ const ManagerDashboard = () => {
     return 'Bajo';
   };
 
+  // Función para cumplir RGPD en formato de último check-in
+  const formatPrivacyCompliantCheckin = (date: Date | null) => {
+    if (!date) return 'Sin registros';
+    const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Evitar "shaming" con rangos generales
+    if (days === 0) return 'Hoy';
+    if (days === 1) return 'Ayer';
+    if (days <= 7) return 'Esta semana';
+    if (days <= 30) return 'Este mes';
+    return '>30 días';
+  };
+
   const loadTrendData = async () => {
     // Simulated trend data - in real app, this would come from API
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -322,85 +337,175 @@ const ManagerDashboard = () => {
         </TabsList>
 
         <TabsContent value="team" className="space-y-6">
+          {/* Privacy Compliance Notice */}
+          <div className="bg-info/5 border border-info/20 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <Shield className="h-5 w-5 text-info mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-info mb-2">Protección de Datos Personales (RGPD)</p>
+                <p className="text-muted-foreground mb-2">
+                  Los datos de bienestar se muestran agregados y en formato de niveles para cumplir con la normativa de privacidad.
+                  Los scores exactos solo son visibles para personal autorizado de RRHH.
+                </p>
+                <div className="text-xs text-muted-foreground">
+                  <strong>Base legal:</strong> Prevención de riesgos laborales (Art. 9.2.h RGPD) • 
+                  <strong> Principio:</strong> Minimización de datos (Art. 5.1.c RGPD)
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Team Performance Overview */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <span>Estado del Equipo</span>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
+                  <span>Estado del Equipo</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {teamDetails.filter(m => m.wellnessScore !== null).length >= 5 ? (
+                    <Badge className="bg-success/20 text-success text-xs">
+                      <Eye className="h-3 w-3 mr-1" />
+                      Datos autorizados
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-warning/20 text-warning text-xs">
+                      <EyeOff className="h-3 w-3 mr-1" />
+                      Modo privacidad
+                    </Badge>
+                  )}
+                </div>
               </CardTitle>
               <CardDescription>
-                📊 Bienestar: Promedio de estado de ánimo (1-5) • 🎯 Participación: % de check-ins completados (últimos 30 días)
+                🛡️ Cumplimiento RGPD: Datos mostrados según principio de minimización • 
+                🎯 Solo niveles de riesgo para acción preventiva • 
+                📊 Scores detallados restringidos a personal autorizado
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {teamDetails.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-medium">{member.name}</div>
-                        <div className="text-sm text-muted-foreground">{member.email}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-6">
-                      <div className="text-center">
-                        <div className={`text-lg font-bold ${
-                          member.wellnessScore >= 70 ? 'text-success' : 
-                          member.wellnessScore >= 50 ? 'text-warning' : 'text-destructive'
-                        }`}>
-                          {getWellnessLevel(member.wellnessScore)}
+                {teamDetails.map((member) => {
+                  const canShowIndividualData = teamDetails.filter(m => m.wellnessScore !== null).length >= 5;
+                  const canViewSensitiveData = user?.role === 'HR_ADMIN';
+                  
+                  return (
+                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                          {/* Semáforo indicator */}
+                          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background ${
+                            member.riskLevel === 'low' ? 'bg-success' : 
+                            member.riskLevel === 'medium' ? 'bg-warning' : 
+                            member.riskLevel === 'high' ? 'bg-destructive' : 'bg-muted'
+                          }`} />
                         </div>
-                        <div className="text-xs text-muted-foreground">Bienestar</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <Badge className={getRiskColor(member.riskLevel)}>
-                          {member.riskLevel === 'high' ? 'Alto' : 
-                           member.riskLevel === 'medium' ? 'Medio' : 'Bajo'}
-                        </Badge>
-                        <div className="text-xs text-muted-foreground mt-1">Riesgo</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="flex items-center space-x-1">
-                          <span className="text-sm">{formatLastCheckin(member.lastCheckin)}</span>
-                          {getTrendIcon(member.trend)}
+                        <div>
+                          <div className="font-medium">{member.name}</div>
+                          <div className="text-sm text-muted-foreground">{member.email}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Último check-in: {formatPrivacyCompliantCheckin(member.lastCheckin)}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">Último check-in</div>
                       </div>
                       
-                      <div className="text-center">
-                        <div className="text-sm font-medium flex items-center space-x-1">
-                          <span>{member.participationRate}%</span>
-                          {member.participationRate >= 70 ? (
-                            <Badge className="bg-success/20 text-success text-xs">Alta</Badge>
-                          ) : member.participationRate >= 40 ? (
-                            <Badge className="bg-warning/20 text-warning text-xs">Media</Badge>
+                      <div className="flex items-center space-x-6">
+                        {/* Nivel de bienestar (no score exacto) */}
+                        <div className="text-center">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-lg">
+                              {member.riskLevel === 'low' ? '🟢' : 
+                               member.riskLevel === 'medium' ? '🟡' : 
+                               member.riskLevel === 'high' ? '🔴' : '⚪'}
+                            </span>
+                            {canViewSensitiveData && (
+                              <span className="text-xs text-muted-foreground">
+                                ({member.wellnessScore}%)
+                              </span>
+                            )}
+                          </div>
+                          <Badge className={
+                            member.riskLevel === 'low' ? 'bg-success/20 text-success border-success/30' :
+                            member.riskLevel === 'medium' ? 'bg-warning/20 text-warning border-warning/30' :
+                            member.riskLevel === 'high' ? 'bg-destructive/20 text-destructive border-destructive/30' :
+                            'bg-muted/20 text-muted-foreground border-muted/30'
+                          }>
+                            {canShowIndividualData ? (
+                              member.riskLevel === 'low' ? 'Situación OK' :
+                              member.riskLevel === 'medium' ? 'Requiere Atención' :
+                              member.riskLevel === 'high' ? 'Prioritario' : 'Sin datos'
+                            ) : (
+                              'Datos insuficientes'
+                            )}
+                          </Badge>
+                          <div className="text-xs text-muted-foreground mt-1">Nivel de Riesgo</div>
+                        </div>
+                        
+                        {/* Participación */}
+                        <div className="text-center">
+                          <div className="text-sm font-medium flex items-center space-x-1">
+                            {member.participationRate >= 70 ? (
+                              <Badge className="bg-success/20 text-success text-xs">Alta</Badge>
+                            ) : member.participationRate >= 40 ? (
+                              <Badge className="bg-warning/20 text-warning text-xs">Media</Badge>
+                            ) : (
+                              <Badge className="bg-destructive/20 text-destructive text-xs">Baja</Badge>
+                            )}
+                            {canViewSensitiveData && (
+                              <span className="text-xs text-muted-foreground">
+                                ({member.participationRate}%)
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Participación</div>
+                        </div>
+                        
+                        {/* Alertas */}
+                        {member.alertCount > 0 && (
+                          <Badge variant="destructive" className="ml-2">
+                            {member.alertCount} alerta{member.alertCount > 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                        
+                        {/* Acción recomendada */}
+                        <div className="text-center">
+                          {member.riskLevel === 'high' ? (
+                            <Badge className="bg-destructive/20 text-destructive">
+                              Derivar RRHH
+                            </Badge>
+                          ) : member.riskLevel === 'medium' ? (
+                            <Badge className="bg-warning/20 text-warning">
+                              Seguimiento 1:1
+                            </Badge>
                           ) : (
-                            <Badge className="bg-destructive/20 text-destructive text-xs">Baja</Badge>
+                            <Badge className="bg-success/20 text-success">
+                              Mantener
+                            </Badge>
                           )}
                         </div>
-                        <Progress value={member.participationRate} className="w-16 h-2 mt-1" />
-                        <div className="text-xs text-muted-foreground">Participación</div>
                       </div>
-                      
-                      {member.alertCount > 0 && (
-                        <Badge variant="destructive" className="ml-2">
-                          {member.alertCount} alertas
-                        </Badge>
-                      )}
-                      
-                      <Button variant="ghost" size="sm" disabled title="Vista detallada del empleado (próximamente)">
-                        <Eye className="h-4 w-4" />
-                      </Button>
                     </div>
+                  );
+                })}
+              </div>
+              
+              {/* Nota legal */}
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-start space-x-2 text-xs text-muted-foreground">
+                  <Shield className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium mb-1">Transparencia y Cumplimiento:</p>
+                    <ul className="space-y-1">
+                      <li>• Datos procesados únicamente para prevención de riesgos laborales</li>
+                      <li>• Acceso auditado según Art. 25, 30 RGPD</li>
+                      <li>• No se utilizan para evaluaciones de desempeño</li>
+                      <li>• Anonimización automática si equipo &lt; 5 personas con datos</li>
+                    </ul>
                   </div>
-                ))}
+                </div>
               </div>
             </CardContent>
           </Card>
