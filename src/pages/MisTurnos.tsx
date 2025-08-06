@@ -106,8 +106,8 @@ const MisTurnos = () => {
     });
   };
 
-  const formatearHora = (hora: string) => {
-    return hora.substring(0, 5);
+  const formatearHora = (hora: string | null | undefined) => {
+    return hora ? hora.substring(0, 5) : '--:--';
   };
 
   const obtenerColorEstado = (estado: string) => {

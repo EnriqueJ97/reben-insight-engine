@@ -153,8 +153,8 @@ const TrabajoFlexible = () => {
     }
   };
 
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-ES');
+  const formatearFecha = (fecha: string | null | undefined) => {
+    return fecha ? new Date(fecha).toLocaleDateString('es-ES') : '--/--/----';
   };
 
   if (loading) {
