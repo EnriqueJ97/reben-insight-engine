@@ -11,8 +11,12 @@ const OnboardingCheck: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     if (user?.tenant_id) {
       checkOnboardingStatus();
+    } else if (user && !user.tenant_id) {
+      // Si el usuario existe pero no tiene tenant_id, no necesita onboarding
+      setLoading(false);
+      setNeedsOnboarding(false);
     }
-  }, [user?.tenant_id]); // Solo re-ejecutar cuando cambie el tenant_id
+  }, [user?.tenant_id, user]); // Incluir user para manejar el caso sin tenant_id
 
   const checkOnboardingStatus = async () => {
     if (!user?.tenant_id) {
