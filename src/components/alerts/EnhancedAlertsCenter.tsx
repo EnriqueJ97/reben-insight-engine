@@ -345,7 +345,7 @@ export const EnhancedAlertsCenter = () => {
             
             {alert.severity === 'high' && (
               <div className="p-3 bg-info/10 border border-info/20 rounded-lg">
-                <p className="text-sm text-info-foreground">
+                <p className="text-sm text-foreground">
                   <strong>Sugerencia:</strong> Repriorizar backlog y revisar staffing. Considerar derivación a Servicio de Prevención.
                 </p>
               </div>

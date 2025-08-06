@@ -151,7 +151,7 @@ export const AlertResolutionModal = ({ alert, isOpen, onClose, onResolve }: Aler
           <Button 
             onClick={handleResolve}
             disabled={isResolving || !comment.trim()}
-            className="bg-success hover:bg-success/90 text-success-foreground"
+            className="bg-success hover:bg-success/90 text-white"
           >
             {isResolving ? (
               <>
