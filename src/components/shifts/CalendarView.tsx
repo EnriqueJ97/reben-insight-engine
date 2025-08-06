@@ -69,20 +69,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) =>
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      'AUTO': { label: 'Asignado', variant: 'secondary' as const, icon: '✓' },
-      'MANUAL': { label: 'Asignado', variant: 'secondary' as const, icon: '✓' },
-      'SWAP_REQ': { label: 'Intercambio', variant: 'destructive' as const, icon: '⏳' }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || { label: status, variant: 'outline' as const, icon: '' };
-    
-    return (
-      <Badge variant={config.variant} className="text-xs flex items-center gap-1">
-        <span>{config.icon}</span>
-        {config.label}
-      </Badge>
-    );
+    if (status === 'SWAP_REQ') {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          ⏳ Intercambio solicitado
+        </Badge>
+      );
+    }
+    return null; // No mostrar badge para turnos normales asignados
   };
 
   const formatTime = (time: string | null | undefined) => {
@@ -126,34 +120,41 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) =>
                     getShiftColor(day.shift.shift_templates?.name || '', day.shift.status)
                   )}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-xs truncate">
+                  {/* Nombre del turno */}
+                  <div className="text-center mb-2">
+                    <span className="font-semibold text-sm block">
                       {day.shift.shift_templates?.name || 'Sin asignar'}
                     </span>
-                    {getStatusBadge(day.shift.status)}
                   </div>
                   
+                  {/* Horario prominente */}
                   {day.shift.shift_templates && (
-                    <div className="flex items-center justify-center mb-2">
-                      <Badge variant="outline" className="text-xs font-medium">
-                        <Clock className="w-3 h-3 mr-1" />
+                    <div className="text-center mb-3">
+                      <Badge className="bg-primary text-primary-foreground text-sm font-bold py-1 px-3">
                         {formatTime(day.shift.shift_templates.start_time)} - {formatTime(day.shift.shift_templates.end_time)}
                       </Badge>
                     </div>
                   )}
+                  
+                  {/* Badge de intercambio solo si aplica */}
+                  {getStatusBadge(day.shift.status) && (
+                    <div className="text-center mb-2">
+                      {getStatusBadge(day.shift.status)}
+                    </div>
+                  )}
                  
-                 {/* Botón de solicitar cambio - solo para turnos futuros y que no sean SWAP_REQ */}
-                 {onRequestSwap && day.shift.status !== 'SWAP_REQ' && new Date(day.date) > new Date() && (
-                   <Button
-                     variant="ghost"
-                     size="sm"
-                     className="w-full mt-2 h-6 text-xs"
-                     onClick={() => onRequestSwap(day.shift!.id)}
-                   >
-                     <RefreshCw className="w-3 h-3 mr-1" />
-                     Solicitar cambio
-                   </Button>
-                 )}
+                  {/* Botón de solicitar cambio solo para turnos normales */}
+                  {onRequestSwap && day.shift.status !== 'SWAP_REQ' && new Date(day.date) > new Date() && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full h-7 text-xs mt-2"
+                      onClick={() => onRequestSwap(day.shift!.id)}
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Solicitar cambio
+                    </Button>
+                  )}
                </div>
              ) : (
                <div className="flex flex-col items-center justify-center py-4 text-muted-foreground">
