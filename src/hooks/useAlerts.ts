@@ -12,6 +12,8 @@ export interface Alert {
   resolved_by?: string;
   resolved_at?: string;
   created_at: string;
+  assigned_to?: string;
+  status?: 'pending' | 'in_progress' | 'resolved';
   profiles?: {
     full_name: string;
     email: string;

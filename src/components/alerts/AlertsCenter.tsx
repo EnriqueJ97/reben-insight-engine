@@ -36,6 +36,13 @@ import { CreateAlertDialog } from './CreateAlertDialog';
 import { AlertMetrics } from './AlertMetrics';
 
 export const AlertsCenter = () => {
+  // Redirect to enhanced version for better UX
+  return <EnhancedAlertsCenter />;
+};
+
+import { EnhancedAlertsCenter } from './EnhancedAlertsCenter';
+
+export const OriginalAlertsCenter = () => {
   const { user } = useAuth();
   const { alerts, loading, resolveAlert, fetchAlerts } = useAlerts();
   const { toast } = useToast();
