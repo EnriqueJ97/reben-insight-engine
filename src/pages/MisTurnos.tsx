@@ -52,7 +52,17 @@ const MisTurnos = () => {
       .limit(14);
 
     if (error) throw error;
-    setTurnos(data || []);
+    
+    // Filtrar para asegurar que solo hay UN turno por día (el más reciente para casos duplicados)
+    const turnosUnicos = data?.reduce((acc, turno) => {
+      const fecha = turno.day;
+      if (!acc[fecha] || new Date(turno.updated_at) > new Date(acc[fecha].updated_at)) {
+        acc[fecha] = turno;
+      }
+      return acc;
+    }, {} as Record<string, any>) || {};
+    
+    setTurnos(Object.values(turnosUnicos));
   };
 
   const cargarPreferencias = async () => {
@@ -96,6 +106,23 @@ const MisTurnos = () => {
     } catch (error) {
       console.error('Error actualizando preferencia:', error);
       toast.error('Error al actualizar preferencia');
+    }
+  };
+
+  const solicitarCambioTurno = async (shiftId: string) => {
+    try {
+      const { error } = await supabase
+        .from('rotas')
+        .update({ status: 'SWAP_REQ' })
+        .eq('id', shiftId);
+
+      if (error) throw error;
+      
+      toast.success('Solicitud de cambio enviada al manager');
+      cargarTurnos();
+    } catch (error) {
+      console.error('Error solicitando cambio:', error);
+      toast.error('Error al solicitar el cambio de turno');
     }
   };
 
@@ -223,7 +250,7 @@ const MisTurnos = () => {
                   Vista Lista
                 </Button>
               </div>
-              <CalendarView shifts={turnos} />
+              <CalendarView shifts={turnos} onRequestSwap={solicitarCambioTurno} />
             </div>
           ) : (
             renderListView()

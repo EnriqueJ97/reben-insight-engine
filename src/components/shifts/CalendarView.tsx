@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Calendar as CalendarIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Clock, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Shift {
@@ -17,9 +18,10 @@ interface Shift {
 
 interface CalendarViewProps {
   shifts: Shift[];
+  onRequestSwap?: (shiftId: string) => void;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ shifts }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ shifts, onRequestSwap }) => {
   // Agrupar turnos por día - solo el último/más relevante por día
   const groupedShifts = shifts.reduce((acc, shift) => {
     const date = shift.day;
@@ -139,16 +141,29 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts }) => {
                       <Clock className="w-3 h-3" />
                       <span>
                         {formatTime(day.shift.shift_templates.start_time)} - {formatTime(day.shift.shift_templates.end_time)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-4 text-muted-foreground">
-                  <CalendarIcon className="w-6 h-6 mb-1 opacity-50" />
-                  <span className="text-xs">Sin turnos</span>
-                </div>
-              )}
+                     </span>
+                   </div>
+                 )}
+                 
+                 {/* Botón de solicitar cambio - solo para turnos futuros y que no sean SWAP_REQ */}
+                 {onRequestSwap && day.shift.status !== 'SWAP_REQ' && new Date(day.date) > new Date() && (
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     className="w-full mt-2 h-6 text-xs"
+                     onClick={() => onRequestSwap(day.shift!.id)}
+                   >
+                     <RefreshCw className="w-3 h-3 mr-1" />
+                     Solicitar cambio
+                   </Button>
+                 )}
+               </div>
+             ) : (
+               <div className="flex flex-col items-center justify-center py-4 text-muted-foreground">
+                 <CalendarIcon className="w-6 h-6 mb-1 opacity-50" />
+                 <span className="text-xs">Sin turnos</span>
+               </div>
+             )}
             </div>
           </CardContent>
           
