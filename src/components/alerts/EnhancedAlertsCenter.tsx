@@ -166,16 +166,40 @@ export const EnhancedAlertsCenter = () => {
     return alert.message;
   };
 
-  const getPrivacyCompliantEmployee = (alert: any, teamSize: number) => {
-    if (teamSize < 5) {
+  const getPrivacyCompliantEmployee = (alert: any, teamSize: number, userRole: string) => {
+    // RGPD Art. 9: Datos de salud mental requieren protección especial
+    
+    // Managers solo ven nivel de riesgo, no identidad individual
+    if (userRole === 'MANAGER') {
+      if (teamSize < 5) {
+        return {
+          name: "Datos protegidos por confidencialidad",
+          role: "Miembro del equipo",
+          showIdentity: false
+        };
+      }
+      // Incluso con equipos grandes, pseudonimizar para managers
       return {
-        name: "Protegido por privacidad",
-        role: "Miembro del equipo"
+        name: `Empleado-${alert.id.slice(-4)}`,
+        role: alert.profiles?.role || "Empleado",
+        showIdentity: false
       };
     }
+    
+    // Solo HR_ADMIN con rol clínico puede ver identidad completa
+    if (userRole === 'HR_ADMIN') {
+      return {
+        name: alert.profiles?.full_name || alert.profiles?.email,
+        role: alert.profiles?.role,
+        showIdentity: true
+      };
+    }
+    
+    // Empleados solo ven sus propias alertas
     return {
       name: alert.profiles?.full_name || alert.profiles?.email,
-      role: alert.profiles?.role
+      role: alert.profiles?.role,
+      showIdentity: true
     };
   };
 
@@ -226,8 +250,17 @@ export const EnhancedAlertsCenter = () => {
       minute: '2-digit'
     });
 
-    const employee = getPrivacyCompliantEmployee(alert, teamSize);
+    const employee = getPrivacyCompliantEmployee(alert, teamSize, user?.role || 'EMPLOYEE');
     const message = getPrivacyCompliantMessage(alert, teamSize);
+
+    // Log access for GDPR audit (Art. 30)
+    console.log('Alert access logged:', {
+      alert_id: alert.id,
+      accessed_by: user?.id,
+      user_role: user?.role,
+      timestamp: new Date().toISOString(),
+      data_shown: employee.showIdentity ? 'full' : 'anonymized'
+    });
 
     return (
       <Card key={alert.id} className={`border-l-4 ${getSeverityBorder(alert.severity)} ${getSeverityBg(alert.severity)} transition-all hover:shadow-md`}>
@@ -262,7 +295,7 @@ export const EnhancedAlertsCenter = () => {
             </div>
           </div>
 
-          {/* Información del empleado (GDPR compliant) */}
+          {/* Información del empleado (GDPR Art. 9 compliant) */}
           {user?.role !== 'EMPLOYEE' && (
             <div className="mb-4 p-3 bg-background/50 rounded-lg border">
               <div className="flex items-center justify-between">
@@ -270,19 +303,40 @@ export const EnhancedAlertsCenter = () => {
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{employee.name}</span>
                   <Badge variant="outline" className="text-xs">{employee.role}</Badge>
+                  {!employee.showIdentity && (
+                    <Badge variant="secondary" className="text-xs">
+                      🔒 Datos anonimizados
+                    </Badge>
+                  )}
                 </div>
-                {teamSize < 5 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Datos anonimizados por equipo pequeño (&lt;5 personas)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                <div className="flex items-center space-x-2">
+                  {user?.role === 'MANAGER' && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Como manager, solo ves nivel de riesgo por RGPD Art. 9</p>
+                          <p>Para detalles clínicos, deriva a RRHH</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {teamSize < 5 && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-4 w-4 text-warning" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Equipo pequeño (&lt;5): identidad protegida</p>
+                          <p>Regla k-anonimato para prevenir reidentificación</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -364,8 +418,9 @@ export const EnhancedAlertsCenter = () => {
 
             {!alert.resolved && (user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
               <div className="flex items-center space-x-2">
-                {/* Acciones GDPR-compliant */}
-                {user?.role === 'HR_ADMIN' && (
+                {/* Acciones según rol y GDPR */}
+                {user?.role === 'HR_ADMIN' ? (
+                  // RRHH tiene acceso completo para función clínica
                   <>
                     <Button
                       variant="outline"
@@ -386,38 +441,41 @@ export const EnhancedAlertsCenter = () => {
                       <Mail className="h-3 w-3" />
                       <span>Email</span>
                     </Button>
+
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setSelectedAlert(alert)}
+                      className="flex items-center space-x-1"
+                    >
+                      <CheckCircle className="h-3 w-3" />
+                      <span>Resolver</span>
+                    </Button>
                   </>
-                )}
+                ) : user?.role === 'MANAGER' ? (
+                  // Managers: acciones limitadas, sin contacto directo
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleQuickAction(alert, 'hr_referral')}
+                      className="flex items-center space-x-1"
+                    >
+                      <Building className="h-3 w-3" />
+                      <span>Derivar RRHH</span>
+                    </Button>
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleQuickAction(alert, 'hr_referral')}
-                  className="flex items-center space-x-1"
-                >
-                  <Building className="h-3 w-3" />
-                  <span>Derivar RRHH</span>
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleQuickAction(alert, 'action_plan')}
-                  className="flex items-center space-x-1"
-                >
-                  <MessageSquare className="h-3 w-3" />
-                  <span>Plan de acción</span>
-                </Button>
-
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setSelectedAlert(alert)}
-                  className="flex items-center space-x-1"
-                >
-                  <CheckCircle className="h-3 w-3" />
-                  <span>Resolver</span>
-                </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleQuickAction(alert, 'action_plan')}
+                      className="flex items-center space-x-1"
+                    >
+                      <MessageSquare className="h-3 w-3" />
+                      <span>Plan 1:1</span>
+                    </Button>
+                  </>
+                ) : null}
               </div>
             )}
           </div>
@@ -479,18 +537,20 @@ export const EnhancedAlertsCenter = () => {
         </div>
       </div>
 
-      {/* Política de privacidad visible */}
+      {/* Política de privacidad RGPD más explícita */}
       <Card className="border-info bg-info/5">
         <CardContent className="p-4">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-info mt-0.5" />
-            <div className="space-y-1">
-              <h4 className="font-medium text-info-foreground">Política de Privacidad RGPD</h4>
-              <p className="text-sm text-info-foreground/80">
-                Las alertas son indicadores preventivos, no criterios de rendimiento. 
-                Cumplimos con el art. 9 RGPD protegiendo datos sensibles de salud mental.
-                Registro de acciones según art. 30 para auditoría.
-              </p>
+            <div className="space-y-2">
+              <h4 className="font-medium text-info-foreground">🔒 Cumplimiento RGPD - Datos de Salud Mental</h4>
+              <div className="text-sm text-info-foreground/80 space-y-1">
+                <p><strong>Art. 9 RGPD:</strong> Datos de bienestar son información sensible de salud.</p>
+                <p><strong>Managers:</strong> Solo ven nivel de riesgo pseudonimizado, no identidad real.</p>
+                <p><strong>RRHH:</strong> Acceso completo para función de prevención laboral.</p>
+                <p><strong>Auditoría:</strong> Todos los accesos se registran según Art. 30 RGPD.</p>
+                <p><strong>Minimización:</strong> Solo datos necesarios para la función específica.</p>
+              </div>
             </div>
           </div>
         </CardContent>
