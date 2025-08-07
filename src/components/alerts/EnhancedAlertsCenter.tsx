@@ -537,24 +537,12 @@ export const EnhancedAlertsCenter = () => {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-3 px-5 py-3 bg-destructive/15 rounded-2xl border border-destructive/25 shadow-lg">
-                  <div className="w-3 h-3 bg-destructive rounded-full animate-pulse shadow-lg shadow-destructive/50"></div>
-                  <span className="text-sm font-bold text-destructive">
-                    {unresolvedAlerts.length} alertas activas
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 px-5 py-3 bg-info/15 rounded-2xl border border-info/25 shadow-lg">
-                  <Zap className="w-4 h-4 text-info" />
-                  <span className="text-sm font-medium text-info">
-                    TMR promedio: 8.5h
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 px-5 py-3 bg-success/15 rounded-2xl border border-success/25 shadow-lg">
-                  <CheckCircle className="w-4 h-4 text-success" />
-                  <span className="text-sm font-medium text-success">
-                    {resolvedAlerts.length} resueltas
-                  </span>
-                </div>
+              <div className="flex items-center gap-3 px-5 py-3 bg-destructive/15 rounded-2xl border border-destructive/25 shadow-lg">
+                <div className="w-3 h-3 bg-destructive rounded-full animate-pulse shadow-lg shadow-destructive/50"></div>
+                <span className="text-sm font-bold text-destructive">
+                  {unresolvedAlerts.length} alertas activas
+                </span>
+              </div>
               </div>
             </div>
             
