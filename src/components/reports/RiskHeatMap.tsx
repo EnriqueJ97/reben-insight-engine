@@ -115,7 +115,7 @@ export const RiskHeatMap = ({ reportData, onCellClick }: RiskHeatMapProps) => {
               {teams.map((team, teamIndex) => (
                 <div key={team.team_id || teamIndex} className="grid grid-cols-5 gap-2 mb-2">
                   <div className="p-2 text-xs font-medium flex items-center space-x-2">
-                    <span>Equipo {(team.team_id || teamIndex.toString()).slice(0, 6)}</span>
+                    <span>{team.team_name || `Equipo ${teamIndex + 1}`}</span>
                     <Badge variant="outline" className="text-[10px]">
                       {team.unique_employees}
                     </Badge>
