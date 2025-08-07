@@ -44,7 +44,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export const EnhancedAlertsCenter = () => {
   const { user } = useAuth();
-  const { alerts, loading, resolveAlert, fetchAlerts } = useAlerts();
+  const { alerts, loading, resolveAlert, fetchAlerts, getGlobalAlertStats } = useAlerts();
   const { toast } = useToast();
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -53,6 +53,7 @@ export const EnhancedAlertsCenter = () => {
   const [actionHistory, setActionHistory] = useState<Record<string, any[]>>({});
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string | null>(null);
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter(alert => {
@@ -93,7 +94,7 @@ export const EnhancedAlertsCenter = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchAlerts();
+      await fetchAlerts(selectedTeamFilter || undefined);
       setLastRefresh(new Date());
       toast({
         title: "Datos actualizados",
@@ -109,6 +110,27 @@ export const EnhancedAlertsCenter = () => {
       setRefreshing(false);
     }
   };
+
+  const handleTeamFilter = async (teamId: string | null) => {
+    setSelectedTeamFilter(teamId);
+    await fetchAlerts(teamId || undefined);
+  };
+
+  // Get available teams for filtering (HR_ADMIN only)
+  const teamOptions = useMemo(() => {
+    if (user?.role !== 'HR_ADMIN') return [];
+    
+    const teams = [...new Set(
+      alerts
+        .map(alert => alert.profiles?.teams)
+        .filter(Boolean)
+        .map(team => ({ id: team!.id, name: team!.name }))
+    )];
+    
+    return teams;
+  }, [alerts, user?.role]);
+
+  const globalStats = user?.role === 'HR_ADMIN' ? getGlobalAlertStats() : null;
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -587,6 +609,63 @@ export const EnhancedAlertsCenter = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Team filter for HR_ADMIN */}
+      {user?.role === 'HR_ADMIN' && teamOptions.length > 0 && (
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <Building className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Vista Global - Filtrar por Equipo</h3>
+                  <p className="text-sm text-muted-foreground">Como HR Admin puedes ver alertas de toda la empresa</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Equipo:</span>
+                <select 
+                  value={selectedTeamFilter || 'all'} 
+                  onChange={(e) => handleTeamFilter(e.target.value === 'all' ? null : e.target.value)}
+                  className="px-3 py-2 border border-input rounded-md text-sm bg-background hover:border-primary/40 transition-colors min-w-48"
+                >
+                  <option value="all">Todos los equipos ({alerts.length} alertas)</option>
+                  {teamOptions.map(team => {
+                    const teamAlerts = alerts.filter(alert => alert.profiles?.team_id === team.id);
+                    return (
+                      <option key={team.id} value={team.id}>
+                        {team.name} ({teamAlerts.length} alertas)
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+            
+            {globalStats && (
+              <div className="mt-4 p-4 bg-background/60 rounded-lg border border-primary/10">
+                <h4 className="font-medium mb-3">Estadísticas por Equipo</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.entries(globalStats.teamBreakdown).map(([teamName, stats]) => (
+                    <div key={teamName} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                      <span className="text-sm font-medium">{teamName}</span>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">{stats.total}</span>
+                        {stats.critical > 0 && (
+                          <Badge variant="destructive" className="h-4 text-xs">{stats.critical}</Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Métricas mejoradas */}
       <AlertMetrics alerts={alertsWithStatus} />

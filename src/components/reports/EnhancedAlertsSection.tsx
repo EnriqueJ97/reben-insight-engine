@@ -34,11 +34,22 @@ interface AlertData {
 }
 
 interface EnhancedAlertsSectionProps {
-  alertData: AlertData[];
+  alertData?: AlertData[];
   onAlertClick?: (alertId: string) => void;
+  userRole?: string;
+  onTeamFilter?: (teamId: string | null) => void;
+  selectedTeam?: string | null;
+  teamOptions?: Array<{ id: string; name: string }>;
 }
 
-export const EnhancedAlertsSection = ({ alertData, onAlertClick }: EnhancedAlertsSectionProps) => {
+export const EnhancedAlertsSection = ({ 
+  alertData = [], 
+  onAlertClick, 
+  userRole = 'EMPLOYEE',
+  onTeamFilter,
+  selectedTeam,
+  teamOptions = []
+}: EnhancedAlertsSectionProps) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'critical' | 'trends' | 'resolution'>('overview');
   const [filterSeverity, setFilterSeverity] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'resolved'>('all');
@@ -177,11 +188,39 @@ export const EnhancedAlertsSection = ({ alertData, onAlertClick }: EnhancedAlert
           <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
             Centro de Alertas Inteligente
+            {userRole === 'HR_ADMIN' && (
+              <Badge variant="outline" className="ml-2">Vista Global</Badge>
+            )}
+            {userRole === 'MANAGER' && (
+              <Badge variant="outline" className="ml-2">Mi Equipo</Badge>
+            )}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Monitoreo en tiempo real y gestión de intervenciones
+            {userRole === 'HR_ADMIN' 
+              ? 'Vista global de todas las alertas de la empresa'
+              : userRole === 'MANAGER'
+              ? 'Alertas de tu equipo en tiempo real'
+              : 'Monitoreo en tiempo real y gestión de intervenciones'
+            }
           </p>
         </div>
+        
+        {/* Team filter for HR_ADMIN */}
+        {userRole === 'HR_ADMIN' && teamOptions.length > 0 && onTeamFilter && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Filtrar por equipo:</span>
+            <select 
+              value={selectedTeam || 'all'} 
+              onChange={(e) => onTeamFilter(e.target.value === 'all' ? null : e.target.value)}
+              className="px-3 py-1 border border-input rounded-md text-sm bg-background"
+            >
+              <option value="all">Todos los equipos</option>
+              {teamOptions.map(team => (
+                <option key={team.id} value={team.id}>{team.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Quick stats */}

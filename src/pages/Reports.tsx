@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PremiumTrendChart } from '@/components/reports/PremiumTrendChart';
 import { EnhancedTeamsSection } from '@/components/reports/EnhancedTeamsSection';
 import { EnhancedAlertsSection } from '@/components/reports/EnhancedAlertsSection';
+import { useAlerts } from '@/hooks/useAlerts';
 import { EnhancedImpactSection } from '@/components/reports/EnhancedImpactSection';
 import { StoryTiles } from '@/components/reports/StoryTiles';
 import { RiskHeatMap } from '@/components/reports/RiskHeatMap';
@@ -27,6 +28,7 @@ const Reports = () => {
   const { user } = useAuth();
   const { loading: reportsLoading, exportToPDF, exportToCSV, getQuickStats } = useReports();
   const { loading: teamLoading, reportData, getTeamReports } = useTeamReports();
+  const { alerts, fetchAlerts } = useAlerts();
   const { toast } = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedTeam, setSelectedTeam] = useState('all');
@@ -614,12 +616,34 @@ const Reports = () => {
 
         <TabsContent value="alerts" className="space-y-6">
           <EnhancedAlertsSection 
-            alertData={[
-              { id: '1', type: 'burnout', severity: 'critical', employee_alias: 'EMP-A1B2', team: 'Desarrollo', created_at: '2024-01-15', resolved: false, impact_score: 8, trends: [] },
-              { id: '2', type: 'high_stress', severity: 'high', employee_alias: 'EMP-C3D4', team: 'Marketing', created_at: '2024-01-14', resolved: false, impact_score: 6, trends: [] },
-              { id: '3', type: 'low_engagement', severity: 'medium', employee_alias: 'EMP-E5F6', team: 'Ventas', created_at: '2024-01-13', resolved: true, resolution_time: 24, impact_score: 4, trends: [] },
-              { id: '4', type: 'absence_pattern', severity: 'low', employee_alias: 'EMP-G7H8', team: 'Operaciones', created_at: '2024-01-12', resolved: false, impact_score: 3, trends: [] }
-            ]} 
+            alertData={alerts.map(alert => ({
+              id: alert.id,
+              type: alert.type === 'burnout_risk' ? 'burnout' : 
+                    alert.type === 'high_stress' ? 'high_stress' : 
+                    alert.type === 'low_satisfaction' ? 'low_engagement' : 'absence_pattern',
+              severity: alert.severity === 'high' ? 'critical' : alert.severity as any,
+              employee_alias: alert.profiles?.full_name ? 
+                alert.profiles.full_name.split(' ').map(word => word.charAt(0).toUpperCase()).join('.') : 
+                'N.N.',
+              team: alert.profiles?.teams?.name || 'Sin equipo',
+              created_at: alert.created_at,
+              resolved: alert.resolved,
+              resolution_time: alert.resolved_at ? 
+                Math.floor((new Date(alert.resolved_at).getTime() - new Date(alert.created_at).getTime()) / (1000 * 60 * 60)) : 
+                undefined,
+              impact_score: alert.severity === 'high' ? 8 : alert.severity === 'medium' ? 5 : 3,
+              trends: []
+            }))}
+            userRole={user?.role}
+            onTeamFilter={async (teamId) => {
+              setSelectedTeam(teamId || 'all');
+              await fetchAlerts(teamId || undefined);
+            }}
+            selectedTeam={selectedTeam === 'all' ? null : selectedTeam}
+            teamOptions={reportData?.team_breakdown.map(team => ({
+              id: team.team_id,
+              name: team.team_name
+            })) || []}
             onAlertClick={(alertId) => handleKPIClick('Alert', alertId.length)}
           />
           

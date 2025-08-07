@@ -18,6 +18,11 @@ export interface Alert {
     full_name: string;
     email: string;
     role: string;
+    team_id?: string;
+    teams?: {
+      id: string;
+      name: string;
+    };
   };
 }
 
@@ -26,7 +31,7 @@ export const useAlerts = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = async (teamId?: string) => {
     if (!user) return;
     
     setLoading(true);
@@ -38,7 +43,12 @@ export const useAlerts = () => {
           profiles!alerts_user_id_fkey (
             full_name,
             email,
-            role
+            role,
+            team_id,
+            teams!profiles_team_id_fkey (
+              id,
+              name
+            )
           )
         `)
         .order('created_at', { ascending: false });
@@ -47,17 +57,40 @@ export const useAlerts = () => {
       if (user.role === 'EMPLOYEE') {
         query = query.eq('user_id', user.id);
       } else if (user.role === 'MANAGER') {
-        // Manager can see alerts from their team members
-        query = query.in('user_id', await getTeamMemberIds());
+        // Manager can only see alerts from their team members
+        const teamMemberIds = await getTeamMemberIds();
+        if (teamMemberIds.length > 0) {
+          query = query.in('user_id', teamMemberIds);
+        } else {
+          // If no team members, return empty array
+          setAlerts([]);
+          return;
+        }
       } else if (user.role === 'HR_ADMIN') {
         // HR_ADMIN can see all alerts in their tenant
         const { data: tenantProfiles } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, team_id')
           .eq('tenant_id', user.tenant_id);
         
         const userIds = tenantProfiles?.map(p => p.id) || [];
-        query = query.in('user_id', userIds);
+        
+        if (userIds.length > 0) {
+          query = query.in('user_id', userIds);
+          
+          // If specific team filter is applied
+          if (teamId) {
+            const teamUserIds = tenantProfiles
+              ?.filter(p => p.team_id === teamId)
+              .map(p => p.id) || [];
+            if (teamUserIds.length > 0) {
+              query = query.in('user_id', teamUserIds);
+            }
+          }
+        } else {
+          setAlerts([]);
+          return;
+        }
       }
 
       const { data, error } = await query;
@@ -72,20 +105,69 @@ export const useAlerts = () => {
   };
 
   const getTeamMemberIds = async (): Promise<string[]> => {
-    if (!user?.team_id) return [];
+    if (!user) return [];
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('profiles')
         .select('id')
-        .eq('team_id', user.team_id);
+        .eq('tenant_id', user.tenant_id);
 
+      // For managers, get their team members
+      if (user.role === 'MANAGER') {
+        if (user.team_id) {
+          // If user has team_id, get all members of that team
+          query = query.eq('team_id', user.team_id);
+        } else {
+          // If manager doesn't have team_id, find teams where they are the manager
+          const { data: teams } = await supabase
+            .from('teams')
+            .select('id')
+            .eq('manager_id', user.id)
+            .eq('tenant_id', user.tenant_id);
+          
+          if (teams && teams.length > 0) {
+            const teamIds = teams.map(t => t.id);
+            query = query.in('team_id', teamIds);
+          } else {
+            return [];
+          }
+        }
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data?.map(p => p.id) || [];
     } catch (error) {
       console.error('Error getting team member IDs:', error);
       return [];
     }
+  };
+
+  const getGlobalAlertStats = () => {
+    const stats = getAlertStats();
+    
+    // Group by teams for HR_ADMIN
+    const teamStats = alerts.reduce((acc, alert) => {
+      const teamName = alert.profiles?.teams?.name || 'Sin equipo';
+      if (!acc[teamName]) {
+        acc[teamName] = {
+          total: 0,
+          critical: 0,
+          resolved: 0,
+          teamId: alert.profiles?.team_id
+        };
+      }
+      acc[teamName].total++;
+      if (alert.severity === 'high') acc[teamName].critical++;
+      if (alert.resolved) acc[teamName].resolved++;
+      return acc;
+    }, {} as Record<string, any>);
+
+    return {
+      ...stats,
+      teamBreakdown: teamStats
+    };
   };
 
   const createAlert = async (
@@ -223,6 +305,7 @@ export const useAlerts = () => {
     createAlert,
     resolveAlert,
     checkForBurnoutAlerts,
-    getAlertStats
+    getAlertStats,
+    getGlobalAlertStats
   };
 };
