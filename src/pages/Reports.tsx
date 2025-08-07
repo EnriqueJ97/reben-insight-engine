@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart3, TrendingUp, TrendingDown, Users, AlertTriangle, Calendar, Download, DollarSign, ArrowLeft, Keyboard } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useReports, ReportData } from '@/hooks/useReports';
+import { useTeamReports } from '@/hooks/useTeamReports';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
 import { PremiumTrendChart } from '@/components/reports/PremiumTrendChart';
@@ -24,12 +25,14 @@ import { InteractiveROI } from '@/components/reports/InteractiveROI';
 
 const Reports = () => {
   const { user } = useAuth();
-  const { loading, generateReport, exportToPDF, exportToCSV, getQuickStats } = useReports();
+  const { loading: reportsLoading, exportToPDF, exportToCSV, getQuickStats } = useReports();
+  const { loading: teamLoading, reportData, getTeamReports } = useTeamReports();
   const { toast } = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedTeam, setSelectedTeam] = useState('all');
-  const [reportData, setReportData] = useState<ReportData | null>(null);
   const [quickStats, setQuickStats] = useState<any>(null);
+
+  const loading = reportsLoading || teamLoading;
   
   // Drill-down state
   const [activeTab, setActiveTab] = useState('methodology');
@@ -40,108 +43,48 @@ const Reports = () => {
   }>({});
   const [breadcrumbPath, setBreadcrumbPath] = useState<string[]>([]);
 
-  // Generate realistic demo data for new users
-  const generateDemoData = () => {
-    const now = new Date();
-    const mockTrends = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() - (29 - i));
-      return {
-        date: date.toISOString(),
-        wellness_score: 65 + Math.random() * 20 + Math.sin(i / 5) * 5
-      };
-    });
-
-    const mockTeams = [
-      {
-        team_id: 'team-1',
-        team_name: 'Desarrollo Frontend',
-        name: 'Desarrollo Frontend',
-        member_count: 8,
-        wellness_score: 78,
-        participation_rate: 95,
-        satisfaction: 82,
-        productivity: 89,
-        risk_level: 'low',
-        unique_employees: 8
-      },
-      {
-        team_id: 'team-2', 
-        team_name: 'Backend & APIs',
-        name: 'Backend & APIs',
-        member_count: 6,
-        wellness_score: 52,
-        participation_rate: 67,
-        satisfaction: 45,
-        productivity: 72,
-        risk_level: 'high',
-        unique_employees: 6
-      },
-      {
-        team_id: 'team-3',
-        team_name: 'UX/UI Design',
-        name: 'UX/UI Design',
-        member_count: 5,
-        wellness_score: 85,
-        participation_rate: 92,
-        satisfaction: 88,
-        productivity: 91,
-        risk_level: 'low',
-        unique_employees: 5
-      },
-      {
-        team_id: 'team-4',
-        team_name: 'Marketing Digital',
-        name: 'Marketing Digital',
-        member_count: 7,
-        wellness_score: 63,
-        participation_rate: 78,
-        satisfaction: 65,
-        productivity: 76,
-        risk_level: 'medium',
-        unique_employees: 7
+  
+  // Generate team-filtered data based on user role
+  const getFilteredData = () => {
+    if (!reportData) return null;
+    
+    // If a specific team is selected and user has permission
+    if (selectedTeam !== 'all') {
+      if (user?.role === 'HR_ADMIN') {
+        // HR_ADMIN can see any team
+        return {
+          ...reportData,
+          team_breakdown: reportData.team_breakdown.filter(team => team.id === selectedTeam)
+        };
+      } else if (user?.role === 'MANAGER') {
+        // MANAGER can only see their own team
+        const userTeams = reportData.team_breakdown.filter(team => 
+          team.id === user.team_id || team.id === selectedTeam
+        );
+        return {
+          ...reportData,
+          team_breakdown: userTeams
+        };
       }
-    ];
-
-    return {
-      period: '30d',
-      total_checkins: 456,
-      avg_mood: 3.5,
-      wellness_score: 70,
-      participation_rate: 83,
-      response_rate: 83,
-      total_alerts: 5,
-      critical_alerts: 3,
-      burnout_risk_percentage: 15,
-      alert_resolution_rate: 78,
-      generated_at: new Date().toISOString(),
-      key_metrics: {
-        estimated_cost_savings: 25000,
-        productivity_improvement: 15,
-        retention_improvement: 8
-      },
-      trends: mockTrends,
-      team_breakdown: mockTeams,
-      overall_wellness: 70,
-      total_responses: 456
-    };
+    }
+    
+    return reportData;
   };
 
-  // Use demo data if no real data available
-  const effectiveReportData = reportData || generateDemoData();
+  const filteredReportData = getFilteredData();
 
-  // Real data from reports with fallback to demo data
-  const wellnessTrendData = effectiveReportData?.trends?.map(trend => ({
+  // Real data from reports with role-based filtering
+  const wellnessTrendData = filteredReportData?.trends?.map(trend => ({
     date: new Date(trend.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }),
     bienestar: Math.round(trend.wellness_score),
     burnout: Math.round(100 - trend.wellness_score),
     satisfaccion: Math.max(0, Math.round(trend.wellness_score - 5))
   })) || [];
 
-  const teamComparisonData = effectiveReportData?.team_breakdown?.map(team => ({
-    team: team.team_name || team.name || `Equipo ${team.team_id?.slice(0, 6)}`,
+  const teamComparisonData = filteredReportData?.team_breakdown?.map(team => ({
+    team: team.team_name || team.name,
     bienestar: Math.round(team.wellness_score),
-    miembros: team.unique_employees
+    miembros: team.unique_employees || team.member_count
   })) || [];
 
   // Define keyMetrics first
@@ -164,25 +107,21 @@ const Reports = () => {
     { categoria: 'Ahorros Estimados', costo_actual: reportData.key_metrics.estimated_cost_savings || 0, costo_potencial: (reportData.key_metrics.estimated_cost_savings || 0) * 1.5 }
   ] : [];
 
-  // Load initial data
-  useEffect(() => {
-    loadReportData();
-    loadQuickStats();
-  }, [selectedPeriod, selectedTeam]);
-
-  const loadReportData = async () => {
-    const data = await generateReport(
-      selectedPeriod, 
-      selectedTeam === 'all' ? undefined : selectedTeam,
-      'json',
-      'executive'
-    );
-    setReportData(data);
-  };
-
-  const loadQuickStats = async () => {
+  const handleGenerateReport = async () => {
+    await getTeamReports(selectedPeriod);
     const stats = await getQuickStats(selectedPeriod);
     setQuickStats(stats);
+  };
+
+  // Load initial data
+  useEffect(() => {
+    if (user) {
+      handleGenerateReport();
+    }
+  }, [user, selectedPeriod]);
+
+  const handleRefreshData = async () => {
+    await getTeamReports(selectedPeriod);
   };
 
   const handleExportPDF = async () => {
@@ -312,6 +251,28 @@ const Reports = () => {
               <SelectItem value="30d">30 días</SelectItem>
               <SelectItem value="90d">3 meses</SelectItem>
               <SelectItem value="1y">1 año</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={selectedTeam}
+            onValueChange={(value) => {
+              setSelectedTeam(value);
+              // Refresh data when team selection changes
+              setTimeout(() => handleRefreshData(), 100);
+            }}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Seleccionar equipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {user?.role === 'HR_ADMIN' ? 'Todos los equipos' : 'Mi equipo'}
+              </SelectItem>
+              {user?.role === 'HR_ADMIN' && reportData?.team_breakdown?.map((team) => (
+                <SelectItem key={team.id} value={team.id}>
+                  {team.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex space-x-2">
@@ -629,24 +590,24 @@ const Reports = () => {
 
         <TabsContent value="teams" className="space-y-6">
           <EnhancedTeamsSection 
-            teamData={effectiveReportData?.team_breakdown?.map(team => ({
-              id: team.team_id || team.name,
-              name: team.team_name || team.name || `Equipo ${team.team_id?.slice(0, 6)}`,
-              wellness_score: Math.round(team.wellness_score),
-              participation_rate: team.participation_rate || Math.floor(Math.random() * 20) + 80,
-              member_count: team.unique_employees || team.member_count,
-              risk_level: team.risk_level || (team.wellness_score >= 80 ? 'low' : team.wellness_score >= 70 ? 'medium' : 'high') as 'low' | 'medium' | 'high',
-              trend: Math.floor(Math.random() * 10) - 5,
-              burnout_risk: Math.max(0, 100 - team.wellness_score),
-              satisfaction: team.satisfaction || Math.max(0, team.wellness_score - 5),
-              productivity: team.productivity || Math.floor(Math.random() * 20) + 75,
-              manager: 'Manager'
+            teamData={filteredReportData?.team_breakdown?.map(team => ({
+              id: team.id,
+              name: team.name,
+              wellness_score: team.wellness_score,
+              participation_rate: team.participation_rate,
+              member_count: team.member_count,
+              risk_level: team.risk_level,
+              trend: team.trend,
+              burnout_risk: team.burnout_risk,
+              satisfaction: team.satisfaction,
+              productivity: team.productivity,
+              manager: team.manager
             })) || []}
             onTeamClick={(teamId) => handleKPIClick('Team', teamId.length)}
           />
           
           <RiskHeatMap 
-            reportData={effectiveReportData} 
+            reportData={filteredReportData} 
             onCellClick={handleHeatMapClick}
           />
         </TabsContent>
