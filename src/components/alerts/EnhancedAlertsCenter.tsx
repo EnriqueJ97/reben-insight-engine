@@ -29,7 +29,10 @@ import {
   Building,
   RefreshCw,
   Eye,
-  Info
+  Info,
+  Zap,
+  Target,
+  BarChart3
 } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -274,30 +277,30 @@ export const EnhancedAlertsCenter = () => {
     });
 
     return (
-      <Card key={alert.id} className={`border-l-4 ${getSeverityBorder(alert.severity)} ${getSeverityBg(alert.severity)} transition-all hover:shadow-md`}>
+      <Card key={alert.id} className={`group border-l-4 ${getSeverityBorder(alert.severity)} ${getSeverityBg(alert.severity)} transition-all duration-300 hover:shadow-xl hover:scale-[1.02]`}>
         <CardContent className="p-6">
-          {/* Header mejorado */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-full ${
-                alert.severity === 'high' ? 'bg-destructive/20 text-destructive' :
-                alert.severity === 'medium' ? 'bg-warning/20 text-warning' :
-                'bg-info/20 text-info'
+          {/* Header mejorado con diseño moderno */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-xl transition-all duration-300 group-hover:scale-110 ${
+                alert.severity === 'high' ? 'bg-gradient-to-br from-destructive/20 to-destructive/10 text-destructive shadow-lg shadow-destructive/25' :
+                alert.severity === 'medium' ? 'bg-gradient-to-br from-warning/20 to-warning/10 text-warning shadow-lg shadow-warning/25' :
+                'bg-gradient-to-br from-info/20 to-info/10 text-info shadow-lg shadow-info/25'
               }`}>
                 {getAlertIcon(alert.type)}
               </div>
               <div>
-                <h4 className="font-semibold text-lg">{getAlertTypeLabel(alert.type)}</h4>
-                <div className="flex items-center space-x-2 mt-1">
-                  <Badge variant={getSeverityColor(alert.severity) as any} className="text-xs font-medium">
+                <h4 className="font-bold text-xl text-foreground mb-2">{getAlertTypeLabel(alert.type)}</h4>
+                <div className="flex items-center space-x-3">
+                  <Badge variant={getSeverityColor(alert.severity) as any} className="text-xs font-bold px-3 py-1 shadow-md">
                     {alert.severity === 'high' ? '🔴 CRÍTICO' : 
                      alert.severity === 'medium' ? '🟡 MEDIO' : '🟢 BAJO'}
                   </Badge>
-                  <span className="text-xs text-muted-foreground flex items-center">
+                  <span className="text-sm text-muted-foreground flex items-center bg-muted/30 px-2 py-1 rounded-md">
                     <Calendar className="h-3 w-3 mr-1" />
                     {timeAgo}
                   </span>
-                  <span className="text-xs text-muted-foreground flex items-center">
+                  <span className="text-sm text-muted-foreground flex items-center bg-muted/30 px-2 py-1 rounded-md">
                     <Clock className="h-3 w-3 mr-1" />
                     SLA: 48h
                   </span>
@@ -308,28 +311,37 @@ export const EnhancedAlertsCenter = () => {
 
           {/* Información del empleado (GDPR Art. 9 compliant) */}
           {user?.role !== 'EMPLOYEE' && (
-            <div className="mb-4 p-3 bg-background/50 rounded-lg border">
+            <div className="mb-6 p-4 bg-gradient-to-r from-background to-muted/20 rounded-xl border border-muted/30 shadow-inner">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{employee.name}</span>
-                  <Badge variant="outline" className="text-xs">{employee.role}</Badge>
-                  {!employee.showIdentity && (
-                    <Badge variant="secondary" className="text-xs">
-                      🔒 Datos anonimizados
-                    </Badge>
-                  )}
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <span className="text-base font-semibold text-foreground">{employee.name}</span>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Badge variant="outline" className="text-xs">{employee.role}</Badge>
+                      {!employee.showIdentity && (
+                        <Badge variant="secondary" className="text-xs bg-warning/10 text-warning border-warning/20">
+                          🔒 Datos anonimizados
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   {user?.role === 'MANAGER' && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <Info className="h-4 w-4 text-muted-foreground" />
+                          <div className="p-2 bg-info/10 rounded-lg">
+                            <Info className="h-4 w-4 text-info" />
+                          </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Como manager, solo ves nivel de riesgo por RGPD Art. 9</p>
-                          <p>Para detalles clínicos, deriva a RRHH</p>
+                        <TooltipContent className="max-w-xs">
+                          <p className="font-medium">Protección RGPD</p>
+                          <p className="text-sm">Como manager, solo ves nivel de riesgo por RGPD Art. 9</p>
+                          <p className="text-sm">Para detalles clínicos, deriva a RRHH</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -338,11 +350,14 @@ export const EnhancedAlertsCenter = () => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <Info className="h-4 w-4 text-warning" />
+                          <div className="p-2 bg-warning/10 rounded-lg">
+                            <Info className="h-4 w-4 text-warning" />
+                          </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Equipo pequeño (&lt;5): identidad protegida</p>
-                          <p>Regla k-anonimato para prevenir reidentificación</p>
+                        <TooltipContent className="max-w-xs">
+                          <p className="font-medium">K-Anonimato</p>
+                          <p className="text-sm">Equipo pequeño (&lt;5): identidad protegida</p>
+                          <p className="text-sm">Regla k-anonimato para prevenir reidentificación</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -353,34 +368,44 @@ export const EnhancedAlertsCenter = () => {
           )}
 
           {/* Descripción y sugerencias */}
-          <div className="mb-4 space-y-3">
-            <div className="p-3 bg-muted/30 rounded-lg">
-              <p className="text-sm leading-relaxed">{message}</p>
+          <div className="mb-6 space-y-4">
+            <div className="p-4 bg-gradient-to-r from-muted/20 to-muted/10 rounded-xl border border-muted/20">
+              <p className="text-sm leading-relaxed text-foreground font-medium">{message}</p>
             </div>
             
             {alert.severity === 'high' && (
-              <div className="p-3 bg-info/10 border border-info/20 rounded-lg">
-                <p className="text-sm text-foreground">
-                  <strong>Sugerencia:</strong> Repriorizar backlog y revisar staffing. Considerar derivación a Servicio de Prevención.
-                </p>
+              <div className="p-4 bg-gradient-to-r from-info/10 to-info/5 border border-info/20 rounded-xl">
+                <div className="flex items-start space-x-3">
+                  <div className="p-1 bg-info/20 rounded-md">
+                    <Target className="h-4 w-4 text-info" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground mb-1">Sugerencia automática:</p>
+                    <p className="text-sm text-foreground">
+                      Repriorizar backlog y revisar staffing. Considerar derivación a Servicio de Prevención.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
           {/* Owner y SLA */}
-          <div className="mb-4 p-3 bg-muted/10 rounded-lg border-l-2 border-primary/20">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center">
-                  <UserCheck className="h-4 w-4 mr-1" />
-                  Owner: {alert.assigned_to ? 'Team Lead' : 'Auto-asignado'}
-                </span>
-                <span className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  TMR: 12h
-                </span>
+          <div className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border-l-4 border-primary/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <UserCheck className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">
+                    Owner: {alert.assigned_to ? 'Team Lead' : 'Auto-asignado'}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">TMR: 12h</span>
+                </div>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
                 Creado: {timeAgo}
               </span>
             </div>
@@ -388,15 +413,15 @@ export const EnhancedAlertsCenter = () => {
 
           {/* Historial de acciones */}
           {actionHistory[alert.id] && actionHistory[alert.id].length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <History className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground">Timeline de acciones</span>
+            <div className="mb-6">
+              <div className="flex items-center space-x-2 mb-3">
+                <History className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Timeline de acciones</span>
               </div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
+              <div className="space-y-2 max-h-32 overflow-y-auto">
                 {actionHistory[alert.id].map((action, index) => (
-                  <div key={index} className="text-xs p-2 bg-background/50 rounded border-l-2 border-primary/20">
-                    <span className="font-medium">{action.type}</span> por {action.user} 
+                  <div key={index} className="text-xs p-3 bg-background/80 rounded-lg border-l-2 border-primary/30 shadow-sm">
+                    <span className="font-semibold text-foreground">{action.type}</span> por {action.user} 
                     <span className="text-muted-foreground ml-2">
                       {new Date(action.timestamp).toLocaleString('es-ES')}
                     </span>
@@ -407,22 +432,22 @@ export const EnhancedAlertsCenter = () => {
           )}
 
           {/* Footer con estado y acciones mejoradas */}
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between pt-6 border-t border-muted/30">
+            <div className="flex items-center space-x-3">
               {alert.resolved ? (
-                <div className="flex items-center space-x-2 text-success">
+                <div className="flex items-center space-x-2 text-success bg-success/10 px-3 py-2 rounded-full">
                   <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Resuelto</span>
+                  <span className="text-sm font-semibold">Resuelto</span>
                 </div>
               ) : (alert.status || 'pending') === 'in_progress' ? (
-                <div className="flex items-center space-x-2 text-warning">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-sm font-medium">En curso</span>
+                <div className="flex items-center space-x-2 text-warning bg-warning/10 px-3 py-2 rounded-full">
+                  <Clock className="h-4 w-4 animate-pulse" />
+                  <span className="text-sm font-semibold">En curso</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 text-muted-foreground">
+                <div className="flex items-center space-x-2 text-muted-foreground bg-muted/20 px-3 py-2 rounded-full">
                   <Clock className="h-4 w-4" />
-                  <span className="text-sm font-medium">Pendiente</span>
+                  <span className="text-sm font-semibold">Pendiente</span>
                 </div>
               )}
             </div>
@@ -437,7 +462,7 @@ export const EnhancedAlertsCenter = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleQuickAction(alert, 'call')}
-                      className="flex items-center space-x-1"
+                      className="flex items-center space-x-2 hover:bg-primary/10"
                     >
                       <Phone className="h-3 w-3" />
                       <span>Llamar</span>
@@ -447,7 +472,7 @@ export const EnhancedAlertsCenter = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleQuickAction(alert, 'email')}
-                      className="flex items-center space-x-1"
+                      className="flex items-center space-x-2 hover:bg-primary/10"
                     >
                       <Mail className="h-3 w-3" />
                       <span>Email</span>
@@ -457,33 +482,33 @@ export const EnhancedAlertsCenter = () => {
                       variant="default"
                       size="sm"
                       onClick={() => setSelectedAlert(alert)}
-                      className="flex items-center space-x-1"
+                      className="flex items-center space-x-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                     >
                       <CheckCircle className="h-3 w-3" />
                       <span>Resolver</span>
                     </Button>
                   </>
                 ) : user?.role === 'MANAGER' ? (
-                  // Managers: acciones limitadas, sin contacto directo
+                  // Manager solo puede derivar (GDPR compliance)
                   <>
                     <Button
-                      variant="secondary"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleQuickAction(alert, 'hr_referral')}
-                      className="flex items-center space-x-1"
-                    >
-                      <Building className="h-3 w-3" />
-                      <span>Derivar RRHH</span>
-                    </Button>
-
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleQuickAction(alert, 'action_plan')}
-                      className="flex items-center space-x-1"
+                      className="flex items-center space-x-2 hover:bg-warning/10"
                     >
                       <MessageSquare className="h-3 w-3" />
-                      <span>Plan 1:1</span>
+                      <span>Derivar a RRHH</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleQuickAction(alert, 'action_plan')}
+                      className="flex items-center space-x-2 hover:bg-info/10"
+                    >
+                      <BarChart3 className="h-3 w-3" />
+                      <span>Plan acción</span>
                     </Button>
                   </>
                 ) : null}
@@ -495,72 +520,80 @@ export const EnhancedAlertsCenter = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Header con refresh */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center space-x-2">
-            <Bell className="h-8 w-8 text-primary" />
-            <span>Centro de Alertas</span>
-          </h1>
-          <p className="text-muted-foreground mt-1 flex items-center space-x-2">
-            <span>
-              {user?.role === 'EMPLOYEE' 
-                ? 'Gestiona tus notificaciones y alertas personales'
-                : user?.role === 'MANAGER'
-                ? 'Monitorea y gestiona las alertas de tu equipo'
-                : 'Control total de alertas y configuración de políticas'
-              }
-            </span>
-            <span className="text-xs">
-              • Última actualización: {lastRefresh.toLocaleTimeString('es-ES')}
-            </span>
-          </p>
-        </div>
-
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>Actualizar</span>
-          </Button>
-          
-          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
-            <CreateAlertDialog />
-          )}
-          {user?.role === 'HR_ADMIN' && (
-            <AlertRuleManager />
-          )}
+    <div className="space-y-8 p-6 max-w-7xl mx-auto">
+      {/* Header rediseñado con gradiente premium */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/15 via-background to-primary/5 border border-primary/20 shadow-2xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,.15)_1px,transparent_0)] [background-size:20px_20px] opacity-30"></div>
+        <div className="relative p-8 lg:p-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-5xl font-black bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+                  Centro de Alertas
+                </h1>
+                <p className="text-xl text-muted-foreground font-medium">
+                  Monitoreo inteligente del bienestar del equipo con IA avanzada
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-3 px-5 py-3 bg-destructive/15 rounded-2xl border border-destructive/25 shadow-lg">
+                  <div className="w-3 h-3 bg-destructive rounded-full animate-pulse shadow-lg shadow-destructive/50"></div>
+                  <span className="text-sm font-bold text-destructive">
+                    {unresolvedAlerts.length} alertas activas
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 px-5 py-3 bg-info/15 rounded-2xl border border-info/25 shadow-lg">
+                  <Zap className="w-4 h-4 text-info" />
+                  <span className="text-sm font-medium text-info">
+                    TMR promedio: 8.5h
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 px-5 py-3 bg-success/15 rounded-2xl border border-success/25 shadow-lg">
+                  <CheckCircle className="w-4 h-4 text-success" />
+                  <span className="text-sm font-medium text-success">
+                    {resolvedAlerts.length} resueltas
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                variant="outline"
+                size="lg"
+                className="gap-3 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary/10 shadow-lg"
+              >
+                <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
+                Actualizar datos
+              </Button>
+              
+              {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
+                <CreateAlertDialog />
+              )}
+              {user?.role === 'HR_ADMIN' && (
+                <AlertRuleManager />
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Política de privacidad RGPD más explícita */}
-      <Card className="border-info bg-info/5">
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <Shield className="h-5 w-5 text-info mt-0.5" />
+      {/* Aviso de privacidad RGPD */}
+      <Card className="border-info/30 bg-gradient-to-r from-info/10 to-info/5 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-start space-x-4">
+            <div className="p-2 bg-info/20 rounded-lg">
+              <Shield className="h-6 w-6 text-info" />
+            </div>
             <div className="space-y-2">
-              <h4 className="font-medium text-foreground">🔒 Cumplimiento RGPD - Datos de Salud Mental</h4>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p><strong>Art. 9 RGPD:</strong> Datos de bienestar son información sensible de salud.</p>
-                <p><strong>Managers:</strong> Solo ven nivel de riesgo pseudonimizado, no identidad real.</p>
-                <p><strong>RRHH:</strong> Acceso completo para función de prevención laboral.</p>
+              <h4 className="font-bold text-lg text-foreground">🔒 Protección de Datos Personales</h4>
+              <div className="text-sm text-muted-foreground space-y-1 leading-relaxed">
+                <p><strong>RGPD Art. 9:</strong> Los datos mostrados están anonimizados para proteger la identidad de los empleados.</p>
+                <p><strong>Solo iniciales:</strong> Se muestran únicamente las iniciales para cumplir con la normativa de privacidad.</p>
                 <p><strong>Auditoría:</strong> Todos los accesos se registran según Art. 30 RGPD.</p>
-                <p><strong>Minimización:</strong> Solo datos necesarios para la función específica.</p>
               </div>
             </div>
           </div>
@@ -568,137 +601,210 @@ export const EnhancedAlertsCenter = () => {
       </Card>
 
       {/* Métricas mejoradas */}
-      <AlertMetrics alerts={alerts} onHighPriorityFilter={handleHighPriorityFilter} />
+      <AlertMetrics alerts={alertsWithStatus} />
 
-      {/* Filtros ampliados */}
-      <div className="flex items-center space-x-4 p-4 bg-muted/30 rounded-lg">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium">Severidad:</label>
-          <Select value={selectedSeverity} onValueChange={setSelectedSeverity}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="high">Alta</SelectItem>
-              <SelectItem value="medium">Media</SelectItem>
-              <SelectItem value="low">Baja</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Filtros rediseñados */}
+      <Card className="border-primary/20 bg-gradient-to-r from-background to-muted/10 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Filter className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">Filtros avanzados</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground">Severidad</Label>
+              <Select value={selectedSeverity} onValueChange={setSelectedSeverity}>
+                <SelectTrigger className="bg-background border-muted/40 hover:border-primary/40 transition-colors">
+                  <SelectValue placeholder="Severidad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las severidades</SelectItem>
+                  <SelectItem value="high">🔴 Crítico</SelectItem>
+                  <SelectItem value="medium">🟡 Medio</SelectItem>
+                  <SelectItem value="low">🟢 Bajo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground">Tipo de alerta</Label>
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="bg-background border-muted/40 hover:border-primary/40 transition-colors">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  {alertTypes.map(type => (
+                    <SelectItem key={type} value={type}>
+                      {getAlertTypeLabel(type)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground">Responsable</Label>
+              <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                <SelectTrigger className="bg-background border-muted/40 hover:border-primary/40 transition-colors">
+                  <SelectValue placeholder="Owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="unassigned">Sin asignar</SelectItem>
+                  {teamMembers.map(member => (
+                    <SelectItem key={member} value={member}>{member}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                onClick={handleHighPriorityFilter}
+                variant="destructive"
+                className="w-full gap-2 bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 shadow-lg"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Solo críticas
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs rediseñadas con mejor UX */}
+      <Tabs defaultValue="pending" className="w-full">
+        <div className="flex items-center justify-between mb-8">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 bg-muted/30 p-2 rounded-2xl shadow-lg">
+            <TabsTrigger 
+              value="pending" 
+              className="data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/20 transition-all duration-300 rounded-xl"
+            >
+              <div className="flex items-center gap-3 py-2">
+                <Clock className="h-5 w-5" />
+                <span className="font-semibold">Pendientes</span>
+                <Badge variant="destructive" className="ml-2 h-6 w-6 p-0 text-xs flex items-center justify-center shadow-md">
+                  {unresolvedAlerts.filter(a => (a.status || 'pending') !== 'in_progress').length}
+                </Badge>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="in_progress"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/20 transition-all duration-300 rounded-xl"
+            >
+              <div className="flex items-center gap-3 py-2">
+                <RefreshCw className="h-5 w-5" />
+                <span className="font-semibold">En curso</span>
+                <Badge variant="secondary" className="ml-2 h-6 w-6 p-0 text-xs flex items-center justify-center shadow-md">
+                  {inProgressAlerts.length}
+                </Badge>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="resolved"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/20 transition-all duration-300 rounded-xl"
+            >
+              <div className="flex items-center gap-3 py-2">
+                <CheckCircle className="h-5 w-5" />
+                <span className="font-semibold">Resueltas</span>
+                <Badge variant="outline" className="ml-2 h-6 w-6 p-0 text-xs flex items-center justify-center shadow-md">
+                  {resolvedAlerts.length}
+                </Badge>
+              </div>
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium">Tipo:</label>
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {alertTypes.map(type => (
-                <SelectItem key={type} value={type}>{getAlertTypeLabel(type)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium">Responsable:</label>
-          <Select value={selectedOwner} onValueChange={setSelectedOwner}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="unassigned">Sin asignar</SelectItem>
-              {teamMembers.map(member => (
-                <SelectItem key={member} value={member}>{member}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Tabs con estados ampliados */}
-      <Tabs defaultValue="active" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="active" className="flex items-center space-x-2">
-            <Clock className="h-4 w-4" />
-            <span>Pendientes ({unresolvedAlerts.filter(a => (a.status || 'pending') !== 'in_progress').length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="in_progress" className="flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4" />
-            <span>En curso ({inProgressAlerts.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="resolved" className="flex items-center space-x-2">
-            <CheckCircle className="h-4 w-4" />
-            <span>Resueltas ({resolvedAlerts.length})</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="active" className="space-y-4">
+        <TabsContent value="pending" className="space-y-6">
           {unresolvedAlerts.filter(a => (a.status || 'pending') !== 'in_progress').length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Shield className="h-16 w-16 text-success mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">¡Todo bajo control!</h3>
-                <p className="text-muted-foreground">No hay alertas pendientes en este momento.</p>
+            <Card className="border-dashed border-2 border-muted-foreground/25 shadow-lg">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="p-4 bg-success/10 rounded-full mb-6">
+                  <CheckCircle className="h-16 w-16 text-success" />
+                </div>
+                <h3 className="font-bold text-2xl mb-3 text-foreground">¡Todo bajo control!</h3>
+                <p className="text-muted-foreground text-center max-w-md text-lg">
+                  No hay alertas pendientes en este momento. El equipo está funcionando de manera óptima.
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
-              {unresolvedAlerts.filter(a => (a.status || 'pending') !== 'in_progress').map(renderPrivacyCompliantAlert)}
+            <div className="grid gap-6">
+              {unresolvedAlerts.filter(a => (a.status || 'pending') !== 'in_progress').map(alert => renderPrivacyCompliantAlert(alert))}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="in_progress" className="space-y-4">
+        <TabsContent value="in_progress" className="space-y-6">
           {inProgressAlerts.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Clock className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Sin alertas en curso</h3>
-                <p className="text-muted-foreground">No hay alertas siendo procesadas actualmente.</p>
+            <Card className="border-dashed border-2 border-muted-foreground/25 shadow-lg">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="p-4 bg-muted/20 rounded-full mb-6">
+                  <Clock className="h-16 w-16 text-muted-foreground" />
+                </div>
+                <h3 className="font-bold text-2xl mb-3 text-foreground">Sin alertas en progreso</h3>
+                <p className="text-muted-foreground text-center max-w-md text-lg">
+                  No hay alertas siendo atendidas actualmente.
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
-              {inProgressAlerts.map(renderPrivacyCompliantAlert)}
+            <div className="grid gap-6">
+              {inProgressAlerts.map(alert => renderPrivacyCompliantAlert(alert))}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="resolved" className="space-y-4">
+        <TabsContent value="resolved" className="space-y-6">
           {resolvedAlerts.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Eye className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Sin historial</h3>
-                <p className="text-muted-foreground">No hay alertas resueltas para mostrar.</p>
+            <Card className="border-dashed border-2 border-muted-foreground/25 shadow-lg">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="p-4 bg-muted/20 rounded-full mb-6">
+                  <History className="h-16 w-16 text-muted-foreground" />
+                </div>
+                <h3 className="font-bold text-2xl mb-3 text-foreground">Sin historial</h3>
+                <p className="text-muted-foreground text-center max-w-md text-lg">
+                  No hay alertas resueltas para mostrar en este momento.
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
-              {resolvedAlerts.map(renderPrivacyCompliantAlert)}
+            <div className="grid gap-6">
+              {resolvedAlerts.map(alert => renderPrivacyCompliantAlert(alert))}
             </div>
           )}
         </TabsContent>
       </Tabs>
 
-      {/* Modal de resolución mejorado */}
+      {/* Modal de resolución */}
       {selectedAlert && (
         <AlertResolutionModal
           alert={selectedAlert}
           isOpen={!!selectedAlert}
           onClose={() => setSelectedAlert(null)}
           onResolve={() => {
+            if (selectedAlert?.id) {
+              resolveAlert(selectedAlert.id);
+            }
             setSelectedAlert(null);
-            fetchAlerts();
           }}
         />
       )}
+
+      {/* Footer con información de actualización */}
+      <div className="flex items-center justify-between text-sm text-muted-foreground mt-12 pt-6 border-t border-muted/30">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="h-4 w-4" />
+          <span>Última actualización: {lastRefresh.toLocaleTimeString('es-ES')}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4" />
+          <span>Datos protegidos por RGPD</span>
+        </div>
+      </div>
     </div>
   );
 };
