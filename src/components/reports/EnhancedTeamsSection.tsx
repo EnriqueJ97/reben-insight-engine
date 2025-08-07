@@ -155,7 +155,7 @@ export const EnhancedTeamsSection = ({ teamData, onTeamClick }: EnhancedTeamsSec
   );
 
   const radarData = filteredTeams.slice(0, 5).map(team => ({
-    team: team.name.substring(0, 8),
+    team: team.name, // Mostrar nombre completo del equipo
     bienestar: team.wellness_score,
     satisfaccion: team.satisfaction,
     productividad: team.productivity,

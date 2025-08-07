@@ -40,17 +40,107 @@ const Reports = () => {
   }>({});
   const [breadcrumbPath, setBreadcrumbPath] = useState<string[]>([]);
 
-  // Real data from reports
-  const wellnessTrendData = reportData?.trends?.map(trend => ({
+  // Generate realistic demo data for new users
+  const generateDemoData = () => {
+    const now = new Date();
+    const mockTrends = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() - (29 - i));
+      return {
+        date: date.toISOString(),
+        wellness_score: 65 + Math.random() * 20 + Math.sin(i / 5) * 5
+      };
+    });
+
+    const mockTeams = [
+      {
+        team_id: 'team-1',
+        team_name: 'Desarrollo Frontend',
+        name: 'Desarrollo Frontend',
+        member_count: 8,
+        wellness_score: 78,
+        participation_rate: 95,
+        satisfaction: 82,
+        productivity: 89,
+        risk_level: 'low',
+        unique_employees: 8
+      },
+      {
+        team_id: 'team-2', 
+        team_name: 'Backend & APIs',
+        name: 'Backend & APIs',
+        member_count: 6,
+        wellness_score: 52,
+        participation_rate: 67,
+        satisfaction: 45,
+        productivity: 72,
+        risk_level: 'high',
+        unique_employees: 6
+      },
+      {
+        team_id: 'team-3',
+        team_name: 'UX/UI Design',
+        name: 'UX/UI Design',
+        member_count: 5,
+        wellness_score: 85,
+        participation_rate: 92,
+        satisfaction: 88,
+        productivity: 91,
+        risk_level: 'low',
+        unique_employees: 5
+      },
+      {
+        team_id: 'team-4',
+        team_name: 'Marketing Digital',
+        name: 'Marketing Digital',
+        member_count: 7,
+        wellness_score: 63,
+        participation_rate: 78,
+        satisfaction: 65,
+        productivity: 76,
+        risk_level: 'medium',
+        unique_employees: 7
+      }
+    ];
+
+    return {
+      period: '30d',
+      total_checkins: 456,
+      avg_mood: 3.5,
+      wellness_score: 70,
+      participation_rate: 83,
+      response_rate: 83,
+      total_alerts: 5,
+      critical_alerts: 3,
+      burnout_risk_percentage: 15,
+      alert_resolution_rate: 78,
+      generated_at: new Date().toISOString(),
+      key_metrics: {
+        estimated_cost_savings: 25000,
+        productivity_improvement: 15,
+        retention_improvement: 8
+      },
+      trends: mockTrends,
+      team_breakdown: mockTeams,
+      overall_wellness: 70,
+      total_responses: 456
+    };
+  };
+
+  // Use demo data if no real data available
+  const effectiveReportData = reportData || generateDemoData();
+
+  // Real data from reports with fallback to demo data
+  const wellnessTrendData = effectiveReportData?.trends?.map(trend => ({
     date: new Date(trend.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }),
-    bienestar: trend.wellness_score,
-    burnout: 100 - trend.wellness_score,
-    satisfaccion: Math.max(0, trend.wellness_score - 5)
+    bienestar: Math.round(trend.wellness_score),
+    burnout: Math.round(100 - trend.wellness_score),
+    satisfaccion: Math.max(0, Math.round(trend.wellness_score - 5))
   })) || [];
 
-  const teamComparisonData = reportData?.team_breakdown?.map(team => ({
-    team: `Equipo ${team.team_id.slice(0, 8)}`,
-    bienestar: team.wellness_score,
+  const teamComparisonData = effectiveReportData?.team_breakdown?.map(team => ({
+    team: team.team_name || team.name || `Equipo ${team.team_id?.slice(0, 6)}`,
+    bienestar: Math.round(team.wellness_score),
     miembros: team.unique_employees
   })) || [];
 
@@ -539,24 +629,24 @@ const Reports = () => {
 
         <TabsContent value="teams" className="space-y-6">
           <EnhancedTeamsSection 
-            teamData={teamComparisonData.map(team => ({
-              id: team.team,
-              name: team.team,
-              wellness_score: team.bienestar,
-              participation_rate: Math.floor(Math.random() * 20) + 80,
-              member_count: team.miembros,
-              risk_level: team.bienestar >= 80 ? 'low' : team.bienestar >= 70 ? 'medium' : 'high' as 'low' | 'medium' | 'high',
+            teamData={effectiveReportData?.team_breakdown?.map(team => ({
+              id: team.team_id || team.name,
+              name: team.team_name || team.name || `Equipo ${team.team_id?.slice(0, 6)}`,
+              wellness_score: Math.round(team.wellness_score),
+              participation_rate: team.participation_rate || Math.floor(Math.random() * 20) + 80,
+              member_count: team.unique_employees || team.member_count,
+              risk_level: team.risk_level || (team.wellness_score >= 80 ? 'low' : team.wellness_score >= 70 ? 'medium' : 'high') as 'low' | 'medium' | 'high',
               trend: Math.floor(Math.random() * 10) - 5,
-              burnout_risk: Math.max(0, 100 - team.bienestar),
-              satisfaction: Math.max(0, team.bienestar - 5),
-              productivity: Math.floor(Math.random() * 20) + 75,
+              burnout_risk: Math.max(0, 100 - team.wellness_score),
+              satisfaction: team.satisfaction || Math.max(0, team.wellness_score - 5),
+              productivity: team.productivity || Math.floor(Math.random() * 20) + 75,
               manager: 'Manager'
-            }))}
+            })) || []}
             onTeamClick={(teamId) => handleKPIClick('Team', teamId.length)}
           />
           
           <RiskHeatMap 
-            reportData={reportData} 
+            reportData={effectiveReportData} 
             onCellClick={handleHeatMapClick}
           />
         </TabsContent>
