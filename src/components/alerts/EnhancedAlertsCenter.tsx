@@ -169,33 +169,48 @@ export const EnhancedAlertsCenter = () => {
   const getPrivacyCompliantEmployee = (alert: any, teamSize: number, userRole: string) => {
     // RGPD Art. 9: Datos de salud mental - NADIE puede ver nombres reales sin consentimiento explícito
     
-    // SISTEMA DE ALIAS TEMPORALES para TODOS los roles
+    // SISTEMA DE ANONIMIZACIÓN para TODOS los roles por protección de datos
+    const getInitials = (name: string) => {
+      if (!name) return "N.N.";
+      return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('.');
+    };
+    
     if (userRole === 'MANAGER' || userRole === 'HR_ADMIN') {
       if (teamSize < 5) {
         return {
-          name: "Datos protegidos por confidencialidad (equipo <5)",
+          name: "Datos protegidos (equipo <5)",
           role: "Miembro del equipo",
           showIdentity: false,
           alias: null
         };
       }
       
-      // TODOS ven solo alias temporal - incluso RRHH para intervenciones ciegas
-      const aliasCode = alert.alias_code || `ANON-${alert.id.slice(-4)}`;
+      // Mostrar solo iniciales para proteger identidad
+      const initials = getInitials(alert.profiles?.full_name || "Usuario");
       return {
-        name: `${aliasCode}`,
+        name: initials,
         role: "Empleado", // Rol genérico para proteger identidad
         showIdentity: false,
-        alias: aliasCode
+        alias: initials
       };
     }
     
     // Empleados solo ven sus propias alertas (con identidad real)
+    if (alert.user_id === userRole) {
+      return {
+        name: alert.profiles?.full_name || alert.profiles?.email,
+        role: alert.profiles?.role,
+        showIdentity: true,
+        alias: null
+      };
+    }
+    
+    // Por defecto, solo iniciales
     return {
-      name: alert.profiles?.full_name || alert.profiles?.email,
-      role: alert.profiles?.role,
-      showIdentity: true,
-      alias: null
+      name: getInitials(alert.profiles?.full_name || "Usuario"),
+      role: "Empleado",
+      showIdentity: false,
+      alias: getInitials(alert.profiles?.full_name || "Usuario")
     };
   };
 
