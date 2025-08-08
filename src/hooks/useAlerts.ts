@@ -14,6 +14,9 @@ export interface Alert {
   created_at: string;
   assigned_to?: string;
   status?: 'pending' | 'in_progress' | 'resolved';
+  priority?: 'low' | 'medium' | 'high';
+  sla_due_at?: string;
+  last_action_at?: string;
   profiles?: {
     full_name: string;
     email: string;
@@ -200,30 +203,46 @@ export const useAlerts = () => {
     }
   };
 
-  const resolveAlert = async (alertId: string) => {
+  const resolveAlert = async (alertId: string, note?: string) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
+      // 1) Log resolution action
+      if (note && note.trim()) {
+        const { error: actionError } = await supabase
+          .from('alert_actions')
+          .insert({
+            alert_id: alertId,
+            user_id: user.id,
+            action_type: 'resolve',
+            note,
+          });
+        if (actionError) throw actionError;
+      }
+
+      // 2) Mark alert as resolved and set status
       const { data, error } = await supabase
         .from('alerts')
         .update({
           resolved: true,
           resolved_by: user.id,
-          resolved_at: new Date().toISOString()
+          resolved_at: new Date().toISOString(),
+          status: 'resolved',
+          last_action_at: new Date().toISOString(),
         })
         .eq('id', alertId)
         .select()
         .single();
 
       if (error) throw error;
-      
-      // Update local state
-      setAlerts(prev => prev.map(alert => 
-        alert.id === alertId 
-          ? { ...alert, resolved: true, resolved_by: user.id, resolved_at: data.resolved_at }
+
+      // 3) Update local state
+      setAlerts(prev => prev.map(alert =>
+        alert.id === alertId
+          ? { ...alert, resolved: true, resolved_by: user.id, resolved_at: data.resolved_at, status: 'resolved', last_action_at: data.last_action_at }
           : alert
       ));
-      
+
       return data;
     } catch (error) {
       console.error('Error resolving alert:', error);
@@ -231,6 +250,75 @@ export const useAlerts = () => {
     }
   };
 
+  // Assign alert to a user (defaults to current user) and mark in progress
+  const assignAlert = async (alertId: string, assigneeId?: string) => {
+    if (!user) throw new Error('User not authenticated');
+    const assignedId = assigneeId || user.id;
+    try {
+      const { data, error } = await supabase
+        .from('alerts')
+        .update({ assigned_to: assignedId, status: 'in_progress', last_action_at: new Date().toISOString() })
+        .eq('id', alertId)
+        .select()
+        .single();
+      if (error) throw error;
+
+      // Log action
+      const { error: actionError } = await supabase
+        .from('alert_actions')
+        .insert({ alert_id: alertId, user_id: user.id, action_type: 'assign', metadata: { assigned_to: assignedId } });
+      if (actionError) throw actionError;
+
+      setAlerts(prev => prev.map(a => a.id === alertId ? { ...a, assigned_to: assignedId, status: 'in_progress', last_action_at: data.last_action_at } : a));
+      return data;
+    } catch (error) {
+      console.error('Error assigning alert:', error);
+      throw error;
+    }
+  };
+
+  // Set SLA in hours (relative deadline)
+  const setAlertSLA = async (alertId: string, hours: number) => {
+    if (!user) throw new Error('User not authenticated');
+    const dueAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+    try {
+      const { data, error } = await supabase
+        .from('alerts')
+        .update({ sla_due_at: dueAt, last_action_at: new Date().toISOString() })
+        .eq('id', alertId)
+        .select()
+        .single();
+      if (error) throw error;
+
+      // Log action
+      const { error: actionError } = await supabase
+        .from('alert_actions')
+        .insert({ alert_id: alertId, user_id: user.id, action_type: 'sla_update', metadata: { hours, sla_due_at: dueAt } });
+      if (actionError) throw actionError;
+
+      setAlerts(prev => prev.map(a => a.id === alertId ? { ...a, sla_due_at: dueAt, last_action_at: data.last_action_at } : a));
+      return data;
+    } catch (error) {
+      console.error('Error setting SLA:', error);
+      throw error;
+    }
+  };
+
+  // Add a note to an alert
+  const addAlertNote = async (alertId: string, note: string) => {
+    if (!user) throw new Error('User not authenticated');
+    try {
+      const { error } = await supabase
+        .from('alert_actions')
+        .insert({ alert_id: alertId, user_id: user.id, action_type: 'note', note });
+      if (error) throw error;
+      // Optimistic: update last action time locally
+      setAlerts(prev => prev.map(a => a.id === alertId ? { ...a, last_action_at: new Date().toISOString() } : a));
+    } catch (error) {
+      console.error('Error adding note to alert:', error);
+      throw error;
+    }
+  };
   const checkForBurnoutAlerts = async (userId: string) => {
     try {
       // Get last 3 checkins for the user
@@ -304,6 +392,9 @@ export const useAlerts = () => {
     fetchAlerts,
     createAlert,
     resolveAlert,
+    assignAlert,
+    setAlertSLA,
+    addAlertNote,
     checkForBurnoutAlerts,
     getAlertStats,
     getGlobalAlertStats

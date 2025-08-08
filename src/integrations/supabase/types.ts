@@ -46,35 +46,50 @@ export type Database = {
       }
       alerts: {
         Row: {
+          assigned_to: string | null
           created_at: string
           id: string
+          last_action_at: string
           message: string | null
+          priority: string
           resolved: boolean | null
           resolved_at: string | null
           resolved_by: string | null
           severity: string
+          sla_due_at: string | null
+          status: string
           type: string
           user_id: string
         }
         Insert: {
+          assigned_to?: string | null
           created_at?: string
           id?: string
+          last_action_at?: string
           message?: string | null
+          priority?: string
           resolved?: boolean | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity?: string
+          sla_due_at?: string | null
+          status?: string
           type: string
           user_id: string
         }
         Update: {
+          assigned_to?: string | null
           created_at?: string
           id?: string
+          last_action_at?: string
           message?: string | null
+          priority?: string
           resolved?: boolean | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity?: string
+          sla_due_at?: string | null
+          status?: string
           type?: string
           user_id?: string
         }

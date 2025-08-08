@@ -44,7 +44,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export const EnhancedAlertsCenter = () => {
   const { user } = useAuth();
-  const { alerts, loading, resolveAlert, fetchAlerts, getGlobalAlertStats } = useAlerts();
+  const { alerts, loading, resolveAlert, fetchAlerts, getGlobalAlertStats, assignAlert, setAlertSLA, addAlertNote } = useAlerts();
   const { toast } = useToast();
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -419,17 +419,39 @@ export const EnhancedAlertsCenter = () => {
                 <div className="flex items-center space-x-2">
                   <UserCheck className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    Owner: {alert.assigned_to ? 'Team Lead' : 'Auto-asignado'}
+                    Owner: {alert.assigned_to ? (alert.assigned_to === user?.id ? 'Tú' : 'Asignado') : 'Sin asignar'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">TMR: 12h</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {alert.sla_due_at ? `Vence: ${new Date(alert.sla_due_at).toLocaleString('es-ES')}` : 'SLA: —'}
+                  </span>
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
-                Creado: {timeAgo}
-              </span>
+              <div className="flex items-center gap-2">
+                {!alert.resolved && (user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => assignAlert(alert.id)}
+                    >
+                      Asignarme
+                    </Button>
+                    <Select onValueChange={(v) => setAlertSLA(alert.id, parseInt(v))}>
+                      <SelectTrigger className="w-[140px] bg-background border-muted/40 hover:border-primary/40">
+                        <SelectValue placeholder="SLA" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="24">SLA 24h</SelectItem>
+                        <SelectItem value="48">SLA 48h</SelectItem>
+                        <SelectItem value="72">SLA 72h</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -534,6 +556,20 @@ export const EnhancedAlertsCenter = () => {
                     </Button>
                   </>
                 ) : null}
+
+                {/* Nota rápida para el ticket */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const n = window.prompt('Escribe una nota para este ticket');
+                    if (n) addAlertNote(alert.id, n);
+                  }}
+                  className="flex items-center space-x-2"
+                >
+                  <MessageSquare className="h-3 w-3" />
+                  <span>Añadir nota</span>
+                </Button>
               </div>
             )}
           </div>

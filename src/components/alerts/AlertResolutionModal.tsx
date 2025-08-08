@@ -48,7 +48,7 @@ export const AlertResolutionModal = ({ alert, isOpen, onClose, onResolve }: Aler
 
     setIsResolving(true);
     try {
-      await resolveAlert(alert.id);
+      await resolveAlert(alert.id, comment);
       toast({
         title: "Alerta resuelta",
         description: "La alerta ha sido marcada como resuelta exitosamente.",
