@@ -177,6 +177,46 @@ export const useCheckins = () => {
     }
   };
 
+  const getCurrentStreak = async (userId?: string): Promise<{ current: number; lastCheckinDate: string | null }> => {
+    const targetUserId = userId || user?.id;
+    if (!targetUserId) throw new Error('No user ID provided');
+    try {
+      const { data, error } = await supabase
+        .from('checkins')
+        .select('created_at')
+        .eq('user_id', targetUserId)
+        .order('created_at', { ascending: false })
+        .limit(60);
+      if (error) throw error;
+      const dates = (data || []).map((c) => new Date(c.created_at));
+      if (dates.length === 0) return { current: 0, lastCheckinDate: null };
+      const daySet = new Set(dates.map((d) => d.toISOString().split('T')[0]));
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      // Start from today if checked, otherwise from yesterday
+      let cursor = new Date(today);
+      const todayKey = cursor.toISOString().split('T')[0];
+      if (!daySet.has(todayKey)) {
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      let streak = 0;
+      while (true) {
+        const key = cursor.toISOString().split('T')[0];
+        if (daySet.has(key)) {
+          streak += 1;
+          cursor.setDate(cursor.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      const lastDate = dates[0].toISOString();
+      return { current: streak, lastCheckinDate: lastDate };
+    } catch (e) {
+      console.error('Error calculating streak:', e);
+      return { current: 0, lastCheckinDate: null };
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchCheckins();
@@ -189,6 +229,7 @@ export const useCheckins = () => {
     fetchCheckins,
     createCheckin,
     getCheckinStats,
-    getTeamCheckinStats
+    getTeamCheckinStats,
+    getCurrentStreak,
   };
 };

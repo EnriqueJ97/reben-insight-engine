@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const CheckIn = () => {
   const { user } = useAuth();
-  const { createCheckin, fetchCheckins } = useCheckins();
+  const { createCheckin, fetchCheckins, getCurrentStreak } = useCheckins();
   const { checkForBurnoutAlerts } = useAlerts();
   const { toast } = useToast();
   
@@ -24,6 +24,7 @@ const CheckIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [questionsCompleted, setQuestionsCompleted] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     checkDailyCompletion();
@@ -50,6 +51,14 @@ const CheckIn = () => {
       } else {
         const hasCompleted = data && data.length > 0;
         setHasCompletedToday(hasCompleted);
+        
+        // Fetch current streak
+        try {
+          const { current } = await getCurrentStreak();
+          setStreak(current);
+        } catch (e) {
+          console.error('Error fetching streak:', e);
+        }
         
         if (!hasCompleted) {
           // Get today's question
@@ -94,7 +103,14 @@ const CheckIn = () => {
       });
 
       // Refresh checkins data
-      fetchCheckins();
+      await fetchCheckins();
+      // Update streak after saving
+      try {
+        const { current } = await getCurrentStreak();
+        setStreak(current);
+      } catch (e) {
+        console.error('Error updating streak:', e);
+      }
 
     } catch (error) {
       console.error('Error submitting checkin:', error);
@@ -211,9 +227,12 @@ const CheckIn = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-green-800">Progreso Diario</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  100% Completado
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    100% Completado
+                  </Badge>
+                  <Badge variant="outline">{streak} días de racha</Badge>
+                </div>
               </div>
               <Progress value={100} className="bg-green-100" />
             </div>

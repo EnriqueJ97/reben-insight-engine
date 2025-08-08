@@ -31,7 +31,7 @@ interface ProgressMetric {
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
-  const { getCheckinStats } = useCheckins();
+  const { getCheckinStats, getCurrentStreak } = useCheckins();
   
   const [progressMetrics, setProgressMetrics] = useState<ProgressMetric[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,11 +48,10 @@ const EmployeeDashboard = () => {
     try {
       const checkinStats = await getCheckinStats();
       
-      // Calcular racha de check-ins
+      // Calcular métricas reales
       const weeklyCheckins = Math.min(checkinStats.total || 0, 5);
-      const consecutiveDays = Math.min(streakDays + 1, 7); // Simulated for demo
-      
-      setStreakDays(consecutiveDays);
+      const { current } = await getCurrentStreak();
+      setStreakDays(current);
       
       setProgressMetrics([
         {
