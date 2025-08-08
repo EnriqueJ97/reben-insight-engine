@@ -147,8 +147,8 @@ const FloatingChatWidget: React.FC = () => {
     });
   };
 
-  // Only show for HR_ADMIN users
-  if (user?.role !== 'HR_ADMIN') {
+  // Visible para todos los usuarios autenticados
+  if (!user) {
     return null;
   }
 
