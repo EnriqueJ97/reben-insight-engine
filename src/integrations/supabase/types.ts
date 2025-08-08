@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_actions: {
+        Row: {
+          action_type: string
+          alert_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          alert_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          alert_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           created_at: string
