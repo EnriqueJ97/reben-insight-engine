@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ArrowRight, CheckCircle, RotateCcw } from 'lucide-react';
+import { Heart, ArrowRight, CheckCircle, RotateCcw, CalendarPlus, Mail, MessageCircle } from 'lucide-react';
 import { WELLNESS_QUESTIONS, getRandomDailyQuestion } from '@/data/questions';
 import { Question } from '@/types/wellness';
 import { useToast } from '@/hooks/use-toast';
-
+import { Textarea } from '@/components/ui/textarea';
+import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 const CheckIn = () => {
   const { user } = useAuth();
   const { createCheckin, fetchCheckins, getCurrentStreak } = useCheckins();
@@ -25,6 +26,13 @@ const CheckIn = () => {
   const [questionsCompleted, setQuestionsCompleted] = useState(0);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
+  const [openFeedback, setOpenFeedback] = useState('');
+  const { generateComprehensiveReport } = useAIAnalysis();
+  const [aiRecommendations, setAiRecommendations] = useState<any | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [downloadingICS, setDownloadingICS] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendingSlack, setSendingSlack] = useState(false);
 
   useEffect(() => {
     checkDailyCompletion();
@@ -89,6 +97,20 @@ const CheckIn = () => {
         selectedScore
       );
 
+      // Optionally store anonymous open feedback
+      if (openFeedback.trim()) {
+        await supabase.from('anonymous_feedback').insert({
+          tenant_id: user.tenant_id,
+          category: 'wellness',
+          message: openFeedback.trim(),
+          metadata: {
+            question_id: currentQuestion.id,
+            score: selectedScore + 1,
+            source_category: currentQuestion.category,
+          },
+        });
+      }
+
       // Check for burnout alerts
       await checkForBurnoutAlerts(user.id);
 
@@ -101,6 +123,22 @@ const CheckIn = () => {
         title: "¡Check-in completado!",
         description: responses.message,
       });
+
+      // Trigger AI recommendations (non-blocking)
+      try {
+        setAiLoading(true);
+        const analysis = await generateComprehensiveReport({
+          wellness_score: ((selectedScore + 1) / 5) * 100,
+          total_checkins: 1,
+          trend: 'neutral',
+          notes: openFeedback.trim(),
+        });
+        setAiRecommendations(analysis);
+      } catch (e) {
+        console.error('AI analysis error:', e);
+      } finally {
+        setAiLoading(false);
+      }
 
       // Refresh checkins data
       await fetchCheckins();
@@ -159,12 +197,71 @@ const CheckIn = () => {
     }
   };
 
+  // Helpers: reminders and calendar
+  const handleDownloadICS = async () => {
+    try {
+      setDownloadingICS(true);
+      const now = new Date();
+      const dtStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0);
+      const format = (d: Date) =>
+        `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}00`;
+
+      const uid = `${crypto.randomUUID()}@reben`;
+      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//REBEN//Check-in Reminder//ES\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${format(now)}\nDTSTART:${format(dtStart)}\nDURATION:PT10M\nRRULE:FREQ=DAILY\nSUMMARY:Recordatorio Check-in de Bienestar\nDESCRIPTION:Completa tu check-in diario en REBEN\nEND:VEVENT\nEND:VCALENDAR`;
+
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reben-checkin-reminder.ics';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: 'Añadido', description: 'Descargamos un archivo .ics para tu calendario.' });
+    } finally {
+      setDownloadingICS(false);
+    }
+  };
+
+  const handleSendEmailReminder = async () => {
+    if (!user?.email) return;
+    try {
+      setSendingEmail(true);
+      await supabase.functions.invoke('send-daily-question', {
+        body: { testEmail: user.email, questionId: currentQuestion?.id || 'S1' },
+      });
+      toast({ title: 'Email enviado', description: 'Te enviamos un recordatorio a tu correo.' });
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: 'Error', description: 'No pudimos enviar el email.', variant: 'destructive' });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const handleSendSlackReminder = async () => {
+    if (!user?.email) return;
+    try {
+      setSendingSlack(true);
+      const link = window.location.origin + '/dashboard/checkin';
+      await supabase.functions.invoke('send-slack-reminder', {
+        body: { email: user.email, message: `Recuerda completar tu check-in de bienestar hoy: ${link}`, tenantId: user.tenant_id },
+      });
+      toast({ title: 'Slack enviado', description: 'Te enviamos un DM en Slack (si tu email está vinculado).' });
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: 'Error', description: 'No pudimos enviar el mensaje de Slack.', variant: 'destructive' });
+    } finally {
+      setSendingSlack(false);
+    }
+  };
+
   const resetForNewQuestion = () => {
     setSelectedScore(null);
     setCurrentQuestion(getRandomDailyQuestion([user?.id || '']));
     setHasCompletedToday(false);
   };
-
   const getScoreLabel = (score: number) => {
     const labels = ['Nunca', 'Rara vez', 'Algunas veces', 'A menudo', 'Siempre'];
     return labels[score];
@@ -260,6 +357,82 @@ const CheckIn = () => {
               <div className="w-2 h-2 rounded-full bg-primary"></div>
               <span className="text-sm">Mantén un equilibrio saludable entre trabajo y vida personal</span>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Suggestions */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle>Sugerencias y recursos</CardTitle>
+            <CardDescription>
+              Recomendaciones generadas con IA en base a tu check-in de hoy
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {aiLoading && (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                Generando recomendaciones...
+              </div>
+            )}
+            {!aiLoading && aiRecommendations && (
+              <div className="space-y-4">
+                {Array.isArray(aiRecommendations.immediate_actions) && (
+                  <div>
+                    <div className="text-sm font-medium mb-2">Acciones inmediatas</div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {aiRecommendations.immediate_actions.map((a: string, idx: number) => (
+                        <li key={idx} className="text-sm text-muted-foreground">{a}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {Array.isArray(aiRecommendations.key_insights) && (
+                  <div>
+                    <div className="text-sm font-medium mb-2">Insights clave</div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {aiRecommendations.key_insights.map((a: string, idx: number) => (
+                        <li key={idx} className="text-sm text-muted-foreground">{a}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {Array.isArray(aiRecommendations.recommendations) && aiRecommendations.recommendations.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium mb-2">Recursos sugeridos</div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {aiRecommendations.recommendations.slice(0,3).map((rec: any, idx: number) => (
+                        <li key={idx} className="text-sm text-muted-foreground">
+                          <span className="font-medium">{rec.title}:</span> {rec.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Reminders */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recordatorios</CardTitle>
+            <CardDescription>Que no se te pase el check-in de mañana</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            <Button onClick={handleDownloadICS} variant="outline" disabled={downloadingICS}>
+              <CalendarPlus className="h-4 w-4 mr-2" />
+              Calendario (.ics)
+            </Button>
+            <Button onClick={handleSendEmailReminder} variant="outline" disabled={sendingEmail}>
+              <Mail className="h-4 w-4 mr-2" />
+              Enviar email ahora
+            </Button>
+            <Button onClick={handleSendSlackReminder} variant="outline" disabled={sendingSlack}>
+              <MessageCircle className="h-4 w-4 mr-2" />
+              DM por Slack
+            </Button>
           </CardContent>
         </Card>
 
@@ -366,6 +539,20 @@ const CheckIn = () => {
           <div className="p-3 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground">
               <strong>Escala:</strong> {currentQuestion.scale_description}
+            </p>
+          </div>
+
+          {/* Open Anonymous Feedback */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">¿Quieres contarnos algo? (anónimo)</label>
+            <Textarea
+              value={openFeedback}
+              onChange={(e) => setOpenFeedback(e.target.value)}
+              placeholder="Opcional: describe con tus palabras cómo te sientes o si hay algo que debamos saber."
+              rows={4}
+            />
+            <p className="text-xs text-muted-foreground">
+              Se guardará de forma anónima para generar mejoras y recursos.
             </p>
           </div>
 
