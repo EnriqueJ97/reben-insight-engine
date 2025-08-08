@@ -65,6 +65,41 @@ export type Database = {
           },
         ]
       }
+      anonymous_feedback: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          metadata: Json
+          tenant_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json
+          tenant_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assurance_reviews: {
         Row: {
           assurance_level: Database["public"]["Enums"]["assurance_level"]
