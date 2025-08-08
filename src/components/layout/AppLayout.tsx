@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FloatingChatWidget from '@/components/chat/FloatingChatWidget';
+import EmployeeOnboarding from '@/components/onboarding/EmployeeOnboarding';
 import { 
   Home, 
   Heart, 
@@ -284,7 +285,10 @@ const AppLayout = () => {
         </div>
       </main>
 
-      {/* Floating Chat Widget */}
+      {/* Onboarding para empleados */}
+      <EmployeeOnboarding />
+
+      {/* Widget flotante de Chat IA */}
       <FloatingChatWidget />
     </div>
   );

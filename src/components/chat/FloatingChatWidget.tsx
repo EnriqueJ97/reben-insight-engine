@@ -204,7 +204,7 @@ const FloatingChatWidget: React.FC = () => {
               </div>
               
               {/* Company Context */}
-              {companyContext && !isMinimized && (
+              {(companyContext && !isMinimized && (user?.role === 'HR_ADMIN' || user?.role === 'MANAGER')) && (
                 <div className="flex items-center justify-between text-xs mt-2 p-2 bg-muted rounded">
                   <div className="text-center">
                     <div className="font-medium">{companyContext.totalEmployees}</div>
