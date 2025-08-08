@@ -14,6 +14,7 @@ import Landing from '@/pages/Landing';
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import EmployeeImport from '@/components/EmployeeImport';
+import AnonymousFeedback from '@/pages/AnonymousFeedback';
 
 export interface RouteConfig {
   path: string;
@@ -106,6 +107,13 @@ export const routes: RouteConfig[] = [
         protected: true,
         allowedRoles: ['MANAGER', 'HR_ADMIN'],
         title: 'Análisis de Equipo'
+      },
+      {
+        path: 'feedback',
+        element: AnonymousFeedback,
+        protected: true,
+        allowedRoles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'],
+        title: 'Feedback Anónimo'
       },
       {
         path: 'settings',

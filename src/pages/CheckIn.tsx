@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ArrowRight, CheckCircle, RotateCcw, CalendarPlus, Mail, MessageCircle } from 'lucide-react';
+import { Heart, ArrowRight, CheckCircle, RotateCcw, CalendarPlus, Mail, MessageCircle, ExternalLink } from 'lucide-react';
 import { WELLNESS_QUESTIONS, getRandomDailyQuestion } from '@/data/questions';
 import { Question } from '@/types/wellness';
 import { useToast } from '@/hooks/use-toast';
