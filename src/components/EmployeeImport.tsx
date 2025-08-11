@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, FileText, CheckCircle, AlertCircle, Users, Download } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CSVRow {
   id: string;
@@ -39,6 +40,10 @@ const EmployeeImport = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'complete'>('upload');
   const [progress, setProgress] = useState(0);
+
+  // Alta manual
+  const [manual, setManual] = useState({ nombre: '', email: '', rol: 'EMPLOYEE', equipo: '' });
+  const [manualLoading, setManualLoading] = useState(false);
 
   const validateCSVRow = async (row: any): Promise<{ valid: boolean; errors: string[] }> => {
     const errors: string[] = [];
@@ -276,6 +281,78 @@ emp_003,Carlos López,carlos.lopez@empresa.com,HR_ADMIN,RRHH`;
     URL.revokeObjectURL(url);
   };
 
+  // Alta manual: crear invitación + equipo opcional
+  const handleManualInvite = async () => {
+    if (!manual.nombre.trim() || !manual.email.trim() || !manual.rol.trim()) {
+      toast({ title: 'Campos requeridos', description: 'Nombre, email y rol son obligatorios', variant: 'destructive' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(manual.email)) {
+      toast({ title: 'Email inválido', description: 'Revisa el formato del correo', variant: 'destructive' });
+      return;
+    }
+
+    setManualLoading(true);
+    try {
+      // Evitar duplicados en el tenant
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('tenant_id', user?.tenant_id)
+        .eq('email', manual.email.toLowerCase());
+      if (existing && existing.length > 0) {
+        toast({ title: 'Email existente', description: 'Ese email ya está registrado en el tenant', variant: 'destructive' });
+        return;
+      }
+
+      // Buscar/crear equipo si aplica
+      let teamId: string | null = null;
+      const teamName = manual.equipo.trim();
+      if (teamName) {
+        const { data: team } = await supabase
+          .from('teams')
+          .select('id')
+          .eq('tenant_id', user?.tenant_id)
+          .eq('name', teamName)
+          .maybeSingle();
+
+        if (team?.id) {
+          teamId = team.id;
+        } else {
+          const { data: newTeam, error: teamErr } = await supabase
+            .from('teams')
+            .insert({ name: teamName, tenant_id: user?.tenant_id })
+            .select('id')
+            .single();
+          if (teamErr) throw teamErr;
+          teamId = newTeam?.id || null;
+        }
+      }
+
+      // Crear invitación
+      const { error: invErr } = await supabase
+        .from('invitations')
+        .insert({
+          tenant_id: user?.tenant_id,
+          created_by: user?.id,
+          email: manual.email.toLowerCase(),
+          role: manual.rol as any,
+          team_id: teamId,
+        });
+      if (invErr) throw invErr;
+
+      toast({ title: 'Invitación creada', description: 'Se envió una invitación al correo indicado.' });
+      setManual({ nombre: '', email: '', rol: 'EMPLOYEE', equipo: '' });
+    } catch (e) {
+      console.error('Manual invite error', e);
+      toast({ title: 'Error al crear invitación', description: 'Intenta de nuevo', variant: 'destructive' });
+    } finally {
+      setManualLoading(false);
+    }
+  };
+
   const resetImport = () => {
     setFile(null);
     setCsvData([]);
@@ -346,6 +423,46 @@ emp_003,Carlos López,carlos.lopez@empresa.com,HR_ADMIN,RRHH`;
                 <Button variant="outline" onClick={downloadTemplate}>
                   <Download className="h-4 w-4 mr-2" />
                   Descargar Plantilla
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Alta manual */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Alta manual de empleado</CardTitle>
+              <CardDescription>Crea e invita a un empleado individualmente</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="manual-nombre">Nombre</Label>
+                <Input id="manual-nombre" value={manual.nombre} onChange={(e) => setManual({ ...manual, nombre: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manual-email">Email</Label>
+                <Input id="manual-email" type="email" value={manual.email} onChange={(e) => setManual({ ...manual, email: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Rol</Label>
+                <Select value={manual.rol} onValueChange={(v) => setManual({ ...manual, rol: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EMPLOYEE">Empleado</SelectItem>
+                    <SelectItem value="MANAGER">Manager</SelectItem>
+                    <SelectItem value="HR_ADMIN">HR Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manual-equipo">Equipo (opcional)</Label>
+                <Input id="manual-equipo" value={manual.equipo} onChange={(e) => setManual({ ...manual, equipo: e.target.value })} />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <Button onClick={handleManualInvite} disabled={manualLoading}>
+                  {manualLoading ? 'Creando...' : 'Crear e invitar'}
                 </Button>
               </div>
             </CardContent>
