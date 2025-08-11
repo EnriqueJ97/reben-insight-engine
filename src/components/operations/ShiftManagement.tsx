@@ -1,14 +1,54 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Users, Settings, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
+import { Clock, Users, Settings, Calendar as CalendarIcon, TrendingUp, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const ShiftManagement = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('templates');
+  const [assigning, setAssigning] = useState(false);
+  const [metrics, setMetrics] = useState<{ equityIndex: number; preferenceMatch: number; averageWorkload: number } | null>(null);
+  const handleAutoAssign = async () => {
+    if (!user?.tenant_id) {
+      toast({ title: 'Falta tenant', description: 'No se pudo detectar el tenant', variant: 'destructive' });
+      return;
+    }
+    setAssigning(true);
+    try {
+      const start = new Date();
+      const end = new Date();
+      end.setDate(start.getDate() + 13); // 14 días
+      const startDate = start.toISOString().split('T')[0];
+      const endDate = end.toISOString().split('T')[0];
+
+      const { data, error } = await supabase.functions.invoke('assign-shifts', {
+        body: {
+          startDate,
+          endDate,
+          tenantId: user.tenant_id,
+        },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        const m = data.metrics || null;
+        setMetrics(m);
+        toast({ title: 'Asignación completada', description: `${data.assignmentsCreated} turnos generados` });
+      } else {
+        toast({ title: 'Error al asignar', description: data?.error || 'Intenta nuevamente', variant: 'destructive' });
+      }
+    } catch (e) {
+      console.error('assign-shifts error', e);
+      toast({ title: 'Error', description: 'No se pudo completar la asignación', variant: 'destructive' });
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -100,11 +140,12 @@ const ShiftManagement = () => {
               <CardTitle className="flex items-center justify-between">
                 <span>Calendario de Turnos</span>
                 <div className="flex gap-2">
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={handleAutoAssign} disabled={assigning}>
+                    <RefreshCw className={`w-4 h-4 mr-2 ${assigning ? 'animate-spin' : ''}`} />
                     Generar Horarios
                   </Button>
-                  <Button>
-                    Asignación Automática
+                  <Button onClick={handleAutoAssign} disabled={assigning}>
+                    {assigning ? 'Asignando...' : 'Asignación Automática'}
                   </Button>
                 </div>
               </CardTitle>
@@ -193,7 +234,7 @@ const ShiftManagement = () => {
                 <CardTitle className="text-lg">Equidad</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-600">0.12</div>
+                <div className="text-3xl font-bold text-green-600">{metrics ? metrics.equityIndex.toFixed(2) : '—'}</div>
                 <p className="text-sm text-muted-foreground">Índice de equidad (desviación estándar)</p>
               </CardContent>
             </Card>
@@ -203,7 +244,7 @@ const ShiftManagement = () => {
                 <CardTitle className="text-lg">Preferencias</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-blue-600">89%</div>
+                <div className="text-3xl font-bold text-blue-600">{metrics ? `${metrics.preferenceMatch}%` : '—%'}</div>
                 <p className="text-sm text-muted-foreground">Coincidencia con preferencias</p>
               </CardContent>
             </Card>
