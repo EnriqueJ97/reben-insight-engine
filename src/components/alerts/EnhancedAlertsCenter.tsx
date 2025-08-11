@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   AlertTriangle, 
@@ -44,7 +45,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export const EnhancedAlertsCenter = () => {
   const { user } = useAuth();
-  const { alerts, loading, resolveAlert, fetchAlerts, getGlobalAlertStats, assignAlert, setAlertSLA, addAlertNote } = useAlerts();
+  const { alerts, loading, resolveAlert, fetchAlerts, getGlobalAlertStats, assignAlert, setAlertSLA, addAlertNote, getAIPrioritizedAlerts, getTeamSLAMetrics } = useAlerts();
   const { toast } = useToast();
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -54,6 +55,8 @@ export const EnhancedAlertsCenter = () => {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string | null>(null);
+
+  const [aiSort, setAiSort] = useState<boolean>(true);
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter(alert => {
@@ -66,12 +69,19 @@ export const EnhancedAlertsCenter = () => {
     });
   }, [alerts, selectedSeverity, selectedType, selectedOwner]);
 
-  const unresolvedAlerts = filteredAlerts.filter(alert => !alert.resolved);
-  const resolvedAlerts = filteredAlerts.filter(alert => alert.resolved);
-  const inProgressAlerts = filteredAlerts.filter(alert => alert.status === 'in_progress');
+  const displayedAlerts = useMemo(() => {
+    if (!aiSort) return filteredAlerts;
+    const ids = getAIPrioritizedAlerts().map(a => a.id);
+    const rank = new Map(ids.map((id, i) => [id, i]));
+    return [...filteredAlerts].sort((a, b) => (rank.get(a.id) ?? 9999) - (rank.get(b.id) ?? 9999));
+  }, [filteredAlerts, aiSort, getAIPrioritizedAlerts]);
+
+  const unresolvedAlerts = displayedAlerts.filter(alert => !alert.resolved);
+  const resolvedAlerts = displayedAlerts.filter(alert => alert.resolved);
+  const inProgressAlerts = displayedAlerts.filter(alert => alert.status === 'in_progress');
   
   // Fallback status assignment for alerts without status
-  const alertsWithStatus = filteredAlerts.map(alert => ({
+  const alertsWithStatus = displayedAlerts.map(alert => ({
     ...alert,
     status: alert.status || (alert.resolved ? 'resolved' : 'pending'),
     assigned_to: alert.assigned_to || undefined
@@ -131,6 +141,7 @@ export const EnhancedAlertsCenter = () => {
   }, [alerts, user?.role]);
 
   const globalStats = user?.role === 'HR_ADMIN' ? getGlobalAlertStats() : null;
+  const teamSLAMetrics = useMemo(() => getTeamSLAMetrics(), [alerts]);
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -709,11 +720,17 @@ export const EnhancedAlertsCenter = () => {
       {/* Filtros rediseñados */}
       <Card className="border-primary/20 bg-gradient-to-r from-background to-muted/10 shadow-lg">
         <CardContent className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Filter className="h-5 w-5 text-primary" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Filter className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Filtros avanzados</h3>
             </div>
-            <h3 className="text-lg font-semibold text-foreground">Filtros avanzados</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Orden AI</span>
+              <Switch checked={aiSort} onCheckedChange={setAiSort} />
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="space-y-2">

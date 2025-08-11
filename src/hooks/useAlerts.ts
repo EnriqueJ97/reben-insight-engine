@@ -380,6 +380,131 @@ export const useAlerts = () => {
     };
   };
 
+  // AI-based prioritization (client-side, non-persistent)
+  const getAIPrioritizedAlerts = () => {
+    const now = Date.now();
+
+    const scoreFor = (a: Alert) => {
+      let score = 0;
+      // Severity weight
+      score += a.severity === 'high' ? 50 : a.severity === 'medium' ? 30 : 10;
+
+      // SLA urgency
+      if (!a.resolved && a.sla_due_at) {
+        const due = new Date(a.sla_due_at).getTime();
+        const diffH = Math.round((due - now) / (1000 * 60 * 60));
+        if (diffH < 0) {
+          // Overdue
+          score += 40 + Math.min(30, Math.abs(diffH));
+        } else if (diffH <= 12) {
+          score += 30;
+        } else if (diffH <= 24) {
+          score += 20;
+        }
+      }
+
+      // Status
+      if (a.status === 'pending' || !a.status) score += 10;
+
+      // Inactivity since last action
+      if (a.last_action_at) {
+        const hours = Math.max(0, Math.round((now - new Date(a.last_action_at).getTime()) / (1000 * 60 * 60)));
+        score += Math.min(20, Math.floor(hours / 6)); // +1 per 6h stalled, capped at 20
+      }
+
+      // Type weighting
+      const typeWeights: Record<string, number> = {
+        burnout_risk: 10,
+        high_stress: 8,
+        workload_critical: 8,
+        turnover_risk: 7,
+      };
+      score += typeWeights[a.type] || 0;
+
+      return score;
+    };
+
+    const withScores = alerts.map((a) => {
+      const s = scoreFor(a as Alert);
+      const label: 'low' | 'medium' | 'high' = s >= 80 ? 'high' : s >= 50 ? 'medium' : 'low';
+      return {
+        ...(a as Alert),
+        aiPriorityScore: s,
+        aiPriority: label,
+      } as Alert & { aiPriorityScore: number; aiPriority: 'low' | 'medium' | 'high' };
+    });
+
+    return withScores.sort(
+      (a: any, b: any) => b.aiPriorityScore - a.aiPriorityScore
+    );
+  };
+
+  // SLA metrics per team (client-side)
+  const getTeamSLAMetrics = () => {
+    const result: Record<string, any> = {};
+
+    const groups = alerts.reduce((acc, a) => {
+      const teamName = a.profiles?.teams?.name || 'Sin equipo';
+      if (!acc[teamName]) acc[teamName] = [] as Alert[];
+      acc[teamName].push(a);
+      return acc;
+    }, {} as Record<string, Alert[]>);
+
+    const now = new Date();
+
+    for (const [teamName, list] of Object.entries(groups)) {
+      const total = list.length;
+      const unresolved = list.filter((a) => !a.resolved);
+      const breaches = unresolved.filter(
+        (a) => a.sla_due_at && new Date(a.sla_due_at) < now
+      ).length;
+      const dueSoon = unresolved.filter(
+        (a) =>
+          a.sla_due_at &&
+          new Date(a.sla_due_at).getTime() - now.getTime() <= 24 * 60 * 60 * 1000 &&
+          new Date(a.sla_due_at) >= now
+      ).length;
+
+      const resolvedWithTimes = list.filter(
+        (a) => a.resolved && a.resolved_at && a.created_at
+      );
+      const avgResMs = resolvedWithTimes.length
+        ? resolvedWithTimes.reduce(
+            (sum, a) =>
+              sum +
+              (new Date(a.resolved_at!).getTime() -
+                new Date(a.created_at).getTime()),
+            0
+          ) / resolvedWithTimes.length
+        : 0;
+      const avgResolutionHours = Math.round(avgResMs / (1000 * 60 * 60));
+
+      const resolvedWithinSLA = list.filter(
+        (a) =>
+          a.resolved &&
+          a.resolved_at &&
+          a.sla_due_at &&
+          new Date(a.resolved_at) <= new Date(a.sla_due_at)
+      ).length;
+      const resolvedWithSLA = list.filter((a) => a.resolved && a.sla_due_at).length;
+      const complianceRate = resolvedWithSLA > 0
+        ? Math.round((resolvedWithinSLA / resolvedWithSLA) * 100)
+        : 0;
+
+      result[teamName] = {
+        total,
+        unresolved: unresolved.length,
+        breaches,
+        dueSoon,
+        avgResolutionHours,
+        complianceRate,
+        teamId: (list[0] as any)?.profiles?.team_id,
+      };
+    }
+
+    return result;
+  };
+
   useEffect(() => {
     if (user) {
       fetchAlerts();
@@ -397,6 +522,8 @@ export const useAlerts = () => {
     addAlertNote,
     checkForBurnoutAlerts,
     getAlertStats,
-    getGlobalAlertStats
+    getGlobalAlertStats,
+    getAIPrioritizedAlerts,
+    getTeamSLAMetrics,
   };
 };
