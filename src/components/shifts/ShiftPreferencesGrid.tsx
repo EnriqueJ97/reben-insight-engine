@@ -29,6 +29,11 @@ const ShiftPreferencesGrid: React.FC<ShiftPreferencesGridProps> = ({
   preferencias,
   onUpdatePreference
 }) => {
+  console.log('🔧 ShiftPreferencesGrid props:', { 
+    plantillasTurnos: plantillasTurnos.length, 
+    preferencias: preferencias.length,
+    onUpdatePreference: typeof onUpdatePreference 
+  });
   const diasSemana = [
     { num: 1, nombre: 'Lunes', corto: 'L' },
     { num: 2, nombre: 'Martes', corto: 'M' },
@@ -85,8 +90,12 @@ const ShiftPreferencesGrid: React.FC<ShiftPreferencesGridProps> = ({
   };
 
   const handlePreferenceClick = (weekday: number, shiftId: string, currentWeight: number) => {
+    console.log('🔍 Preference click:', { weekday, shiftId, currentWeight });
+    
     // Ciclar entre las opciones: sin configurar -> 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> sin configurar
     const nextWeight = currentWeight >= 5 ? 0 : currentWeight + 1;
+    console.log('➡️ Next weight:', nextWeight);
+    
     onUpdatePreference(weekday, shiftId, nextWeight);
   };
 

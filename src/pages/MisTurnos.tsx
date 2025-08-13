@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, RefreshCw, LayoutGrid, List, Settings } from 'lucide-react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CalendarView from '@/components/shifts/CalendarView';
 import ShiftPreferencesGrid from '@/components/shifts/ShiftPreferencesGrid';
@@ -88,10 +88,13 @@ const MisTurnos = () => {
       .eq('is_active', true);
 
     if (error) throw error;
+    console.log('📋 Plantillas turnos cargadas:', data);
     setPlantillasTurnos(data || []);
   };
 
   const actualizarPreferencia = async (weekday: number, shiftTemplateId: string, weight: number) => {
+    console.log('📝 Updating preference:', { weekday, shiftTemplateId, weight, userId: user?.id });
+    
     try {
       const { error } = await supabase
         .from('employee_shift_prefs')
@@ -102,8 +105,12 @@ const MisTurnos = () => {
           weight
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
       
+      console.log('✅ Preference updated successfully');
       toast.success('Preferencia guardada ✅', {
         description: 'Tu manager verá esto al planificar 📅'
       });
@@ -280,6 +287,9 @@ const MisTurnos = () => {
               <DialogContent className="max-w-4xl">
                 <DialogHeader>
                   <DialogTitle>Configurar Preferencias de Turnos</DialogTitle>
+                  <DialogDescription>
+                    Configura tus preferencias para cada día de la semana y tipo de turno. Tu manager las tendrá en cuenta al asignar turnos automáticamente.
+                  </DialogDescription>
                 </DialogHeader>
                 <ShiftPreferencesGrid
                   plantillasTurnos={plantillasTurnos}
