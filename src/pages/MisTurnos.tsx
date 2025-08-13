@@ -100,9 +100,10 @@ const MisTurnos = () => {
         .from('employee_shift_prefs')
         .upsert({
           employee_id: user?.id,
-          weekday,
           shift_template_id: shiftTemplateId,
-          weight
+          weekday,
+          weight,
+          tenant_id: user?.tenant_id
         });
 
       if (error) {
@@ -115,7 +116,7 @@ const MisTurnos = () => {
         description: 'Tu manager verá esto al planificar 📅'
       });
       cargarPreferencias();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error actualizando preferencia:', error);
       toast.error('Error al actualizar preferencia');
     }
