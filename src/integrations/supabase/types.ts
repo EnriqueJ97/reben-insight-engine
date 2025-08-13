@@ -295,6 +295,71 @@ export type Database = {
           },
         ]
       }
+      billing_invoices: {
+        Row: {
+          created_at: string
+          currency: string | null
+          due_date: string | null
+          file_path: string | null
+          id: string
+          invoice_number: string
+          metadata: Json | null
+          paid_date: string | null
+          period_end: string
+          period_start: string
+          sent_date: string | null
+          status: string | null
+          subtotal: number
+          tax_amount: number
+          tenant_id: string
+          total: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          invoice_number: string
+          metadata?: Json | null
+          paid_date?: string | null
+          period_end: string
+          period_start: string
+          sent_date?: string | null
+          status?: string | null
+          subtotal: number
+          tax_amount: number
+          tenant_id: string
+          total: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          invoice_number?: string
+          metadata?: Json | null
+          paid_date?: string | null
+          period_end?: string
+          period_start?: string
+          sent_date?: string | null
+          status?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tenant_id?: string
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkins: {
         Row: {
           created_at: string
@@ -2133,15 +2198,84 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_billing: {
+        Row: {
+          annual_price: number | null
+          billing_address: Json | null
+          billing_email: string
+          created_at: string
+          currency: string | null
+          id: string
+          last_payment_date: string | null
+          monthly_price: number
+          next_billing_date: string | null
+          notes: string | null
+          payment_day: number | null
+          payment_method: string | null
+          payment_status: string | null
+          tax_rate: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          annual_price?: number | null
+          billing_address?: Json | null
+          billing_email: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          last_payment_date?: string | null
+          monthly_price?: number
+          next_billing_date?: string | null
+          notes?: string | null
+          payment_day?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
+          tax_rate?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          annual_price?: number | null
+          billing_address?: Json | null
+          billing_email?: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          last_payment_date?: string | null
+          monthly_price?: number
+          next_billing_date?: string | null
+          notes?: string | null
+          payment_day?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
+          tax_rate?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_billing_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
+          arr: number | null
           company_size: string | null
+          contract_end_date: string | null
+          contract_start_date: string | null
           created_at: string
           description: string | null
           domain: string | null
           id: string
           industry: string | null
           max_users: number | null
+          mrr: number | null
           name: string
           onboarding_completed: boolean
           settings: Json | null
@@ -2152,13 +2286,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arr?: number | null
           company_size?: string | null
+          contract_end_date?: string | null
+          contract_start_date?: string | null
           created_at?: string
           description?: string | null
           domain?: string | null
           id?: string
           industry?: string | null
           max_users?: number | null
+          mrr?: number | null
           name: string
           onboarding_completed?: boolean
           settings?: Json | null
@@ -2169,13 +2307,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arr?: number | null
           company_size?: string | null
+          contract_end_date?: string | null
+          contract_start_date?: string | null
           created_at?: string
           description?: string | null
           domain?: string | null
           id?: string
           industry?: string | null
           max_users?: number | null
+          mrr?: number | null
           name?: string
           onboarding_completed?: boolean
           settings?: Json | null

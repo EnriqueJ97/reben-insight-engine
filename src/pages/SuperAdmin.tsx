@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Users, Activity, AlertTriangle, Plus, Edit, Ban, CheckCircle, BarChart3 } from 'lucide-react';
+import { Building2, Users, Activity, AlertTriangle, Plus, Edit, Ban, CheckCircle, BarChart3, Euro, CreditCard, Calendar } from 'lucide-react';
+import TenantEditDialog from '@/components/TenantEditDialog';
 
 interface Tenant {
   id: string;
@@ -21,9 +22,30 @@ interface Tenant {
   subscription_plan: 'basic' | 'premium' | 'enterprise';
   subscription_status: 'active' | 'cancelled' | 'expired';
   max_users: number;
+  contract_start_date?: string;
+  contract_end_date?: string;
+  mrr?: number;
+  arr?: number;
   created_at: string;
   updated_at: string;
   settings: any;
+}
+
+interface TenantBilling {
+  id: string;
+  tenant_id: string;
+  billing_email: string;
+  billing_address?: any;
+  payment_method: string;
+  monthly_price: number;
+  annual_price?: number;
+  currency: string;
+  payment_day: number;
+  next_billing_date?: string;
+  last_payment_date?: string;
+  payment_status: string;
+  tax_rate: number;
+  notes?: string;
 }
 
 interface PlatformMetrics {
@@ -55,6 +77,8 @@ export default function SuperAdmin() {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [newTenant, setNewTenant] = useState<NewTenantForm>({
     name: '',
     domain: '',
@@ -442,7 +466,14 @@ export default function SuperAdmin() {
                       <TableCell>{new Date(tenant.created_at).toLocaleDateString('es-ES')}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTenant(tenant);
+                              setIsEditDialogOpen(true);
+                            }}
+                          >
                             <Edit className="w-3 h-3" />
                           </Button>
                           {tenant.status === 'active' ? (
@@ -506,6 +537,13 @@ export default function SuperAdmin() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <TenantEditDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        tenant={selectedTenant}
+        onUpdate={fetchData}
+      />
     </div>
   );
 }
