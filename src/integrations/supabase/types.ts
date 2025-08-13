@@ -2040,6 +2040,48 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          billing_cycle: string | null
+          created_at: string
+          display_name: string
+          features: Json
+          id: string
+          is_active: boolean | null
+          max_employees: number | null
+          min_employees: number | null
+          plan_name: string
+          price_per_employee: number
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string | null
+          created_at?: string
+          display_name: string
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          max_employees?: number | null
+          min_employees?: number | null
+          plan_name: string
+          price_per_employee: number
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string | null
+          created_at?: string
+          display_name?: string
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          max_employees?: number | null
+          min_employees?: number | null
+          plan_name?: string
+          price_per_employee?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tag_map: {
         Row: {
           created_at: string
@@ -2213,9 +2255,12 @@ export type Database = {
           payment_day: number | null
           payment_method: string | null
           payment_status: string | null
+          price_per_employee: number | null
           tax_rate: number | null
           tenant_id: string
+          total_employees: number | null
           updated_at: string
+          volume_discount: number | null
         }
         Insert: {
           annual_price?: number | null
@@ -2231,9 +2276,12 @@ export type Database = {
           payment_day?: number | null
           payment_method?: string | null
           payment_status?: string | null
+          price_per_employee?: number | null
           tax_rate?: number | null
           tenant_id: string
+          total_employees?: number | null
           updated_at?: string
+          volume_discount?: number | null
         }
         Update: {
           annual_price?: number | null
@@ -2249,9 +2297,12 @@ export type Database = {
           payment_day?: number | null
           payment_method?: string | null
           payment_status?: string | null
+          price_per_employee?: number | null
           tax_rate?: number | null
           tenant_id?: string
+          total_employees?: number | null
           updated_at?: string
+          volume_discount?: number | null
         }
         Relationships: [
           {
@@ -2462,6 +2513,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_tenant_pricing: {
+        Args: { tenant_uuid: string }
+        Returns: {
+          monthly_total: number
+          annual_total: number
+          price_per_employee: number
+          total_employees: number
+          volume_discount: number
+        }[]
+      }
       cleanup_expired_aliases: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2501,6 +2562,7 @@ export type Database = {
       compliance_status: "DRAFT" | "SUBMITTED" | "QA" | "FINAL"
       coverage_status: "OK" | "MISSING" | "ESTIMATE"
       materiality_quadrant: "high_high" | "high_low" | "low_high" | "low_low"
+      subscription_plan_type: "lite" | "esencial" | "profesional" | "enterprise"
       task_status: "TODO" | "IN_PROGRESS" | "READY" | "COMPLETED"
       user_role:
         | "EMPLOYEE"
@@ -2639,6 +2701,7 @@ export const Constants = {
       compliance_status: ["DRAFT", "SUBMITTED", "QA", "FINAL"],
       coverage_status: ["OK", "MISSING", "ESTIMATE"],
       materiality_quadrant: ["high_high", "high_low", "low_high", "low_low"],
+      subscription_plan_type: ["lite", "esencial", "profesional", "enterprise"],
       task_status: ["TODO", "IN_PROGRESS", "READY", "COMPLETED"],
       user_role: [
         "EMPLOYEE",

@@ -18,7 +18,7 @@ interface Tenant {
   name: string;
   domain?: string;
   status: 'active' | 'suspended';
-  subscription_plan: 'basic' | 'premium' | 'enterprise';
+  subscription_plan: 'lite' | 'esencial' | 'profesional' | 'enterprise';
   subscription_status: 'active' | 'cancelled' | 'expired';
   max_users: number;
   contract_start_date?: string;
@@ -234,9 +234,10 @@ export default function TenantEditDialog({ isOpen, onOpenChange, tenant, onUpdat
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="basic">Básico - €99/mes</SelectItem>
-                        <SelectItem value="premium">Premium - €299/mes</SelectItem>
-                        <SelectItem value="enterprise">Enterprise - €999/mes</SelectItem>
+                        <SelectItem value="lite">Lite - €1,90/empleado/mes</SelectItem>
+                        <SelectItem value="esencial">Esencial - €3,90/empleado/mes</SelectItem>
+                        <SelectItem value="profesional">Profesional - €7,90/empleado/mes</SelectItem>
+                        <SelectItem value="enterprise">Enterprise - Precio personalizado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

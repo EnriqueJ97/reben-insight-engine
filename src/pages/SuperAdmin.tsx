@@ -19,7 +19,7 @@ interface Tenant {
   name: string;
   domain?: string;
   status: 'active' | 'suspended';
-  subscription_plan: 'basic' | 'premium' | 'enterprise';
+  subscription_plan: 'lite' | 'esencial' | 'profesional' | 'enterprise';
   subscription_status: 'active' | 'cancelled' | 'expired';
   max_users: number;
   contract_start_date?: string;
@@ -61,7 +61,7 @@ interface TenantWithMetrics extends Tenant {
   alertCount: number;
 }
 
-type SubscriptionPlan = 'basic' | 'premium' | 'enterprise';
+type SubscriptionPlan = 'lite' | 'esencial' | 'profesional' | 'enterprise';
 
 interface NewTenantForm {
   name: string;
@@ -82,7 +82,7 @@ export default function SuperAdmin() {
   const [newTenant, setNewTenant] = useState<NewTenantForm>({
     name: '',
     domain: '',
-    subscription_plan: 'basic',
+    subscription_plan: 'lite',
     max_users: 50
   });
 
@@ -148,7 +148,7 @@ export default function SuperAdmin() {
           return {
             ...tenant,
             status: tenant.status as 'active' | 'suspended',
-            subscription_plan: tenant.subscription_plan as 'basic' | 'premium' | 'enterprise',
+            subscription_plan: tenant.subscription_plan as 'lite' | 'esencial' | 'profesional' | 'enterprise',
             subscription_status: tenant.subscription_status as 'active' | 'cancelled' | 'expired',
             max_users: tenant.max_users || 50,
             userCount: usersResult.count || 0,
@@ -206,7 +206,7 @@ export default function SuperAdmin() {
         description: "Empresa creada exitosamente.",
       });
 
-      setNewTenant({ name: '', domain: '', subscription_plan: 'basic', max_users: 50 });
+      setNewTenant({ name: '', domain: '', subscription_plan: 'lite', max_users: 50 });
       setIsCreateDialogOpen(false);
       fetchData();
     } catch (error) {
@@ -260,8 +260,9 @@ export default function SuperAdmin() {
 
   const getPlanBadge = (plan: string) => {
     const colors = {
-      basic: 'bg-blue-100 text-blue-800',
-      premium: 'bg-purple-100 text-purple-800',
+      lite: 'bg-blue-100 text-blue-800',
+      esencial: 'bg-green-100 text-green-800',
+      profesional: 'bg-purple-100 text-purple-800',
       enterprise: 'bg-orange-100 text-orange-800'
     };
     return (
@@ -342,8 +343,9 @@ export default function SuperAdmin() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="basic">Básico</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="lite">Lite</SelectItem>
+                    <SelectItem value="esencial">Esencial</SelectItem>
+                    <SelectItem value="profesional">Profesional</SelectItem>
                     <SelectItem value="enterprise">Enterprise</SelectItem>
                   </SelectContent>
                 </Select>
