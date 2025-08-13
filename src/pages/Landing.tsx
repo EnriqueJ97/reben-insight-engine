@@ -18,6 +18,8 @@ import {
   ArrowRight,
   Star
 } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Link } from 'react-router-dom';
 
 const Landing = () => {
   return (
@@ -29,10 +31,10 @@ const Landing = () => {
         
         <div className="container mx-auto px-4 z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Transforma el bienestar de tu empresa en resultados reales
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-foreground text-shadow-soft">
+              Transforma el <span className="text-primary-deep">bienestar</span> de tu empresa en <span className="text-primary-deep">resultados reales</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-strong mb-8 max-w-3xl mx-auto">
               Prevén el burnout, reduce la rotación y cumple con la CSRD mientras impulsas productividad
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -67,8 +69,8 @@ const Landing = () => {
             
             <Card className="text-center p-8 border-warning/20">
               <CardContent className="space-y-4">
-                <div className="text-6xl font-bold text-warning">54%</div>
-                <p className="text-lg font-semibold">de compañías reportan más rotación en los últimos 12 meses</p>
+                <div className="text-6xl font-bold text-warning-strong">54%</div>
+                <p className="text-lg font-bold">de compañías reportan más rotación en los últimos 12 meses</p>
               </CardContent>
             </Card>
             
@@ -87,13 +89,13 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">La solución inteligente que necesitas</h2>
-            <p className="text-xl text-muted-foreground">Tecnología avanzada para el bienestar organizacional</p>
+            <p className="text-xl text-muted-strong">Tecnología avanzada para el bienestar organizacional</p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="p-6 hover:shadow-lg transition-shadow">
               <CardContent className="space-y-4">
-                <Brain className="h-12 w-12 text-primary" />
+                <Brain className="h-12 w-12 text-primary-deep" />
                 <h3 className="text-xl font-semibold">IA Predictiva</h3>
                 <p className="text-muted-foreground">Algoritmos avanzados que anticipan riesgos de burnout</p>
               </CardContent>
@@ -138,48 +140,48 @@ const Landing = () => {
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <MessageSquare className="h-10 w-10 text-primary" />
-                <h3 className="text-lg font-semibold">Check-ins Emocionales</h3>
-                <p className="text-muted-foreground">Medición contextual del estado emocional del equipo</p>
+                <h3 className="text-xl font-semibold">Check-ins Emocionales</h3>
+                <p className="text-muted-strong">Medición contextual del estado emocional del equipo</p>
               </CardContent>
             </Card>
             
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <BarChart3 className="h-10 w-10 text-success" />
-                <h3 className="text-lg font-semibold">Dashboard Interactivo</h3>
-                <p className="text-muted-foreground">Visualización en tiempo real del bienestar organizacional</p>
+                <h3 className="text-xl font-semibold">Dashboard Interactivo</h3>
+                <p className="text-muted-strong">Visualización en tiempo real del bienestar organizacional</p>
               </CardContent>
             </Card>
             
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <Users className="h-10 w-10 text-info" />
-                <h3 className="text-lg font-semibold">Pulsos Temáticos</h3>
-                <p className="text-muted-foreground">Encuestas personalizadas por departamento y rol</p>
+                <h3 className="text-xl font-semibold">Pulsos Temáticos</h3>
+                <p className="text-muted-strong">Encuestas personalizadas por departamento y rol</p>
               </CardContent>
             </Card>
             
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <TrendingUp className="h-10 w-10 text-warning" />
-                <h3 className="text-lg font-semibold">Simulador What-If</h3>
-                <p className="text-muted-foreground">Calcula el ROI de diferentes escenarios</p>
+                <h3 className="text-xl font-semibold">Simulador What-If</h3>
+                <p className="text-muted-strong">Calcula el ROI de diferentes escenarios</p>
               </CardContent>
             </Card>
             
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <Brain className="h-10 w-10 text-primary" />
-                <h3 className="text-lg font-semibold">Chat IA</h3>
-                <p className="text-muted-foreground">Asistente inteligente para insights instantáneos</p>
+                <h3 className="text-xl font-semibold">Chat IA</h3>
+                <p className="text-muted-strong">Asistente inteligente para insights instantáneos</p>
               </CardContent>
             </Card>
             
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <Shield className="h-10 w-10 text-success" />
-                <h3 className="text-lg font-semibold">Reportes ESG</h3>
-                <p className="text-muted-foreground">Cumplimiento automático de normativas</p>
+                <h3 className="text-xl font-semibold">Reportes ESG</h3>
+                <p className="text-muted-strong">Cumplimiento automático de normativas</p>
               </CardContent>
             </Card>
           </div>
@@ -236,7 +238,7 @@ const Landing = () => {
                   <Button className="w-full">Calcular mi ROI</Button>
                 </div>
                 <div className="text-center pt-4 border-t">
-                  <p className="text-2xl font-bold text-success">€124,000</p>
+                  <p className="text-2xl font-bold"><span className="text-primary-deep">€</span><span className="text-foreground">124,000</span></p>
                   <p className="text-sm text-muted-foreground">Ahorro anual estimado</p>
                 </div>
               </CardContent>
@@ -254,11 +256,11 @@ const Landing = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-6">
+            <Card className="p-6 shadow-sm">
               <CardContent className="space-y-4">
                 <div className="flex text-warning">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
+                    <Star key={i} className="h-6 w-6 fill-current" />
                   ))}
                 </div>
                 <p className="italic">"Redujimos la rotación del 22% al 8% en solo 6 meses. El ROI fue inmediato."</p>
@@ -269,11 +271,11 @@ const Landing = () => {
               </CardContent>
             </Card>
             
-            <Card className="p-6">
+            <Card className="p-6 shadow-sm">
               <CardContent className="space-y-4">
                 <div className="flex text-warning">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
+                    <Star key={i} className="h-6 w-6 fill-current" />
                   ))}
                 </div>
                 <p className="italic">"El cumplimiento CSRD pasó de ser una pesadilla a un proceso automático."</p>
@@ -284,11 +286,11 @@ const Landing = () => {
               </CardContent>
             </Card>
             
-            <Card className="p-6">
+            <Card className="p-6 shadow-sm">
               <CardContent className="space-y-4">
                 <div className="flex text-warning">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
+                    <Star key={i} className="h-6 w-6 fill-current" />
                   ))}
                 </div>
                 <p className="italic">"Nuestro índice de engagement subió del 6.2 al 8.7. Los equipos están más motivados."</p>
@@ -328,8 +330,77 @@ const Landing = () => {
           <div className="text-center mt-12">
             <div className="inline-flex items-center space-x-4 px-6 py-3 bg-success/10 rounded-full">
               <Shield className="h-6 w-6 text-success" />
-              <span className="font-semibold">100% Cumplimiento RGPD • Certificación ISO 27001</span>
+              <span className="font-semibold text-primary-deep">100% Cumplimiento RGPD • Certificación ISO 27001</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparativa de Planes */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-2">Planes que escalan contigo</h2>
+            <p className="text-lg text-muted-strong">Empieza sencillo y desbloquea todo el valor predictivo cuando lo necesites.</p>
+          </div>
+
+          <div className="relative w-full overflow-x-auto">
+            <div className="min-w-[900px]">
+              <Table className="w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[28%]">Funcionalidad</TableHead>
+                    <TableHead className="text-center">Lite<br /><span className="text-muted-strong text-sm">1,90 €/empleado/mes</span></TableHead>
+                    <TableHead className="text-center">Esencial<br /><span className="text-muted-strong text-sm">3,90 €/empleado/mes</span></TableHead>
+                    <TableHead className="text-center ring-1 ring-primary bg-secondary/40 shadow-sm">Profesional<br /><span className="text-muted-strong text-sm">7,90 €/empleado/mes</span><div className="mt-1 text-xs font-semibold text-primary">Más popular</div></TableHead>
+                    <TableHead className="text-center">Enterprise<br /><span className="text-muted-strong text-sm">A medida</span></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { name: 'Check-ins emocionales básicos', vals: ['✅','✅','✅','✅'] },
+                    { name: 'Check-ins automáticos contextuales', vals: ['','✅','✅','✅'] },
+                    { name: 'Pulsos temáticos configurables', vals: ['','✅','✅','✅'] },
+                    { name: 'Registro horario con autoevaluación', vals: ['','✅','✅','✅'] },
+                    { name: 'Dashboard segmentado por equipo', vals: ['','✅','✅','✅'] },
+                    { name: 'Chat IA básico', vals: ['','✅','✅','✅'] },
+                    { name: 'Alertas proactivas simples', vals: ['','✅','✅','✅'] },
+                    { name: 'Diagnóstico burnout y cultura organizacional', vals: ['','','✅','✅'] },
+                    { name: 'Score de bienestar organizacional', vals: ['','','✅','✅'] },
+                    { name: 'Alertas predictivas con IA', vals: ['','','✅','✅'] },
+                    { name: 'Simulador What If', vals: ['','','✅','✅'] },
+                    { name: 'Panel ejecutivo con KPIs e impacto económico', vals: ['','','✅','✅'] },
+                    { name: 'Cumplimiento normativo (CSRD)', vals: ['','','✅','✅'] },
+                    { name: 'Integraciones (Slack, Teams, Outlook, HRIS)', vals: ['','','✅','✅'] },
+                    { name: 'Exportaciones avanzadas (PDF, Excel)', vals: ['','','✅','✅'] },
+                    { name: 'Implementación y onboarding in company', vals: ['','','','✅'] },
+                    { name: 'Integración de datos en tiempo real', vals: ['','','','✅'] },
+                    { name: 'Cultura de trabajo flexible y turnos inteligentes', vals: ['','','','✅'] },
+                    { name: 'Modelos IA personalizados', vals: ['','','','✅'] },
+                    { name: 'Customer Success Manager dedicado', vals: ['','','','✅'] },
+                    { name: 'Soporte prioritario 24/7', vals: ['','','','✅'] },
+                    { name: 'Formación managers y RRHH', vals: ['','','','✅'] },
+                    { name: 'API abierta', vals: ['','','','✅'] },
+                  ].map((row, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-medium">{row.name}</TableCell>
+                      <TableCell className="text-center text-lg">{row.vals[0]}</TableCell>
+                      <TableCell className="text-center text-lg">{row.vals[1]}</TableCell>
+                      <TableCell className="text-center text-lg ring-1 ring-primary bg-secondary/30 shadow-sm">{row.vals[2]}</TableCell>
+                      <TableCell className="text-center text-lg">{row.vals[3]}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          <p className="mt-4 text-center text-muted-foreground text-sm">Descuentos por volumen desde 500 empleados. Facturación mensual o anual.</p>
+
+          <div className="mt-8 flex justify-center">
+            <Link to="/login">
+              <Button size="lg" className="px-8">Ir al login</Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -337,7 +408,7 @@ const Landing = () => {
       {/* CTA Final */}
       <section className="py-20 bg-gradient-to-r from-primary to-secondary">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center text-white">
+          <div className="max-w-4xl mx-auto text-center text-foreground">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               ¿Listo para transformar tu organización?
             </h2>
@@ -345,16 +416,16 @@ const Landing = () => {
               Únete a más de 150 empresas que ya mejoran su bienestar organizacional con REBEN
             </p>
             
-            <Card className="p-8 bg-white/10 backdrop-blur border-white/20">
+            <Card className="p-8 bg-card border">
               <CardContent className="space-y-6">
                 <h3 className="text-2xl font-bold">Solicita tu demo gratuita</h3>
                 <div className="grid md:grid-cols-2 gap-4 max-w-md mx-auto">
-                  <Input placeholder="Tu nombre" className="bg-white/20 border-white/30 text-white placeholder:text-white/70" />
-                  <Input placeholder="Email corporativo" className="bg-white/20 border-white/30 text-white placeholder:text-white/70" />
-                  <Input placeholder="Empresa" className="bg-white/20 border-white/30 text-white placeholder:text-white/70" />
-                  <Input placeholder="Nº empleados" className="bg-white/20 border-white/30 text-white placeholder:text-white/70" />
+                  <Input placeholder="Tu nombre" />
+                  <Input placeholder="Email corporativo" />
+                  <Input placeholder="Empresa" />
+                  <Input placeholder="Nº empleados" />
                 </div>
-                <Button size="lg" variant="secondary" className="w-full md:w-auto px-8 py-6 text-lg">
+                <Button size="lg" className="w-full md:w-auto px-8 py-6 text-lg">
                   Solicitar demo gratuita
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
