@@ -57,32 +57,34 @@ serve(async (req) => {
       throw new Error(`Error fetching shift templates: ${templatesError.message}`);
     }
 
-    // 2. Get employee preferences
+    // 2. Get employees first
+    const { data: employees, error: employeesError } = await supabaseClient
+      .from('profiles')
+      .select('id, full_name, team_id')
+      .eq('tenant_id', tenantId)
+      .eq('role', 'EMPLOYEE');
+
+    if (employeesError) {
+      throw new Error(`Error fetching employees: ${employeesError.message}`);
+    }
+
+    // 3. Get employee preferences separately
     const { data: preferences, error: preferencesError } = await supabaseClient
       .from('employee_shift_prefs')
-      .select(`
-        *,
-        profiles!employee_shift_prefs_employee_id_fkey(id, full_name, team_id)
-      `)
-      .in('employee_id', 
-        await supabaseClient
-          .from('profiles')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .then(({ data }) => data?.map(p => p.id) || [])
-      );
+      .select('*')
+      .eq('tenant_id', tenantId);
 
     if (preferencesError) {
       throw new Error(`Error fetching preferences: ${preferencesError.message}`);
     }
 
-    // 3. Get existing workload (last 14 days)
+    // 4. Get existing workload (last 14 days) - simplified query
     const fourteenDaysAgo = new Date();
     fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
     const { data: recentShifts, error: shiftsError } = await supabaseClient
       .from('rotas')
-      .select('employee_id, day, shift_templates(start_time, end_time)')
+      .select('employee_id, day, shift_template_id')
       .gte('day', fourteenDaysAgo.toISOString().split('T')[0])
       .lt('day', startDate);
 
@@ -90,30 +92,20 @@ serve(async (req) => {
       throw new Error(`Error fetching recent shifts: ${shiftsError.message}`);
     }
 
-    // 4. Calculate workload for each employee
+    // 5. Calculate workload for each employee (simplified)
     const workloadMap = new Map<string, number>();
     recentShifts?.forEach(shift => {
       const employeeId = shift.employee_id;
-      const hoursWorked = calculateShiftHours(shift.shift_templates.start_time, shift.shift_templates.end_time);
-      workloadMap.set(employeeId, (workloadMap.get(employeeId) || 0) + hoursWorked);
+      // Simplified: assume 8 hours per shift
+      workloadMap.set(employeeId, (workloadMap.get(employeeId) || 0) + 8);
     });
-
-    // 5. Get wellness scores (simplified - in real implementation would use EIE data)
-    const { data: profiles, error: profilesError } = await supabaseClient
-      .from('profiles')
-      .select('id, full_name, team_id')
-      .eq('tenant_id', tenantId);
-
-    if (profilesError) {
-      throw new Error(`Error fetching profiles: ${profilesError.message}`);
-    }
 
     // 6. Generate assignments using simplified algorithm
     const assignments = generateOptimalAssignments({
       templates: templates as ShiftTemplate[],
-      preferences: preferences as (EmployeePreference & { profiles: any })[],
+      preferences: preferences as EmployeePreference[],
       workloadMap,
-      profiles: profiles || [],
+      profiles: employees || [],
       startDate,
       endDate
     });
@@ -188,7 +180,7 @@ function generateOptimalAssignments({
   endDate
 }: {
   templates: ShiftTemplate[];
-  preferences: (EmployeePreference & { profiles: any })[];
+  preferences: EmployeePreference[];
   workloadMap: Map<string, number>;
   profiles: any[];
   startDate: string;
@@ -250,7 +242,7 @@ function generateOptimalAssignments({
 }
 
 function getAvailableEmployees(
-  preferences: (EmployeePreference & { profiles: any })[],
+  preferences: EmployeePreference[],
   profiles: any[],
   shiftTemplateId: string,
   weekday: number,
