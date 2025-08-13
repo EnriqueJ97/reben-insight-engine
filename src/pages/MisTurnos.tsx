@@ -103,7 +103,9 @@ const MisTurnos = () => {
           shift_template_id: shiftTemplateId,
           weekday,
           weight,
-          tenant_id: user?.tenant_id
+          blocked: weight === -1
+        }, {
+          onConflict: 'employee_id,weekday,shift_template_id'
         });
 
       if (error) {
