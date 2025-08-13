@@ -157,10 +157,16 @@ const ShiftAssignmentCalendar = () => {
         return;
       }
 
-      // Check if shift already exists for this employee on this day
-      const existingShift = shifts.find(s => s.day === date && s.employee_id === empId);
+      // Check if shift already exists for this employee on this day in the database
+      const { data: existingShifts, error: checkError } = await supabase
+        .from('rotas')
+        .select('id')
+        .eq('day', date)
+        .eq('employee_id', empId);
+
+      if (checkError) throw checkError;
       
-      if (existingShift) {
+      if (existingShifts && existingShifts.length > 0) {
         // Update existing shift
         const { error } = await supabase
           .from('rotas')
@@ -168,7 +174,8 @@ const ShiftAssignmentCalendar = () => {
             shift_template_id: tempId,
             status: 'MANUAL'
           })
-          .eq('id', existingShift.id);
+          .eq('day', date)
+          .eq('employee_id', empId);
 
         if (error) throw error;
         toast.success('Turno actualizado');
