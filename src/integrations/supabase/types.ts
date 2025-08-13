@@ -195,6 +195,59 @@ export type Database = {
           },
         ]
       }
+      attendance: {
+        Row: {
+          created_at: string
+          date: string
+          hours_worked: number | null
+          id: string
+          justification: string | null
+          overtime_hours: number | null
+          row_hash: string | null
+          source: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          hours_worked?: number | null
+          id?: string
+          justification?: string | null
+          overtime_hours?: number | null
+          row_hash?: string | null
+          source?: string | null
+          status: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          hours_worked?: number | null
+          id?: string
+          justification?: string | null
+          overtime_hours?: number | null
+          row_hash?: string | null
+          source?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -335,6 +388,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cost_baselines: {
+        Row: {
+          absenteeism_cost_per_hour: number | null
+          avg_salary_month: number | null
+          created_at: string
+          id: string
+          replacement_cost_factor: number | null
+          role_level: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          absenteeism_cost_per_hour?: number | null
+          avg_salary_month?: number | null
+          created_at?: string
+          id?: string
+          replacement_cost_factor?: number | null
+          role_level?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          absenteeism_cost_per_hour?: number | null
+          avg_salary_month?: number | null
+          created_at?: string
+          id?: string
+          replacement_cost_factor?: number | null
+          role_level?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       csrd_profile: {
         Row: {
@@ -964,6 +1050,99 @@ export type Database = {
         }
         Relationships: []
       }
+      headcount_snapshots: {
+        Row: {
+          created_at: string
+          date_month: string
+          headcount: number
+          id: string
+          involuntary_terminations: number
+          tenant_id: string
+          updated_at: string
+          voluntary_terminations: number
+        }
+        Insert: {
+          created_at?: string
+          date_month: string
+          headcount: number
+          id?: string
+          involuntary_terminations?: number
+          tenant_id: string
+          updated_at?: string
+          voluntary_terminations?: number
+        }
+        Update: {
+          created_at?: string
+          date_month?: string
+          headcount?: number
+          id?: string
+          involuntary_terminations?: number
+          tenant_id?: string
+          updated_at?: string
+          voluntary_terminations?: number
+        }
+        Relationships: []
+      }
+      hr_events: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_type: string
+          fte: number | null
+          id: string
+          reason: string | null
+          row_hash: string | null
+          source: string | null
+          team_id: string | null
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_type: string
+          fte?: number | null
+          id?: string
+          reason?: string | null
+          row_hash?: string | null
+          source?: string | null
+          team_id?: string | null
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_type?: string
+          fte?: number | null
+          id?: string
+          reason?: string | null
+          row_hash?: string | null
+          source?: string | null
+          team_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_logs: {
         Row: {
           action: string
@@ -1399,6 +1578,66 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      productivity_metrics: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          metric_type: string
+          row_hash: string | null
+          source: string | null
+          team_id: string | null
+          tenant_id: string
+          unit: string | null
+          updated_at: string
+          user_id: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          metric_type: string
+          row_hash?: string | null
+          source?: string | null
+          team_id?: string | null
+          tenant_id: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          metric_type?: string
+          row_hash?: string | null
+          source?: string | null
+          team_id?: string | null
+          tenant_id?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "productivity_metrics_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "productivity_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1860,6 +2099,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tenant_api_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          last4: string | null
+          name: string | null
+          revoked_at: string | null
+          tenant_id: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last4?: string | null
+          name?: string | null
+          revoked_at?: string | null
+          tenant_id: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last4?: string | null
+          name?: string | null
+          revoked_at?: string | null
+          tenant_id?: string
+          token_hash?: string
+        }
+        Relationships: []
       }
       tenants: {
         Row: {

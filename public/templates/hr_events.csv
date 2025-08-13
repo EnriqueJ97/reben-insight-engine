@@ -1,0 +1,3 @@
+external_user_id,email,team,event_type,event_date,fte,reason
+U123,a@example.com,Sales,hire,2025-08-01,1,
+U124,b@example.com,Sales,termination,2025-08-12,1,"voluntary"

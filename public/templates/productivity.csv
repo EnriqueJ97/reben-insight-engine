@@ -1,0 +1,3 @@
+date,team,external_user_id,email,metric_type,value,unit
+2025-08-12,Sales,U123,a@example.com,revenue,1200,EUR
+2025-08-12,Support,,c@example.com,tickets_closed,34,count

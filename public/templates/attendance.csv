@@ -1,0 +1,3 @@
+external_user_id,email,date,status,hours_worked,overtime_hours,justification
+U123,a@example.com,2025-08-12,present,8,0,
+U124,b@example.com,2025-08-12,sick,0,0,flu

@@ -5,3 +5,6 @@ name = "reben-insight-engine"
 [api]
 url = "https://scjwymsygllanubzfbok.supabase.co"
 anon_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjand5bXN5Z2xsYW51YnpmYm9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwMTMzNzEsImV4cCI6MjA2ODU4OTM3MX0.JQBPlDP8fxDVSde5sJJysmy7hUsH4HUwuu3EFnNDYAs"
+
+[functions.ingest-people-data]
+verify_jwt = false
