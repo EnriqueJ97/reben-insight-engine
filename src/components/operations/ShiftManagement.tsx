@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Users, Settings, Calendar as CalendarIcon, TrendingUp, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ShiftAssignmentCalendar from '@/components/shifts/ShiftAssignmentCalendar';
+import EmployeePreferences from '@/components/shifts/EmployeePreferences';
 
 const ShiftManagement = () => {
   const { user } = useAuth();
@@ -135,96 +137,20 @@ const ShiftManagement = () => {
         </TabsContent>
 
         <TabsContent value="schedule" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Calendario de Turnos</span>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleAutoAssign} disabled={assigning}>
-                    <RefreshCw className={`w-4 h-4 mr-2 ${assigning ? 'animate-spin' : ''}`} />
-                    Generar Horarios
-                  </Button>
-                  <Button onClick={handleAutoAssign} disabled={assigning}>
-                    {assigning ? 'Asignando...' : 'Asignación Automática'}
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted/50 p-8 rounded-lg text-center">
-                <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Calendario de Turnos</h3>
-                <p className="text-muted-foreground">
-                  Aquí se mostrará el calendario interactivo de turnos con la posibilidad de arrastrar y soltar asignaciones.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex gap-2 mb-6">
+            <Button variant="outline" onClick={handleAutoAssign} disabled={assigning}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${assigning ? 'animate-spin' : ''}`} />
+              Generar Horarios
+            </Button>
+            <Button onClick={handleAutoAssign} disabled={assigning}>
+              {assigning ? 'Asignando...' : 'Asignación Automática'}
+            </Button>
+          </div>
+          <ShiftAssignmentCalendar />
         </TabsContent>
 
         <TabsContent value="preferences" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferencias de Empleados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">María García</h4>
-                          <p className="text-sm text-muted-foreground">Desarrolladora Senior</p>
-                        </div>
-                        <Badge variant="secondary">Preferencias: 85%</Badge>
-                      </div>
-                      <div className="mt-3 space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>Mañana</span>
-                          <span className="text-green-600">+8</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Tarde</span>
-                          <span className="text-yellow-600">+2</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Noche</span>
-                          <span className="text-red-600">-5</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">Carlos López</h4>
-                          <p className="text-sm text-muted-foreground">DevOps Engineer</p>
-                        </div>
-                        <Badge variant="secondary">Preferencias: 92%</Badge>
-                      </div>
-                      <div className="mt-3 space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>Mañana</span>
-                          <span className="text-green-600">+10</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Tarde</span>
-                          <span className="text-green-600">+6</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Noche</span>
-                          <span className="text-yellow-600">+1</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <EmployeePreferences />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
