@@ -4,11 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Leaf, AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Leaf, AlertTriangle, CheckCircle, Clock, TrendingUp, Settings, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CSRDQuickActions } from '@/components/sustainability/CSRDQuickActions';
+import { useNavigate } from 'react-router-dom';
 
 const CSRDDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [complianceData, setComplianceData] = useState<any>({
     complianceIndex: 0,
     totalDataPoints: 0,
@@ -43,9 +47,10 @@ const CSRDDashboard = () => {
     const { data, error } = await supabase
       .from('csrd_profile')
       .select('*')
-      .single();
+      .eq('tenant_id', user?.tenant_id)
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('Error cargando perfil CSRD:', error);
       return;
     }
@@ -54,15 +59,58 @@ const CSRDDashboard = () => {
   };
 
   const cargarEstadisticasCompliance = async () => {
-    // Simulamos datos por ahora
-    setComplianceData({
-      complianceIndex: 45,
-      totalDataPoints: 1100,
-      completedDataPoints: 495,
-      pendingTasks: 127,
-      criticalTasks: 8,
-      daysToDeadline: 245
-    });
+    try {
+      // Cargar estadísticas reales de ESRS data points
+      const { data: dataPoints, error: dataError } = await supabase
+        .from('esrs_data_points')
+        .select('id')
+        .eq('tenant_id', user?.tenant_id);
+
+      const { data: values, error: valuesError } = await supabase
+        .from('esrs_values')
+        .select('*')
+        .eq('tenant_id', user?.tenant_id)
+        .not('value_numeric', 'is', null)
+        .not('value_text', 'is', null);
+
+      if (dataError || valuesError) {
+        console.error('Error cargando estadísticas:', dataError || valuesError);
+        return;
+      }
+
+      const totalDataPoints = dataPoints?.length || 0;
+      const completedDataPoints = values?.length || 0;
+      const complianceIndex = totalDataPoints > 0 
+        ? Math.round((completedDataPoints / totalDataPoints) * 100) 
+        : 0;
+
+      // Calcular días hasta deadline basado en el año del primer reporte
+      const currentYear = new Date().getFullYear();
+      const targetYear = csrdProfile?.year_first_report || currentYear + 1;
+      const deadline = new Date(targetYear, 2, 31); // 31 de marzo
+      const today = new Date();
+      const daysToDeadline = Math.max(0, Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
+      setComplianceData({
+        complianceIndex,
+        totalDataPoints,
+        completedDataPoints,
+        pendingTasks: totalDataPoints - completedDataPoints,
+        criticalTasks: Math.floor((totalDataPoints - completedDataPoints) * 0.1), // 10% críticas
+        daysToDeadline
+      });
+    } catch (error) {
+      console.error('Error calculando estadísticas:', error);
+      // Fallback a datos simulados
+      setComplianceData({
+        complianceIndex: 0,
+        totalDataPoints: 0,
+        completedDataPoints: 0,
+        pendingTasks: 0,
+        criticalTasks: 0,
+        daysToDeadline: 365
+      });
+    }
   };
 
   const getComplianceColor = (index: number) => {
@@ -90,14 +138,26 @@ const CSRDDashboard = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Leaf className="w-6 h-6 text-green-600" />
-        <h1 className="text-3xl font-bold">Dashboard CSRD</h1>
-        {csrdProfile?.year_first_report && (
-          <Badge variant="outline">
-            Primer Reporte: {csrdProfile.year_first_report}
-          </Badge>
-        )}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Leaf className="w-6 h-6 text-green-600" />
+          <h1 className="text-3xl font-bold">Dashboard CSRD</h1>
+          {csrdProfile?.year_first_report && (
+            <Badge variant="outline">
+              Primer Reporte: {csrdProfile.year_first_report}
+            </Badge>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/dashboard/sustainability/datahub-esrs')}>
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Data Hub ESRS
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/dashboard/sustainability/diagnostico-csrd')}>
+            <Settings className="w-4 h-4 mr-2" />
+            Configuración
+          </Button>
+        </div>
       </div>
 
       {/* KPIs Principales */}
@@ -187,6 +247,9 @@ const CSRDDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Quick Actions Panel */}
+      <CSRDQuickActions onRefresh={cargarDatos} complianceData={complianceData} />
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
