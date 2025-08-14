@@ -149,7 +149,7 @@ const EnhancedTeamsManagement = () => {
         .from('teams')
         .insert({
           name: teamForm.name,
-          manager_id: teamForm.managerId || null,
+          manager_id: teamForm.managerId === 'no-manager' ? null : teamForm.managerId,
           tenant_id: userProfile?.tenant_id
         });
 
@@ -180,7 +180,7 @@ const EnhancedTeamsManagement = () => {
         .from('teams')
         .update({
           name: teamForm.name,
-          manager_id: teamForm.managerId || null
+          manager_id: teamForm.managerId === 'no-manager' ? null : teamForm.managerId
         })
         .eq('id', selectedTeam.id);
 
@@ -263,7 +263,7 @@ const EnhancedTeamsManagement = () => {
     setSelectedTeam(team);
     setTeamForm({
       name: team.name,
-      managerId: team.manager_id || ''
+      managerId: team.manager_id || 'no-manager'
     });
     setIsEditTeamOpen(true);
   };
@@ -414,7 +414,7 @@ const EnhancedTeamsManagement = () => {
                       <SelectValue placeholder="Selecciona un manager" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sin manager</SelectItem>
+                      <SelectItem value="no-manager">Sin manager</SelectItem>
                       {managers.map((manager) => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.full_name || manager.email}
@@ -598,8 +598,8 @@ const EnhancedTeamsManagement = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un manager" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Sin manager</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="no-manager">Sin manager</SelectItem>
                   {managers.map((manager) => (
                     <SelectItem key={manager.id} value={manager.id}>
                       {manager.full_name || manager.email}
