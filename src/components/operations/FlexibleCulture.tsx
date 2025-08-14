@@ -4,11 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Home, Wifi, Settings, TrendingUp, Clock, MapPin } from 'lucide-react';
+import PolicyManager from './PolicyManager';
 
 const FlexibleCulture = () => {
   const { user } = useAuth();
@@ -37,60 +34,7 @@ const FlexibleCulture = () => {
         </TabsList>
 
         <TabsContent value="policies" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Políticas de Flexibilidad</span>
-                <Button>
-                  <Settings className="w-4 h-4 mr-2" />
-                  Nueva Política
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Política General</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="min-days">Días mínimos en oficina</Label>
-                        <Input id="min-days" type="number" defaultValue="3" />
-                      </div>
-                      <div>
-                        <Label htmlFor="core-hours">Horario núcleo</Label>
-                        <Input id="core-hours" defaultValue="10:00 - 15:00" />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="allowed-modes">Modalidades permitidas</Label>
-                      <div className="flex gap-4 mt-2">
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="office" defaultChecked />
-                          <label htmlFor="office" className="text-sm">Oficina</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="remote" defaultChecked />
-                          <label htmlFor="remote" className="text-sm">Remoto</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="hybrid" defaultChecked />
-                          <label htmlFor="hybrid" className="text-sm">Híbrido</label>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end">
-                      <Button>Guardar Cambios</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
+          <PolicyManager />
         </TabsContent>
 
         <TabsContent value="requests" className="space-y-6">

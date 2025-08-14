@@ -7,18 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Home, Building, Users, Plus, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Calendar, Home, Building, Users, Plus, RefreshCw, Shield, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useFlexPolicyEnforcement } from '@/hooks/useFlexPolicyEnforcement';
 
 const TrabajoFlexible = () => {
   const { user } = useAuth();
+  const { activePolicy, validateFlexRequest } = useFlexPolicyEnforcement();
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
   const [politicas, setPoliticas] = useState<any[]>([]);
   const [historial, setHistorial] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNuevaSolicitud, setShowNuevaSolicitud] = useState(false);
+  const [validationResult, setValidationResult] = useState<any>(null);
 
   const [nuevaSolicitud, setNuevaSolicitud] = useState({
     fecha: '',
@@ -83,7 +87,39 @@ const TrabajoFlexible = () => {
     setHistorial(data || []);
   };
 
+  const validateRequest = () => {
+    if (!nuevaSolicitud.modo) {
+      setValidationResult(null);
+      return;
+    }
+
+    const requestedHours = nuevaSolicitud.horasInicio && nuevaSolicitud.horasFin ? {
+      start: nuevaSolicitud.horasInicio,
+      end: nuevaSolicitud.horasFin
+    } : undefined;
+
+    const result = validateFlexRequest(nuevaSolicitud.modo, requestedHours);
+    setValidationResult(result);
+  };
+
+  useEffect(() => {
+    validateRequest();
+  }, [nuevaSolicitud.modo, nuevaSolicitud.horasInicio, nuevaSolicitud.horasFin]);
+
   const enviarSolicitud = async () => {
+    // Validate before submitting
+    const requestedHours = nuevaSolicitud.horasInicio && nuevaSolicitud.horasFin ? {
+      start: nuevaSolicitud.horasInicio,
+      end: nuevaSolicitud.horasFin
+    } : undefined;
+
+    const validation = validateFlexRequest(nuevaSolicitud.modo, requestedHours);
+    
+    if (!validation.isValid) {
+      toast.error(validation.violations.join('. '));
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('flex_requests')
@@ -110,6 +146,7 @@ const TrabajoFlexible = () => {
         horasFin: '',
         razon: ''
       });
+      setValidationResult(null);
       cargarSolicitudes();
     } catch (error) {
       console.error('Error enviando solicitud:', error);
@@ -175,14 +212,25 @@ const TrabajoFlexible = () => {
           <Calendar className="w-6 h-6 text-primary" />
           <h1 className="text-3xl font-bold">Trabajo Flexible</h1>
         </div>
-        
-        <Dialog open={showNuevaSolicitud} onOpenChange={setShowNuevaSolicitud}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Nueva Solicitud
-            </Button>
-          </DialogTrigger>
+
+        <div className="flex items-center gap-4">
+          {activePolicy && (
+            <Card className="px-3 py-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="w-4 h-4 text-primary" />
+                <span className="font-medium">Política activa:</span>
+                <span>{activePolicy.name}</span>
+              </div>
+            </Card>
+          )}
+          
+          <Dialog open={showNuevaSolicitud} onOpenChange={setShowNuevaSolicitud}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Nueva Solicitud
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Nueva Solicitud de Flexibilidad</DialogTitle>
@@ -238,13 +286,40 @@ const TrabajoFlexible = () => {
                   placeholder="Explica el motivo de tu solicitud..."
                 />
               </div>
+
+              {validationResult && !validationResult.isValid && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <ul className="list-disc list-inside space-y-1">
+                      {validationResult.violations.map((violation: string, index: number) => (
+                        <li key={index}>{violation}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {validationResult && validationResult.isValid && nuevaSolicitud.modo && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    ✅ Esta solicitud cumple con la política de flexibilidad activa
+                  </AlertDescription>
+                </Alert>
+              )}
               
-              <Button onClick={enviarSolicitud} className="w-full">
+              <Button 
+                onClick={enviarSolicitud} 
+                className="w-full"
+                disabled={!nuevaSolicitud.fecha || !nuevaSolicitud.modo || (validationResult && !validationResult.isValid)}
+              >
                 Enviar Solicitud
               </Button>
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="solicitudes" className="w-full">
