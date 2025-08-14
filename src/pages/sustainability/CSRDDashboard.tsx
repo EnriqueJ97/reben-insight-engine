@@ -149,11 +149,11 @@ const CSRDDashboard = () => {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/dashboard/sustainability/datahub-esrs')}>
+          <Button variant="outline" onClick={() => navigate('/dashboard/sustainability/data-hub')}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Data Hub ESRS
           </Button>
-          <Button variant="outline" onClick={() => navigate('/dashboard/sustainability/diagnostico-csrd')}>
+          <Button variant="outline" onClick={() => navigate('/dashboard/sustainability/diagnostico')}>
             <Settings className="w-4 h-4 mr-2" />
             Configuración
           </Button>
