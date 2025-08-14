@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -46,7 +45,6 @@ const AdvancedShiftPreferences: React.FC<AdvancedShiftPreferencesProps> = ({
 }) => {
   const [selectedShift, setSelectedShift] = useState<string>(plantillasTurnos[0]?.id || '');
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   
   const diasSemana = [
     { num: 1, nombre: 'Lun', full: 'Lunes' },
@@ -138,211 +136,182 @@ const AdvancedShiftPreferences: React.FC<AdvancedShiftPreferencesProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Configura tus Preferencias de Turnos
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Configura tus preferencias generales por día de la semana y preferencias específicas para fechas concretas.
-          </p>
-        </CardHeader>
+    <div className="space-y-6 max-h-[60vh] overflow-y-auto">
+      {/* Selector de turno */}
+      <div className="space-y-3">
+        <h3 className="font-medium">Selecciona el turno:</h3>
+        <div className="flex flex-wrap gap-2">
+          {plantillasTurnos.map((turno) => (
+            <Button
+              key={turno.id}
+              variant={selectedShift === turno.id ? "default" : "outline"}
+              onClick={() => setSelectedShift(turno.id)}
+              className="h-auto p-2"
+              size="sm"
+            >
+              <div className="text-center">
+                <div className="font-medium text-sm">{turno.name}</div>
+                <div className="text-xs opacity-70">
+                  {formatTime(turno.start_time)} - {formatTime(turno.end_time)}
+                </div>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <Tabs defaultValue="weekly" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="weekly">Preferencias Semanales</TabsTrigger>
+          <TabsTrigger value="specific">Fechas Específicas</TabsTrigger>
+        </TabsList>
         
-        <CardContent className="space-y-6">
-          {/* Selector de turno */}
-          <div className="space-y-3">
-            <h3 className="font-medium">Selecciona el turno:</h3>
-            <div className="flex flex-wrap gap-2">
-              {plantillasTurnos.map((turno) => (
-                <Button
-                  key={turno.id}
-                  variant={selectedShift === turno.id ? "default" : "outline"}
-                  onClick={() => setSelectedShift(turno.id)}
-                  className="h-auto p-3"
-                >
-                  <div className="text-center">
-                    <div className="font-medium">{turno.name}</div>
-                    <div className="text-xs opacity-70">
-                      {formatTime(turno.start_time)} - {formatTime(turno.end_time)}
-                    </div>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <Tabs defaultValue="weekly" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="weekly">Preferencias Semanales</TabsTrigger>
-              <TabsTrigger value="specific">Fechas Específicas</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="weekly" className="space-y-4">
-              {selectedShiftData && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium">
-                      Preferencias generales para: {selectedShiftData.name}
-                    </h3>
-                    <Badge variant="outline">
-                      {formatTime(selectedShiftData.start_time)} - {formatTime(selectedShiftData.end_time)}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-7 gap-3">
-                    {diasSemana.map((dia) => {
-                      const currentWeight = obtenerPreferencia(dia.num, selectedShift);
-                      return (
-                        <div key={dia.num} className="text-center">
-                          <div className="font-medium text-sm mb-2">{dia.nombre}</div>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "h-16 w-full flex flex-col items-center justify-center text-2xl border-2 transition-all",
-                              getPreferenceColor(currentWeight)
-                            )}
-                            onClick={() => handlePreferenceClick(dia.num, currentWeight)}
-                          >
-                            <span className="text-2xl">{getPreferenceEmoji(currentWeight)}</span>
-                            <span className="text-xs font-normal mt-1">
-                              {currentWeight === 0 ? 'No' : `Nivel ${currentWeight}`}
-                            </span>
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="specific" className="space-y-4">
-              {selectedShiftData && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium">
-                      Fechas específicas para: {selectedShiftData.name}
-                    </h3>
-                    <div className="flex items-center gap-2">
+        <TabsContent value="weekly" className="space-y-4">
+          {selectedShiftData && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-sm">
+                  Preferencias para: {selectedShiftData.name}
+                </h3>
+                <Badge variant="outline" className="text-xs">
+                  {formatTime(selectedShiftData.start_time)} - {formatTime(selectedShiftData.end_time)}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-7 gap-2">
+                {diasSemana.map((dia) => {
+                  const currentWeight = obtenerPreferencia(dia.num, selectedShift);
+                  return (
+                    <div key={dia.num} className="text-center">
+                      <div className="font-medium text-xs mb-1">{dia.nombre}</div>
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                        className={cn(
+                          "h-12 w-full flex flex-col items-center justify-center border-2 transition-all",
+                          getPreferenceColor(currentWeight)
+                        )}
+                        onClick={() => handlePreferenceClick(dia.num, currentWeight)}
                       >
-                        <ChevronLeft className="w-4 h-4" />
-                      </Button>
-                      <span className="font-medium min-w-[120px] text-center">
-                        {format(currentMonth, 'MMMM yyyy', { locale: es })}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                      >
-                        <ChevronRight className="w-4 h-4" />
+                        <span className="text-lg">{getPreferenceEmoji(currentWeight)}</span>
+                        <span className="text-xs font-normal">
+                          {currentWeight === 0 ? 'No' : currentWeight}
+                        </span>
                       </Button>
                     </div>
-                  </div>
-
-                  {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1 text-sm">
-                    {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-                      <div key={day} className="p-2 text-center font-medium text-muted-foreground">
-                        {day}
-                      </div>
-                    ))}
-                    
-                    {calendarDays.map((day, index) => {
-                      const dateStr = getDateString(day);
-                      const currentWeight = obtenerPreferenciaFecha(dateStr, selectedShift);
-                      const effectiveWeight = getEffectivePreference(day, selectedShift);
-                      const hasSpecificPref = hasDatePreference(day);
-                      const isToday = isSameDay(day, new Date());
-                      
-                      return (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          className={cn(
-                            "h-12 p-1 flex flex-col items-center justify-center relative",
-                            currentWeight > 0 ? getPreferenceColor(currentWeight) : 
-                            effectiveWeight > 0 ? `${getPreferenceColor(effectiveWeight)} opacity-50` : 
-                            "hover:bg-muted",
-                            isToday && "ring-2 ring-primary",
-                            hasSpecificPref && "ring-1 ring-accent"
-                          )}
-                          onClick={() => onUpdateDatePreference && handleDatePreferenceClick(dateStr, currentWeight)}
-                          disabled={!isSameMonth(day, currentMonth)}
-                        >
-                          <span className="text-xs font-medium">
-                            {format(day, 'd')}
-                          </span>
-                          {(currentWeight > 0 || effectiveWeight > 0) && (
-                            <span className="text-xs">
-                              {getPreferenceEmoji(currentWeight > 0 ? currentWeight : effectiveWeight)}
-                            </span>
-                          )}
-                          {hasSpecificPref && currentWeight > 0 && (
-                            <div className="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full" />
-                          )}
-                        </Button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p>• Haz clic en cualquier fecha para configurar una preferencia específica</p>
-                    <p>• Las fechas con punto azul tienen preferencias específicas configuradas</p>
-                    <p>• Las fechas sin configuración específica usan las preferencias semanales generales</p>
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-
-          {/* Leyenda */}
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <h4 className="font-medium mb-3 text-sm">Niveles de preferencia:</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">😍</span>
-                <span>5 - Me encanta</span>
+                  );
+                })}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">😊</span>
-                <span>4 - Me gusta</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">😐</span>
-                <span>3 - Neutral</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">😕</span>
-                <span>2 - Poco</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">😞</span>
-                <span>1 - Evitar</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">❌</span>
-                <span>0 - No disponible</span>
-              </div>
-            </div>
-          </div>
-
-          {onSave && (
-            <div className="flex justify-end">
-              <Button onClick={onSave} className="flex items-center gap-2">
-                <Save className="w-4 h-4" />
-                Guardar Preferencias
-              </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="specific" className="space-y-4">
+          {selectedShiftData && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-sm">
+                  Fechas específicas: {selectedShiftData.name}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </Button>
+                  <span className="font-medium text-sm min-w-[100px] text-center">
+                    {format(currentMonth, 'MMM yyyy', { locale: es })}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 text-sm">
+                {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day) => (
+                  <div key={day} className="p-1 text-center font-medium text-muted-foreground">
+                    {day}
+                  </div>
+                ))}
+                
+                {calendarDays.map((day, index) => {
+                  const dateStr = getDateString(day);
+                  const currentWeight = obtenerPreferenciaFecha(dateStr, selectedShift);
+                  const effectiveWeight = getEffectivePreference(day, selectedShift);
+                  const hasSpecificPref = hasDatePreference(day);
+                  const isToday = isSameDay(day, new Date());
+                  
+                  return (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className={cn(
+                        "h-10 p-1 flex flex-col items-center justify-center relative text-xs",
+                        currentWeight > 0 ? getPreferenceColor(currentWeight) : 
+                        effectiveWeight > 0 ? `${getPreferenceColor(effectiveWeight)} opacity-50` : 
+                        "hover:bg-muted",
+                        isToday && "ring-1 ring-primary",
+                        hasSpecificPref && "ring-1 ring-accent"
+                      )}
+                      onClick={() => onUpdateDatePreference && handleDatePreferenceClick(dateStr, currentWeight)}
+                      disabled={!isSameMonth(day, currentMonth)}
+                    >
+                      <span className="text-xs font-medium">
+                        {format(day, 'd')}
+                      </span>
+                      {(currentWeight > 0 || effectiveWeight > 0) && (
+                        <span className="text-xs">
+                          {getPreferenceEmoji(currentWeight > 0 ? currentWeight : effectiveWeight)}
+                        </span>
+                      )}
+                      {hasSpecificPref && currentWeight > 0 && (
+                        <div className="absolute top-0 right-0 w-1 h-1 bg-accent rounded-full" />
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>• Haz clic en cualquier fecha para configurar una preferencia específica</p>
+                <p>• Las fechas sin configuración específica usan las preferencias semanales</p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Leyenda compacta */}
+      <div className="bg-muted/50 p-3 rounded-lg">
+        <h4 className="font-medium mb-2 text-xs">Niveles:</h4>
+        <div className="grid grid-cols-3 gap-1 text-xs">
+          <div className="flex items-center gap-1">
+            <span>😍</span><span>5</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>😊</span><span>4</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>😐</span><span>3</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>😕</span><span>2</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>😞</span><span>1</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>❌</span><span>0</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
