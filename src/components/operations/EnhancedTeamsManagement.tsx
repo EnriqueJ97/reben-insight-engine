@@ -104,8 +104,7 @@ const EnhancedTeamsManagement = () => {
       .from('teams')
       .select(`
         *,
-        manager:profiles!teams_manager_id_fkey(id, full_name, email),
-        member_count:profiles(count)
+        manager:profiles!teams_manager_id_fkey(id, full_name, email)
       `)
       .order('created_at', { ascending: false });
 
