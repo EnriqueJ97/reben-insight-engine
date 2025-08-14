@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CalendarView from '@/components/shifts/CalendarView';
-import ShiftPreferencesGrid from '@/components/shifts/ShiftPreferencesGrid';
+import SimpleShiftPreferences from '@/components/shifts/SimpleShiftPreferences';
 
 const MisTurnos = () => {
   const { user } = useAuth();
@@ -294,11 +294,11 @@ const MisTurnos = () => {
                     Configura tus preferencias para cada día de la semana y tipo de turno. Tu manager las tendrá en cuenta al asignar turnos automáticamente.
                   </DialogDescription>
                 </DialogHeader>
-                <ShiftPreferencesGrid
-                  plantillasTurnos={plantillasTurnos}
-                  preferencias={preferencias}
-                  onUpdatePreference={actualizarPreferencia}
-                />
+              <SimpleShiftPreferences
+                plantillasTurnos={plantillasTurnos}
+                preferencias={preferencias}
+                onUpdatePreference={actualizarPreferencia}
+              />
               </DialogContent>
             </Dialog>
           </div>
