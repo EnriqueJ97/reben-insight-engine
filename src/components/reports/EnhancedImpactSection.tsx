@@ -131,6 +131,38 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
     }
   }, [metrics.roiPercentage, programInvestment[0], avgSalary[0]]);
 
+  // Helper function to safely render content that might be string or object
+  const renderSafeContent = (content: any): string => {
+    if (typeof content === 'string') {
+      return content;
+    }
+    if (typeof content === 'object' && content !== null) {
+      if (content.title) return content.title;
+      if (content.description) return content.description;
+      return JSON.stringify(content);
+    }
+    return String(content || '');
+  };
+
+  // Helper function to safely render array content
+  const renderSafeArray = (items: any[]): React.ReactNode[] => {
+    if (!Array.isArray(items)) return [];
+    
+    return items.map((item: any, index: number) => (
+      <li key={index} className="flex items-start gap-2">
+        <span className="mt-1">•</span>
+        <div>
+          {typeof item === 'string' ? item : (
+            <>
+              <div className="font-medium">{item.title || 'Recomendación'}</div>
+              {item.description && <div className="text-xs mt-1 text-muted-foreground">{item.description}</div>}
+            </>
+          )}
+        </div>
+      </li>
+    ));
+  };
+
   const getROIStatus = (roi: number) => {
     if (roi > 200) return 'Excelente';
     if (roi > 100) return 'Muy Bueno';
@@ -496,7 +528,8 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
                     <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                       <h4 className="font-semibold text-gray-800 mb-2">Recomendaciones Generales</h4>
                       <p className="text-sm text-gray-700">
-                        {aiRecommendations.summary || aiRecommendations.recommendations || 
+                        {renderSafeContent(aiRecommendations.summary) || 
+                         renderSafeContent(aiRecommendations.recommendations) || 
                          'Basándose en tu ROI actual, te recomendamos continuar monitoreando las métricas clave y ajustar la inversión según los resultados.'}
                       </p>
                     </div>
