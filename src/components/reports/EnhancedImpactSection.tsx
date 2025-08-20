@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -14,8 +15,13 @@ import {
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
-  Info
+  Info,
+  Brain,
+  Lightbulb,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
+import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RePieChart, Pie, Cell } from 'recharts';
 
 interface ImpactData {
@@ -36,6 +42,11 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
   const [avgSalary, setAvgSalary] = useState([45000]);
   const [programInvestment, setProgramInvestment] = useState([25000]);
   const [activeTab, setActiveTab] = useState<'roi' | 'savings' | 'projections' | 'business-case'>('roi');
+  
+  // AI Recommendations
+  const { generateTeamInsights, loading: aiLoading } = useAIAnalysis();
+  const [aiRecommendations, setAiRecommendations] = useState<any>(null);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   // ROI Calculations
   const calculateROI = () => {
@@ -79,6 +90,46 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
   };
 
   const metrics = calculateROI();
+
+  // Generate AI recommendations for ROI optimization
+  const generateROIRecommendations = async () => {
+    setLoadingRecommendations(true);
+    try {
+      const roiData = {
+        current_roi: metrics.roiPercentage,
+        roi_status: getROIStatus(metrics.roiPercentage),
+        total_savings: metrics.totalSavings,
+        investment: programInvestment[0],
+        payback_months: metrics.paybackMonths,
+        employees: impactData.total_employees,
+        wellness_score: impactData.avg_wellness,
+        engagement_score: impactData.engagement_score,
+        productivity_index: impactData.productivity_index,
+        turnover_rate: impactData.turnover_rate,
+        absenteeism_rate: impactData.absenteeism_rate,
+        savings_breakdown: {
+          productivity: metrics.productivitySavings,
+          retention: metrics.retentionSavings,
+          absenteeism: metrics.absenteeismSavings,
+          healthcare: metrics.healthcareSavings
+        }
+      };
+
+      const recommendations = await generateTeamInsights(roiData);
+      setAiRecommendations(recommendations);
+    } catch (error) {
+      console.error('Error generating ROI recommendations:', error);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  // Auto-generate recommendations when ROI changes significantly
+  useEffect(() => {
+    if (metrics.roiPercentage && !aiRecommendations) {
+      generateROIRecommendations();
+    }
+  }, [metrics.roiPercentage, programInvestment[0], avgSalary[0]]);
 
   const getROIStatus = (roi: number) => {
     if (roi > 200) return 'Excelente';
@@ -288,6 +339,150 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
               </CardContent>
             </Card>
           </div>
+
+          {/* AI Recommendations Section */}
+          <Card className="mt-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-purple-600" />
+                  Recomendaciones de IA para Maximizar ROI
+                </CardTitle>
+                <Button 
+                  onClick={generateROIRecommendations} 
+                  disabled={loadingRecommendations}
+                  variant="outline"
+                  size="sm"
+                >
+                  {loadingRecommendations ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <Lightbulb className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">
+                    {loadingRecommendations ? 'Generando...' : 'Actualizar'}
+                  </span>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingRecommendations ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <LoadingSpinner size="lg" />
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Analizando datos y generando recomendaciones personalizadas...
+                    </p>
+                  </div>
+                </div>
+              ) : aiRecommendations ? (
+                <div className="space-y-4">
+                  {/* Priority Recommendations */}
+                  {aiRecommendations.priority_actions && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        Acciones Prioritarias
+                      </h4>
+                      <ul className="text-sm text-red-700 space-y-1">
+                        {aiRecommendations.priority_actions.map((action: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-red-500 mt-1">•</span>
+                            <span>{action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Quick Wins */}
+                  {aiRecommendations.quick_wins && (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        Mejoras Rápidas (ROI Inmediato)
+                      </h4>
+                      <ul className="text-sm text-green-700 space-y-1">
+                        {aiRecommendations.quick_wins.map((win: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-green-500 mt-1">•</span>
+                            <span>{win}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Investment Optimization */}
+                  {aiRecommendations.investment_optimization && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Optimización de Inversión
+                      </h4>
+                      <p className="text-sm text-blue-700">
+                        {aiRecommendations.investment_optimization}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Long-term Strategy */}
+                  {aiRecommendations.long_term_strategy && (
+                    <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                      <h4 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Estrategia a Largo Plazo
+                      </h4>
+                      <ul className="text-sm text-purple-700 space-y-1">
+                        {aiRecommendations.long_term_strategy.map((strategy: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-purple-500 mt-1">•</span>
+                            <span>{strategy}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Potential ROI Impact */}
+                  {aiRecommendations.potential_roi_increase && (
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Impacto Potencial en ROI
+                      </h4>
+                      <p className="text-sm text-amber-700">
+                        Implementando estas recomendaciones, podrías aumentar tu ROI hasta un{' '}
+                        <strong>{aiRecommendations.potential_roi_increase}%</strong> adicional.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Fallback content if no specific recommendations */}
+                  {!aiRecommendations.priority_actions && !aiRecommendations.quick_wins && (
+                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                      <h4 className="font-semibold text-gray-800 mb-2">Recomendaciones Generales</h4>
+                      <p className="text-sm text-gray-700">
+                        {aiRecommendations.summary || aiRecommendations.recommendations || 
+                         'Basándose en tu ROI actual, te recomendamos continuar monitoreando las métricas clave y ajustar la inversión según los resultados.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <Brain className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Haz clic en "Actualizar" para generar recomendaciones personalizadas
+                  </p>
+                  <Button onClick={generateROIRecommendations} variant="outline" size="sm">
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Generar Recomendaciones
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="savings" className="space-y-4">
