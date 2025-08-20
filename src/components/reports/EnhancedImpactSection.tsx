@@ -384,13 +384,23 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
                         <AlertCircle className="h-4 w-4" />
                         Acciones Prioritarias
                       </h4>
-                      <ul className="text-sm text-red-700 space-y-1">
-                        {aiRecommendations.priority_actions.map((action: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-red-500 mt-1">•</span>
-                            <span>{action}</span>
-                          </li>
-                        ))}
+                      <ul className="text-sm text-red-700 space-y-2">
+                        {Array.isArray(aiRecommendations.priority_actions) ? 
+                          aiRecommendations.priority_actions.map((action: any, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-red-500 mt-1">•</span>
+                              <div>
+                                {typeof action === 'string' ? action : (
+                                  <>
+                                    <div className="font-medium">{action.title}</div>
+                                    {action.description && <div className="text-xs mt-1">{action.description}</div>}
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          )) : 
+                          <li className="text-sm">{aiRecommendations.priority_actions}</li>
+                        }
                       </ul>
                     </div>
                   )}
@@ -402,13 +412,23 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
                         <CheckCircle className="h-4 w-4" />
                         Mejoras Rápidas (ROI Inmediato)
                       </h4>
-                      <ul className="text-sm text-green-700 space-y-1">
-                        {aiRecommendations.quick_wins.map((win: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-green-500 mt-1">•</span>
-                            <span>{win}</span>
-                          </li>
-                        ))}
+                      <ul className="text-sm text-green-700 space-y-2">
+                        {Array.isArray(aiRecommendations.quick_wins) ? 
+                          aiRecommendations.quick_wins.map((win: any, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-green-500 mt-1">•</span>
+                              <div>
+                                {typeof win === 'string' ? win : (
+                                  <>
+                                    <div className="font-medium">{win.title}</div>
+                                    {win.description && <div className="text-xs mt-1">{win.description}</div>}
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          )) :
+                          <li className="text-sm">{aiRecommendations.quick_wins}</li>
+                        }
                       </ul>
                     </div>
                   )}
@@ -421,7 +441,10 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
                         Optimización de Inversión
                       </h4>
                       <p className="text-sm text-blue-700">
-                        {aiRecommendations.investment_optimization}
+                        {typeof aiRecommendations.investment_optimization === 'string' 
+                          ? aiRecommendations.investment_optimization
+                          : aiRecommendations.investment_optimization.description || aiRecommendations.investment_optimization.title || 'Recomendación disponible'
+                        }
                       </p>
                     </div>
                   )}
@@ -433,13 +456,23 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
                         <Target className="h-4 w-4" />
                         Estrategia a Largo Plazo
                       </h4>
-                      <ul className="text-sm text-purple-700 space-y-1">
-                        {aiRecommendations.long_term_strategy.map((strategy: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-purple-500 mt-1">•</span>
-                            <span>{strategy}</span>
-                          </li>
-                        ))}
+                      <ul className="text-sm text-purple-700 space-y-2">
+                        {Array.isArray(aiRecommendations.long_term_strategy) ? 
+                          aiRecommendations.long_term_strategy.map((strategy: any, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-purple-500 mt-1">•</span>
+                              <div>
+                                {typeof strategy === 'string' ? strategy : (
+                                  <>
+                                    <div className="font-medium">{strategy.title}</div>
+                                    {strategy.description && <div className="text-xs mt-1">{strategy.description}</div>}
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          )) :
+                          <li className="text-sm">{aiRecommendations.long_term_strategy}</li>
+                        }
                       </ul>
                     </div>
                   )}
