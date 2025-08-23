@@ -73,6 +73,38 @@ const AppRoutes = () => {
             </RoleProtectedRoute>
           }
         />
+        <Route
+          path="team/overview"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER']}>
+              <Team />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="team/recognition"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER']}>
+              <Team />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="team/turnover"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER']}>
+              <Team />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="team/management"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER']}>
+              <Team />
+            </RoleProtectedRoute>
+          }
+        />
         <Route path="alerts" element={<AlertsCenter />} />
         <Route path="integrations" element={<IntegrationsCenter />} />
         <Route path="notifications" element={<NotificationCenter />} />
