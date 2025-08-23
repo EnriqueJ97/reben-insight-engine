@@ -480,130 +480,33 @@ const TurnoverPrediction = () => {
 
         <TabsContent value="interventions" className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Intervenciones Activas</h3>
+            <h3 className="text-lg font-semibold mb-2">Gestión de Intervenciones</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Acciones tomadas para reducir el riesgo de rotación
+              Crea y gestiona intervenciones para empleados en riesgo
             </p>
           </div>
 
-          <div className="space-y-4">
-            {predictions.filter(p => p.interventions.length > 0).map((prediction) => (
-              <Card key={prediction.id} className="p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback>
-                      {prediction.employeeName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-semibold">{prediction.employeeName}</h4>
-                    <Badge className={`${getRiskBg(prediction.riskLevel)} ${getRiskColor(prediction.riskLevel)} border-0`}>
-                      Riesgo {prediction.riskLevel === 'high' ? 'Alto' : 'Medio'}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {prediction.interventions.map((intervention, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {getInterventionIcon(intervention.type)}
-                        <div>
-                          <p className="font-medium capitalize">
-                            {intervention.type.replace(/_/g, ' ')}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(intervention.date).toLocaleDateString('es-ES')}
-                          </p>
-                        </div>
-                      </div>
-                      {getInterventionStatus(intervention.status)}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            ))}
-          </div>
+          <InterventionManager 
+            predictions={predictions} 
+            setPredictions={setPredictions}
+          />
         </TabsContent>
 
         <TabsContent value="strategies" className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold mb-2">Estrategias de Retención</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Planes de acción recomendados para diferentes niveles de riesgo
+              Aplica estrategias personalizadas para empleados en riesgo
             </p>
           </div>
 
-          <div className="grid gap-6">
-            {retentionStrategies.map((strategy) => (
-              <Card key={strategy.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h4 className="font-semibold text-lg">{strategy.title}</h4>
-                      <div className="flex space-x-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < strategy.impact * 5 
-                                ? 'text-warning fill-warning' 
-                                : 'text-muted-foreground'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {strategy.description}
-                    </p>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Impacto</p>
-                        <p className="font-semibold">{Math.round(strategy.impact * 100)}%</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Duración</p>
-                        <p className="font-semibold">{strategy.duration}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Aplicable para</p>
-                        <div className="flex space-x-1">
-                          {strategy.applicableFor.map((level) => (
-                            <Badge key={level} variant="outline" className="text-xs">
-                              {level === 'high' ? 'Alto' : 'Medio'}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Recursos</p>
-                        <p className="font-semibold text-xs">{strategy.resources.length} elementos</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button>
-                    <Target className="h-4 w-4 mr-2" />
-                    Implementar
-                  </Button>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <p className="text-sm font-medium mb-2">Recursos necesarios:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {strategy.resources.map((resource, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {resource}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <RetentionStrategies 
+            strategies={retentionStrategies}
+            predictions={predictions}
+            onApplyStrategy={(strategyId, employeeId) => {
+              console.log('Aplicando estrategia', strategyId, 'a empleado', employeeId);
+            }}
+          />
         </TabsContent>
       </Tabs>
     </div>
