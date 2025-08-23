@@ -380,384 +380,517 @@ const SimuladorWhatIf = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Simulador What-If</h1>
-          <p className="text-muted-foreground">
-            Simula el impacto de políticas empresariales en bienestar y productividad
-          </p>
-        </div>
-        
-        <Dialog open={showCreatePolicy} onOpenChange={setShowCreatePolicy}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Crear Política
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Crear Política Personalizada</DialogTitle>
-            </DialogHeader>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-primary via-primary-foreground to-accent text-primary-foreground">
+        <div className="container mx-auto px-6 py-12">
+          <div className="flex items-center justify-between">
             <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Nombre</label>
-                <Input
-                  value={newPolicyName}
-                  onChange={(e) => setNewPolicyName(e.target.value)}
-                  placeholder="Ej: Flexibilidad Horaria Avanzada"
-                />
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                  <BarChart3 className="w-8 h-8" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                    Simulador What-If
+                  </h1>
+                  <p className="text-lg text-white/90 mt-1">
+                    Plataforma líder en análisis predictivo de políticas empresariales
+                  </p>
+                </div>
               </div>
-              
-              <div>
-                <label className="text-sm font-medium">Descripción</label>
-                <Textarea
-                  value={newPolicyDescription}
-                  onChange={(e) => setNewPolicyDescription(e.target.value)}
-                  placeholder="Describe el impacto esperado de esta política..."
-                />
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Categoría</label>
-                <Select value={newPolicyCategory} onValueChange={setNewPolicyCategory}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button onClick={crearPoliticaPersonalizada} disabled={!newPolicyName}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Crear Política
-                </Button>
-                <Button variant="outline" onClick={() => setShowCreatePolicy(false)}>
-                  Cancelar
-                </Button>
+              <div className="flex items-center gap-6 text-sm text-white/80">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  IA Avanzada Activa
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  Análisis en Tiempo Real
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                  ROI Garantizado
+                </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Panel de Selección de Políticas */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Políticas Disponibles</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="templates">Predefinidas</TabsTrigger>
-                  <TabsTrigger value="custom">Personalizadas</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="templates" className="space-y-3">
-                  {policyTemplates.map((policy) => (
-                    <div
-                      key={policy.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedPolicy?.id === policy.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                      onClick={() => setSelectedPolicy(policy)}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        {policy.is_recommended && (
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        )}
-                        <h4 className="font-medium text-sm">{policy.name}</h4>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {policy.description}
-                      </p>
-                      <Badge className={getCategoryStyle(policy.category)}>
-                        {categories.find(c => c.value === policy.category)?.label}
-                      </Badge>
-                    </div>
-                  ))}
-                </TabsContent>
-                
-                <TabsContent value="custom" className="space-y-3">
-                  {customPolicies.map((policy) => (
-                    <div
-                      key={policy.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedPolicy?.id === policy.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                      onClick={() => setSelectedPolicy(policy)}
-                    >
-                      <h4 className="font-medium text-sm mb-2">{policy.name}</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {policy.description}
-                      </p>
-                      <Badge className={getCategoryStyle(policy.category)}>
-                        Personalizada
-                      </Badge>
-                    </div>
-                  ))}
-                  
-                  {customPolicies.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p className="text-sm">No tienes políticas personalizadas</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={() => setShowCreatePolicy(true)}
-                      >
-                        Crear Primera Política
-                      </Button>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Panel de Configuración y Simulación */}
-        <div className="lg:col-span-2">
-          {selectedPolicy ? (
-            <div className="space-y-6">
-              {/* Configuración de la Simulación */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    Configurar Simulación: {selectedPolicy.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            
+            <Dialog open={showCreatePolicy} onOpenChange={setShowCreatePolicy}>
+              <DialogTrigger asChild>
+                <Button className="bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear Política
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Crear Política Personalizada</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Período Base</label>
+                    <label className="text-sm font-medium">Nombre</label>
                     <Input
-                      value={baselinePeriod}
-                      onChange={(e) => setBaselinePeriod(e.target.value)}
-                      placeholder="2024-01-01/2024-12-31"
+                      value={newPolicyName}
+                      onChange={(e) => setNewPolicyName(e.target.value)}
+                      placeholder="Ej: Flexibilidad Horaria Avanzada"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Descripción</label>
+                    <Textarea
+                      value={newPolicyDescription}
+                      onChange={(e) => setNewPolicyDescription(e.target.value)}
+                      placeholder="Describe el impacto esperado de esta política..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Categoría</label>
+                    <Select value={newPolicyCategory} onValueChange={setNewPolicyCategory}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex gap-2">
-                    <Button 
-                      onClick={ejecutarSimulacion} 
-                      disabled={simulating}
-                      className="flex-1"
-                    >
-                      {simulating ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                          Simulando...
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Ejecutar Simulación
-                        </>
-                      )}
+                    <Button onClick={crearPoliticaPersonalizada} disabled={!newPolicyName}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Crear Política
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowCreatePolicy(false)}>
+                      Cancelar
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Resultados de la Simulación */}
-              {currentScenario && scenarioOutputs.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5" />
-                      Resultados de la Simulación
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {scenarioOutputs.map((output) => (
-                        <div key={output.metric_key} className="p-4 border rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm">
-                              {output.metric_key === 'burnout_risk' && 'Riesgo de Burnout'}
-                              {output.metric_key === 'turnover_risk' && 'Riesgo de Rotación'}
-                              {output.metric_key === 'economic_impact_eur' && 'Impacto Económico'}
-                              {output.metric_key === 'productivity_score' && 'Productividad'}
-                              {output.metric_key === 'employee_satisfaction' && 'Satisfacción'}
-                            </h4>
-                            <div className="flex items-center gap-1">
-                              {getMetricIcon(output.delta)}
-                              {output.confidence && (
-                                <Badge variant="outline" className="text-xs">
-                                  {Math.round(output.confidence * 100)}% confianza
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">Baseline:</span>
-                              <span>{formatMetric(output.metric_key, output.baseline)}</span>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">Proyectado:</span>
-                              <span>{formatMetric(output.metric_key, output.projected)}</span>
-                            </div>
-                            <div className="flex justify-between text-xs font-medium">
-                              <span>Delta:</span>
-                              <span className={output.delta < 0 ? 'text-green-600' : 'text-red-600'}>
-                                {output.delta > 0 ? '+' : ''}{formatMetric(output.metric_key, output.delta)}
-                              </span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              IC 95%: {formatMetric(output.metric_key, output.ci_low)} - {formatMetric(output.metric_key, output.ci_high)}
-                            </div>
-                            {output.explanation && (
-                              <div className="text-xs text-blue-600 mt-1">
-                                💡 {output.explanation}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Resumen de Impacto */}
-                    <div className="mt-6 p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2 flex items-center gap-2">
-                        🤖 Análisis IA - Resumen de Impacto
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">
-                            {Math.abs(scenarioOutputs.find(o => o.metric_key === 'economic_impact_eur')?.delta || 0).toLocaleString()}€
-                          </div>
-                          <div className="text-sm text-muted-foreground">Ahorro Anual</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {((scenarioOutputs.find(o => o.metric_key === 'burnout_risk')?.delta || 0) * -100).toFixed(1)}%
-                          </div>
-                          <div className="text-sm text-muted-foreground">Reducción Burnout</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">
-                            {((scenarioOutputs.find(o => o.metric_key === 'productivity_score')?.delta || 0)).toFixed(1)}
-                          </div>
-                          <div className="text-sm text-muted-foreground">Mejora Productividad</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Insights de IA */}
-                    {aiInsights && (
-                      <div className="mt-6 space-y-4">
-                        <h4 className="font-medium flex items-center gap-2">
-                          🧠 Insights Inteligentes
-                        </h4>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-3 bg-green-50 rounded-lg">
-                            <h5 className="font-medium text-green-800 mb-2">✅ Beneficios Clave</h5>
-                            <ul className="text-sm text-green-700 space-y-1">
-                              {aiInsights.key_benefits.map((benefit, idx) => (
-                                <li key={idx}>• {benefit}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="p-3 bg-orange-50 rounded-lg">
-                            <h5 className="font-medium text-orange-800 mb-2">⚠️ Riesgos Potenciales</h5>
-                            <ul className="text-sm text-orange-700 space-y-1">
-                              {aiInsights.potential_risks.map((risk, idx) => (
-                                <li key={idx}>• {risk}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="p-3 bg-blue-50 rounded-lg">
-                            <h5 className="font-medium text-blue-800 mb-2">💡 Tips de Implementación</h5>
-                            <ul className="text-sm text-blue-700 space-y-1">
-                              {aiInsights.implementation_tips.map((tip, idx) => (
-                                <li key={idx}>• {tip}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="p-3 bg-purple-50 rounded-lg">
-                            <h5 className="font-medium text-purple-800 mb-2">🎯 Factores de Éxito</h5>
-                            <ul className="text-sm text-purple-700 space-y-1">
-                              {aiInsights.success_factors.map((factor, idx) => (
-                                <li key={idx}>• {factor}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                        
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <h5 className="font-medium text-gray-800 mb-1">⏱️ Timeline Recomendado</h5>
-                          <p className="text-sm text-gray-700">{aiInsights.timeline_recommendation}</p>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Selecciona una Política</h3>
-                  <p className="text-muted-foreground">
-                    Elige una política predefinida o personalizada para simular su impacto
-                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 
-      {/* Escenarios Recientes */}
-      {scenarios.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Simulaciones Recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {scenarios.slice(0, 5).map((scenario) => (
-                <div key={scenario.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <h4 className="font-medium text-sm">{scenario.name}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(scenario.created_at).toLocaleDateString()}
+      <div className="container mx-auto px-6 -mt-6 pb-12">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+          {/* Panel de Selección de Políticas */}
+          <div className="xl:col-span-1">
+            <Card className="shadow-2xl border-0 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <div className="p-2 bg-gradient-to-br from-primary to-primary/60 rounded-lg">
+                    <Star className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                  Políticas Disponibles
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid w-full grid-cols-2 bg-secondary/50">
+                    <TabsTrigger value="templates" className="text-xs">Predefinidas</TabsTrigger>
+                    <TabsTrigger value="custom" className="text-xs">Personalizadas</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="templates" className="space-y-3 mt-4">
+                    {policyTemplates.map((policy) => (
+                      <div
+                        key={policy.id}
+                        className={`group p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                          selectedPolicy?.id === policy.id
+                            ? 'border-primary bg-gradient-to-br from-primary/5 to-primary/10 shadow-md'
+                            : 'border-border hover:border-primary/50 bg-background/50'
+                        }`}
+                        onClick={() => setSelectedPolicy(policy)}
+                      >
+                        <div className="flex items-start gap-3 mb-3">
+                          {policy.is_recommended && (
+                            <div className="p-1 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-md">
+                              <Star className="w-3 h-3 text-white fill-current" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors">
+                              {policy.name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                              {policy.description}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs bg-secondary/50 hover:bg-secondary transition-colors"
+                        >
+                          {categories.find(c => c.value === policy.category)?.label}
+                        </Badge>
+                      </div>
+                    ))}
+                  </TabsContent>
+                  
+                  <TabsContent value="custom" className="space-y-3 mt-4">
+                    {customPolicies.map((policy) => (
+                      <div
+                        key={policy.id}
+                        className={`group p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                          selectedPolicy?.id === policy.id
+                            ? 'border-primary bg-gradient-to-br from-primary/5 to-primary/10 shadow-md'
+                            : 'border-border hover:border-primary/50 bg-background/50'
+                        }`}
+                        onClick={() => setSelectedPolicy(policy)}
+                      >
+                        <h4 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">
+                          {policy.name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                          {policy.description}
+                        </p>
+                        <Badge variant="outline" className="text-xs">
+                          Personalizada
+                        </Badge>
+                      </div>
+                    ))}
+                    
+                    {customPolicies.length === 0 && (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <div className="w-16 h-16 bg-gradient-to-br from-muted to-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                          <Plus className="w-8 h-8" />
+                        </div>
+                        <p className="text-sm font-medium mb-2">No tienes políticas personalizadas</p>
+                        <p className="text-xs mb-4">Crea tu primera política personalizada</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowCreatePolicy(true)}
+                          className="text-xs"
+                        >
+                          Crear Primera Política
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Panel de Configuración y Simulación */}
+          <div className="xl:col-span-3">
+            {selectedPolicy ? (
+              <div className="space-y-8">
+                {/* Configuración de la Simulación */}
+                <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+                  <CardHeader className="pb-6">
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                        <Play className="w-5 h-5 text-white" />
+                      </div>
+                      Configuración de Simulación
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        {selectedPolicy.name}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-foreground">Período Base de Análisis</label>
+                        <Input
+                          value={baselinePeriod}
+                          onChange={(e) => setBaselinePeriod(e.target.value)}
+                          placeholder="2024-01-01/2024-12-31"
+                          className="bg-background/50 border-2 focus:border-primary/50"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Define el período histórico para calcular métricas base
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-foreground">Estado de la Simulación</label>
+                        <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
+                          <div className={`w-3 h-3 rounded-full ${simulating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
+                          <span className="text-sm font-medium">
+                            {simulating ? 'Ejecutando análisis IA...' : 'Sistema listo para simulación'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-6">
+                      <Button 
+                        onClick={ejecutarSimulacion} 
+                        disabled={simulating}
+                        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200"
+                      >
+                        {simulating ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
+                            Analizando con IA Avanzada...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-5 h-5 mr-3" />
+                            Ejecutar Simulación IA
+                            <Euro className="w-4 h-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Resultados de la Simulación */}
+                {currentScenario && scenarioOutputs.length > 0 && (
+                  <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+                    <CardHeader className="pb-6">
+                      <CardTitle className="flex items-center gap-3 text-xl">
+                        <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                          <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                        Resultados del Análisis IA
+                        <Badge variant="default" className="ml-auto bg-green-500">
+                          Completado
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                      {/* Métricas Principales */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {scenarioOutputs.map((output) => (
+                          <Card key={output.metric_key} className="border-2 hover:border-primary/50 transition-all duration-200 hover:shadow-lg">
+                            <CardContent className="p-6">
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="font-bold text-sm text-foreground">
+                                  {output.metric_key === 'burnout_risk' && 'Riesgo de Burnout'}
+                                  {output.metric_key === 'turnover_risk' && 'Riesgo de Rotación'}
+                                  {output.metric_key === 'economic_impact_eur' && 'Impacto Económico'}
+                                  {output.metric_key === 'productivity_score' && 'Productividad'}
+                                  {output.metric_key === 'employee_satisfaction' && 'Satisfacción'}
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  {getMetricIcon(output.delta)}
+                                  {output.confidence && (
+                                    <Badge variant="outline" className="text-xs font-medium">
+                                      {Math.round(output.confidence * 100)}%
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-muted-foreground font-medium">Actual:</span>
+                                  <span className="text-sm font-semibold">{formatMetric(output.metric_key, output.baseline)}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-muted-foreground font-medium">Proyectado:</span>
+                                  <span className="text-sm font-semibold">{formatMetric(output.metric_key, output.projected)}</span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg">
+                                  <span className="text-sm font-bold">Impacto:</span>
+                                  <span className={`text-lg font-bold ${output.delta < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {output.delta > 0 ? '+' : ''}{formatMetric(output.metric_key, output.delta)}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  IC 95%: {formatMetric(output.metric_key, output.ci_low)} - {formatMetric(output.metric_key, output.ci_high)}
+                                </div>
+                                {output.explanation && (
+                                  <div className="text-xs text-primary bg-primary/10 p-2 rounded-md">
+                                    💡 {output.explanation}
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+
+                      {/* Resumen Ejecutivo de Impacto */}
+                      <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+                        <CardContent className="p-8">
+                          <h4 className="text-xl font-bold mb-6 flex items-center gap-3">
+                            🚀 Resumen Ejecutivo de Impacto
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="text-center">
+                              <div className="text-4xl font-black text-green-600 mb-2">
+                                €{Math.abs(scenarioOutputs.find(o => o.metric_key === 'economic_impact_eur')?.delta || 0).toLocaleString()}
+                              </div>
+                              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Ahorro Anual Proyectado</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-4xl font-black text-blue-600 mb-2">
+                                {((scenarioOutputs.find(o => o.metric_key === 'burnout_risk')?.delta || 0) * -100).toFixed(1)}%
+                              </div>
+                              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Reducción Burnout</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-4xl font-black text-purple-600 mb-2">
+                                +{((scenarioOutputs.find(o => o.metric_key === 'productivity_score')?.delta || 0)).toFixed(1)}
+                              </div>
+                              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mejora Productividad</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Insights de IA */}
+                      {aiInsights && (
+                        <Card className="border-accent/50">
+                          <CardHeader>
+                            <CardTitle className="text-xl font-bold flex items-center gap-3">
+                              🧠 Análisis Inteligente Avanzado
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
+                                <CardContent className="p-6">
+                                  <h5 className="font-bold text-green-800 mb-4 flex items-center gap-2">
+                                    ✅ Beneficios Clave Identificados
+                                  </h5>
+                                  <ul className="text-sm text-green-700 space-y-2">
+                                    {aiInsights.key_benefits.map((benefit, idx) => (
+                                      <li key={idx} className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                        {benefit}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200">
+                                <CardContent className="p-6">
+                                  <h5 className="font-bold text-orange-800 mb-4 flex items-center gap-2">
+                                    ⚠️ Riesgos a Considerar
+                                  </h5>
+                                  <ul className="text-sm text-orange-700 space-y-2">
+                                    {aiInsights.potential_risks.map((risk, idx) => (
+                                      <li key={idx} className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                                        {risk}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
+                                <CardContent className="p-6">
+                                  <h5 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
+                                    💡 Guía de Implementación
+                                  </h5>
+                                  <ul className="text-sm text-blue-700 space-y-2">
+                                    {aiInsights.implementation_tips.map((tip, idx) => (
+                                      <li key={idx} className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                                        {tip}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
+                                <CardContent className="p-6">
+                                  <h5 className="font-bold text-purple-800 mb-4 flex items-center gap-2">
+                                    🎯 Factores Críticos de Éxito
+                                  </h5>
+                                  <ul className="text-sm text-purple-700 space-y-2">
+                                    {aiInsights.success_factors.map((factor, idx) => (
+                                      <li key={idx} className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                                        {factor}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </Card>
+                            </div>
+                            
+                            <Card className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 border-gray-200">
+                              <CardContent className="p-6">
+                                <h5 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                  ⏱️ Timeline de Implementación Recomendado
+                                </h5>
+                                <p className="text-sm text-gray-700 leading-relaxed">{aiInsights.timeline_recommendation}</p>
+                              </CardContent>
+                            </Card>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+                <CardContent className="flex items-center justify-center py-24">
+                  <div className="text-center max-w-md">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                      <BarChart3 className="w-12 h-12 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4">Simulador Listo</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed">
+                      Selecciona una política de la lista para iniciar el análisis predictivo con IA avanzada
                     </p>
                   </div>
-                  <Badge
-                    variant={scenario.status === 'COMPLETED' ? 'default' : 'secondary'}
-                  >
-                    {scenario.status}
-                  </Badge>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Historial de Simulaciones */}
+        {scenarios.length > 0 && (
+          <Card className="shadow-2xl border-0 bg-card/50 backdrop-blur-sm mt-8">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <div className="p-2 bg-gradient-to-br from-accent to-accent/60 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-accent-foreground" />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                Historial de Simulaciones
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {scenarios.slice(0, 6).map((scenario) => (
+                  <Card key={scenario.id} className="hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-sm truncate">{scenario.name}</h4>
+                        <Badge
+                          variant={scenario.status === 'COMPLETED' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {scenario.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(scenario.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
