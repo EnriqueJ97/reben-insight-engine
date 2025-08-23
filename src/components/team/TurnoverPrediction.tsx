@@ -610,4 +610,423 @@ const TurnoverPrediction = () => {
   );
 };
 
+// Componente para gestionar intervenciones
+const InterventionManager = ({ predictions, setPredictions }) => {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [interventionType, setInterventionType] = useState('');
+  const [interventionDate, setInterventionDate] = useState('');
+  const [interventionNotes, setInterventionNotes] = useState('');
+
+  // Funciones helper locales
+  const getRiskColor = (level) => {
+    switch (level) {
+      case 'low': return 'text-success';
+      case 'medium': return 'text-warning';
+      case 'high': return 'text-destructive';
+      default: return 'text-muted-foreground';
+    }
+  };
+
+  const getRiskBg = (level) => {
+    switch (level) {
+      case 'low': return 'bg-success/10';
+      case 'medium': return 'bg-warning/10';
+      case 'high': return 'bg-destructive/10';
+      default: return 'bg-muted/10';
+    }
+  };
+
+  const interventionTypes = [
+    { value: 'one_on_one', label: 'Reunión 1:1', icon: MessageCircle },
+    { value: 'workload_adjustment', label: 'Ajuste de Carga', icon: BarChart3 },
+    { value: 'development_plan', label: 'Plan de Desarrollo', icon: Target },
+    { value: 'mentor_assignment', label: 'Asignación de Mentor', icon: Users },
+    { value: 'recognition_program', label: 'Programa de Reconocimiento', icon: Star },
+    { value: 'urgent_meeting', label: 'Reunión Urgente', icon: AlertTriangle }
+  ];
+
+  const handleCreateIntervention = () => {
+    if (!selectedEmployee || !interventionType || !interventionDate) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    const newIntervention = {
+      type: interventionType,
+      date: interventionDate,
+      status: 'pending',
+      notes: interventionNotes,
+      createdAt: new Date().toISOString(),
+      createdBy: 'current_manager'
+    };
+
+    setPredictions(prevPredictions =>
+      prevPredictions.map(prediction =>
+        prediction.employeeId === selectedEmployee
+          ? {
+              ...prediction,
+              interventions: [...prediction.interventions, newIntervention]
+            }
+          : prediction
+      )
+    );
+
+    // Reset form
+    setSelectedEmployee('');
+    setInterventionType('');
+    setInterventionDate('');
+    setInterventionNotes('');
+    setShowCreateForm(false);
+
+    alert('Intervención creada exitosamente');
+  };
+
+  const handleUpdateInterventionStatus = (employeeId, interventionIndex, newStatus) => {
+    setPredictions(prevPredictions =>
+      prevPredictions.map(prediction =>
+        prediction.employeeId === employeeId
+          ? {
+              ...prediction,
+              interventions: prediction.interventions.map((intervention, index) =>
+                index === interventionIndex
+                  ? { ...intervention, status: newStatus }
+                  : intervention
+              )
+            }
+          : prediction
+      )
+    );
+  };
+
+  const getInterventionIcon = (type) => {
+    const interventionTypeObj = interventionTypes.find(t => t.value === type);
+    const IconComponent = interventionTypeObj?.icon || Zap;
+    return <IconComponent className="h-4 w-4" />;
+  };
+
+  const getInterventionStatus = (status) => {
+    switch (status) {
+      case 'completed': return <Badge className="bg-success text-success-foreground">Completado</Badge>;
+      case 'in_progress': return <Badge className="bg-info text-info-foreground">En Curso</Badge>;
+      case 'pending': return <Badge className="bg-warning text-warning-foreground">Pendiente</Badge>;
+      default: return <Badge variant="outline">Estado Desconocido</Badge>;
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Formulario de creación */}
+      {showCreateForm ? (
+        <Card className="p-6">
+          <h4 className="font-semibold mb-4">Crear Nueva Intervención</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Empleado</label>
+              <select 
+                className="w-full p-2 border rounded-md"
+                value={selectedEmployee}
+                onChange={(e) => setSelectedEmployee(e.target.value)}
+              >
+                <option value="">Seleccionar empleado...</option>
+                {predictions.filter(p => p.riskLevel !== 'low').map(prediction => (
+                  <option key={prediction.employeeId} value={prediction.employeeId}>
+                    {prediction.employeeName} ({prediction.riskLevel})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Tipo de Intervención</label>
+              <select 
+                className="w-full p-2 border rounded-md"
+                value={interventionType}
+                onChange={(e) => setInterventionType(e.target.value)}
+              >
+                <option value="">Seleccionar tipo...</option>
+                {interventionTypes.map(type => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Fecha Programada</label>
+              <input 
+                type="date"
+                className="w-full p-2 border rounded-md"
+                value={interventionDate}
+                onChange={(e) => setInterventionDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Notas (Opcional)</label>
+              <textarea 
+                className="w-full p-2 border rounded-md"
+                rows={3}
+                value={interventionNotes}
+                onChange={(e) => setInterventionNotes(e.target.value)}
+                placeholder="Detalles adicionales sobre la intervención..."
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={() => setShowCreateForm(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateIntervention}>
+              Crear Intervención
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <Button onClick={() => setShowCreateForm(true)}>
+          <Target className="h-4 w-4 mr-2" />
+          Nueva Intervención
+        </Button>
+      )}
+
+      {/* Lista de intervenciones activas */}
+      {predictions.filter(p => p.interventions.length > 0).length === 0 ? (
+        <Card className="p-8 text-center">
+          <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">No hay intervenciones activas</p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {predictions.filter(p => p.interventions.length > 0).map((prediction) => (
+            <Card key={prediction.id} className="p-6">
+              <div className="flex items-center space-x-4 mb-4">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback>
+                    {prediction.employeeName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h4 className="font-semibold">{prediction.employeeName}</h4>
+                  <p className="text-sm text-muted-foreground">{prediction.role}</p>
+                </div>
+                <Badge className={`${getRiskBg(prediction.riskLevel)} ${getRiskColor(prediction.riskLevel)} border-0`}>
+                  Riesgo {prediction.riskLevel === 'high' ? 'Alto' : prediction.riskLevel === 'medium' ? 'Medio' : 'Bajo'}
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                {prediction.interventions.map((intervention, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      {getInterventionIcon(intervention.type)}
+                      <div>
+                        <p className="font-medium capitalize">
+                          {interventionTypes.find(t => t.value === intervention.type)?.label || intervention.type}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Programado: {new Date(intervention.date).toLocaleDateString('es-ES')}
+                        </p>
+                        {intervention.notes && (
+                          <p className="text-xs text-muted-foreground mt-1">{intervention.notes}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {getInterventionStatus(intervention.status)}
+                      {intervention.status !== 'completed' && (
+                        <select 
+                          className="text-xs p-1 border rounded"
+                          value={intervention.status}
+                          onChange={(e) => handleUpdateInterventionStatus(prediction.employeeId, index, e.target.value)}
+                        >
+                          <option value="pending">Pendiente</option>
+                          <option value="in_progress">En Curso</option>
+                          <option value="completed">Completado</option>
+                        </select>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente para estrategias de retención
+const RetentionStrategies = ({ strategies, predictions, onApplyStrategy }) => {
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [implementationDate, setImplementationDate] = useState('');
+  const [customizations, setCustomizations] = useState('');
+
+  const getRiskColor = (level) => {
+    switch (level) {
+      case 'low': return 'text-success';
+      case 'medium': return 'text-warning';
+      case 'high': return 'text-destructive';
+      default: return 'text-muted-foreground';
+    }
+  };
+
+  const handleApplyStrategy = (strategy) => {
+    setSelectedStrategy(strategy);
+    setShowApplicationForm(true);
+  };
+
+  const handleConfirmApplication = () => {
+    if (!selectedEmployee || !implementationDate) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    // Aquí se podría implementar la lógica para guardar en la base de datos
+    onApplyStrategy(selectedStrategy.id, selectedEmployee);
+    
+    alert(`Estrategia "${selectedStrategy.title}" aplicada exitosamente a ${predictions.find(p => p.employeeId === selectedEmployee)?.employeeName}`);
+    
+    // Reset form
+    setSelectedStrategy(null);
+    setShowApplicationForm(false);
+    setSelectedEmployee('');
+    setImplementationDate('');
+    setCustomizations('');
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Formulario de aplicación de estrategia */}
+      {showApplicationForm && selectedStrategy && (
+        <Card className="p-6">
+          <h4 className="font-semibold mb-4">Aplicar Estrategia: {selectedStrategy.title}</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Empleado</label>
+              <select 
+                className="w-full p-2 border rounded-md"
+                value={selectedEmployee}
+                onChange={(e) => setSelectedEmployee(e.target.value)}
+              >
+                <option value="">Seleccionar empleado...</option>
+                {predictions.filter(p => selectedStrategy.applicableFor.includes(p.riskLevel)).map(prediction => (
+                  <option key={prediction.employeeId} value={prediction.employeeId}>
+                    {prediction.employeeName} ({prediction.riskLevel} risk)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Fecha de Implementación</label>
+              <input 
+                type="date"
+                className="w-full p-2 border rounded-md"
+                value={implementationDate}
+                onChange={(e) => setImplementationDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-2">Personalizaciones (Opcional)</label>
+              <textarea 
+                className="w-full p-2 border rounded-md"
+                rows={3}
+                value={customizations}
+                onChange={(e) => setCustomizations(e.target.value)}
+                placeholder="Ajustes específicos para este empleado..."
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={() => setShowApplicationForm(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmApplication}>
+              Aplicar Estrategia
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Lista de estrategias disponibles */}
+      <div className="grid gap-4">
+        {strategies.map((strategy) => (
+          <Card key={strategy.id} className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h4 className="font-semibold text-lg mb-2">{strategy.title}</h4>
+                <p className="text-muted-foreground mb-4">{strategy.description}</p>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Impacto Estimado</p>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-16 bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full" 
+                          style={{ width: `${strategy.impact * 100}%` }}
+                        />
+                      </div>
+                      <span className="font-semibold">{Math.round(strategy.impact * 100)}%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Duración</p>
+                    <p className="font-semibold">{strategy.duration}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Aplicable a</p>
+                    <div className="flex space-x-1">
+                      {strategy.applicableFor.map((risk) => (
+                        <Badge 
+                          key={risk} 
+                          variant="outline" 
+                          className={`text-xs ${getRiskColor(risk)}`}
+                        >
+                          {risk}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Candidatos</p>
+                    <p className="font-semibold">
+                      {predictions.filter(p => strategy.applicableFor.includes(p.riskLevel)).length} empleados
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <Button onClick={() => handleApplyStrategy(strategy)}>
+                <Target className="h-4 w-4 mr-2" />
+                Aplicar
+              </Button>
+            </div>
+            
+            <div className="border-t pt-4">
+              <h5 className="font-medium mb-2">Recursos Necesarios:</h5>
+              <div className="flex flex-wrap gap-2">
+                {strategy.resources.map((resource, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {resource}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default TurnoverPrediction;
