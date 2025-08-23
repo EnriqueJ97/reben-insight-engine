@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, TrendingUp, Users, AlertTriangle, Calendar, Target, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
+import AdvancedManagerDashboard from '@/components/dashboard/AdvancedManagerDashboard';
 import EmployeeDashboard from '@/components/dashboard/EmployeeDashboard';
 import { AIInsightsPanel } from '@/components/ai/AIInsightsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,9 +19,9 @@ import { Brain } from 'lucide-react';
 const Dashboard = () => {
   const { user } = useAuth();
   
-  // If user is a manager, show the enhanced manager dashboard
+  // If user is a manager, show the advanced manager dashboard
   if (user?.role === 'MANAGER') {
-    return <ManagerDashboard />;
+    return <AdvancedManagerDashboard />;
   }
 
   // If user is an employee, show the positive employee dashboard
