@@ -318,14 +318,6 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="simulador-what-if"
-          element={
-            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'MANAGER']}>
-              <SimuladorWhatIf />
-            </RoleProtectedRoute>
-          }
-        />
-        <Route
           path="employees/import"
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
