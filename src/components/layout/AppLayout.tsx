@@ -24,7 +24,10 @@ import {
   Clock,
   Calendar,
   Leaf,
-  TrendingUp
+  TrendingUp,
+  Eye,
+  Award,
+  Target
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -64,6 +67,10 @@ const AppLayout = () => {
   ];
 
   const teamsSubItems = [
+    { name: 'Vista General', href: '/dashboard/team/overview', icon: Eye },
+    { name: 'Reconocimiento', href: '/dashboard/team/recognition', icon: Award },
+    { name: 'Predicción Rotación', href: '/dashboard/team/turnover', icon: Target },
+    { name: 'Gestión Equipo', href: '/dashboard/team/management', icon: Settings },
     { name: 'Equipos', href: '/dashboard/teams/manage', icon: Users },
     { name: 'Importar Empleados', href: '/dashboard/teams/import', icon: Upload },
   ];
@@ -162,13 +169,13 @@ const AppLayout = () => {
             </Collapsible>
           )}
           
-          {/* Teams Collapsible Section - Only for HR_ADMIN */}
-          {user?.role === 'HR_ADMIN' && (
+          {/* Teams Collapsible Section - For MANAGER and HR_ADMIN */}
+          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
             <Collapsible open={isTeamsOpen} onOpenChange={setIsTeamsOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
                 <div className="flex items-center space-x-2">
                   <Users className="w-4 h-4" />
-                  <span>Gestión de Equipos</span>
+                  <span>Mi Equipo</span>
                 </div>
                 {isTeamsOpen ? (
                   <ChevronDown className="w-4 h-4" />

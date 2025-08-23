@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, AlertTriangle, MessageSquare, TrendingUp, Calendar, Award, Target, Settings, Eye } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import PrivacyCompliantTeamView from '@/components/team/PrivacyCompliantTeamView';
 import RecognitionSystem from '@/components/team/RecognitionSystem';
@@ -42,10 +42,18 @@ const Team = () => {
 
         <Tabs value={getActiveTabFromPath()} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">👁️ Vista General</TabsTrigger>
-            <TabsTrigger value="recognition">🏆 Reconocimiento</TabsTrigger>
-            <TabsTrigger value="turnover">🎯 Predicción Rotación</TabsTrigger>
-            <TabsTrigger value="management">👥 Gestión Equipo</TabsTrigger>
+            <TabsTrigger value="overview" asChild>
+              <Link to="/dashboard/team/overview">👁️ Vista General</Link>
+            </TabsTrigger>
+            <TabsTrigger value="recognition" asChild>
+              <Link to="/dashboard/team/recognition">🏆 Reconocimiento</Link>
+            </TabsTrigger>
+            <TabsTrigger value="turnover" asChild>
+              <Link to="/dashboard/team/turnover">🎯 Predicción Rotación</Link>
+            </TabsTrigger>
+            <TabsTrigger value="management" asChild>
+              <Link to="/dashboard/team/management">👥 Gestión Equipo</Link>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
