@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_policy_recommendations: {
+        Row: {
+          applied_at: string | null
+          applied_by: string | null
+          confidence_score: number
+          current_metrics: Json
+          expected_impact: Json
+          generated_at: string
+          id: string
+          reasoning: string | null
+          recommendation_type: string
+          recommended_changes: Json
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_by?: string | null
+          confidence_score?: number
+          current_metrics?: Json
+          expected_impact?: Json
+          generated_at?: string
+          id?: string
+          reasoning?: string | null
+          recommendation_type: string
+          recommended_changes?: Json
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          applied_by?: string | null
+          confidence_score?: number
+          current_metrics?: Json
+          expected_impact?: Json
+          generated_at?: string
+          id?: string
+          reasoning?: string | null
+          recommendation_type?: string
+          recommended_changes?: Json
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       alert_actions: {
         Row: {
           action_type: string
@@ -1208,6 +1253,42 @@ export type Database = {
           },
         ]
       }
+      hr_policy_configs: {
+        Row: {
+          config_data: Json
+          config_name: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          policy_type: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          config_data?: Json
+          config_name: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          policy_type: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          config_data?: Json
+          config_name?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          policy_type?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integration_logs: {
         Row: {
           action: string
@@ -1559,6 +1640,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      policy_performance_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          measurement_date: string
+          metric_type: string
+          metric_value: number
+          period_type: string
+          policy_config_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          metric_type: string
+          metric_value: number
+          period_type?: string
+          policy_config_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          metric_type?: string
+          metric_value?: number
+          period_type?: string
+          policy_config_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_performance_metrics_policy_config_id_fkey"
+            columns: ["policy_config_id"]
+            isOneToOne: false
+            referencedRelation: "hr_policy_configs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       policy_templates: {
         Row: {

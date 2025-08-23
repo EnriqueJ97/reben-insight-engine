@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle, TrendingUp, TrendingDown, Star, Plus, Play, Save, BarChart3, Euro } from 'lucide-react';
 import { toast } from 'sonner';
+import AIAssistant from '@/components/simulator/AIAssistant';
 
 interface PolicyTemplate {
   id: string;

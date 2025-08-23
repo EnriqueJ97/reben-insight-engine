@@ -9,7 +9,8 @@ import { EmailCampaignManager } from '@/components/emails/EmailCampaignManager';
 import { QuestionManager } from '@/components/questions/QuestionManager';
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
-import { Settings as SettingsIcon, Mail, HelpCircle, AlertTriangle, Plug } from 'lucide-react';
+import PolicyConfigurator from '@/components/settings/PolicyConfigurator';
+import { Settings as SettingsIcon, Mail, HelpCircle, AlertTriangle, Plug, Sliders } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function Settings() {
     if (path.includes('/questions')) return 'questions';
     if (path.includes('/alerts')) return 'alerts';
     if (path.includes('/integrations')) return 'integrations';
+    if (path.includes('/policies')) return 'policies';
     return 'campaigns'; // default
   };
 
@@ -130,6 +132,31 @@ export default function Settings() {
                 <h3 className="text-lg font-medium mb-2">Acceso Restringido</h3>
                 <p className="text-muted-foreground">
                   Solo los administradores HR pueden gestionar las integraciones del sistema.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      );
+    }
+
+    if (location.pathname.includes('/policies')) {
+      return (
+        <div className="container mx-auto py-8 space-y-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Sliders className="w-6 h-6" />
+            <h1 className="text-3xl font-bold">Configuración de Políticas</h1>
+            <Badge variant="outline">HR_ADMIN</Badge>
+          </div>
+          {isHRAdmin ? (
+            <PolicyConfigurator />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Sliders className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Acceso Restringido</h3>
+                <p className="text-muted-foreground">
+                  Solo los administradores HR pueden configurar las políticas del sistema.
                 </p>
               </CardContent>
             </Card>
