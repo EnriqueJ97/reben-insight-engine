@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PersonalProgressPanel from './PersonalProgressPanel';
 import { 
   Heart, 
   Calendar, 
@@ -16,7 +18,9 @@ import {
   Gift,
   Coffee,
   Clock,
-  Users
+  Users,
+  BarChart3,
+  Home
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -148,9 +152,24 @@ const EmployeeDashboard = () => {
           ¡Hola, {user?.name || user?.full_name || user?.email?.split('@')[0]}! 👋
         </h1>
         <p className="text-muted-foreground mt-1">
-          Aquí tienes un resumen de tu día
+          Tu centro de bienestar personal y seguimiento de progreso
         </p>
       </div>
+
+      {/* Tabs para organizar el contenido */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="overview" className="flex items-center space-x-2">
+            <Home className="h-4 w-4" />
+            <span>Resumen del Día</span>
+          </TabsTrigger>
+          <TabsTrigger value="progress" className="flex items-center space-x-2">
+            <BarChart3 className="h-4 w-4" />
+            <span>Mi Progreso</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6 mt-6">
 
       {/* Racha de participación */}
       {streakDays > 0 && (
@@ -275,20 +294,27 @@ const EmployeeDashboard = () => {
         </Card>
       </div>
 
-      {/* Footer */}
-      <Card className="bg-muted/30">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Última actualización: {new Date().toLocaleDateString()}</span>
+        {/* Footer */}
+        <Card className="bg-muted/30">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>Última actualización: {new Date().toLocaleDateString()}</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Mantente al día con tus rutinas de bienestar 💪
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              Mantente al día con tus rutinas de bienestar 💪
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        
+        </TabsContent>
+
+        <TabsContent value="progress" className="mt-6">
+          <PersonalProgressPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
