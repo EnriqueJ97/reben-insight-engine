@@ -105,7 +105,31 @@ const AppRoutes = () => {
           path="operations/simulador"
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
-              <SimuladorWhatIf />
+              <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/360feedback"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/integrations"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/resources"
+          element={
+            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <Operations />
             </RoleProtectedRoute>
           }
         />
