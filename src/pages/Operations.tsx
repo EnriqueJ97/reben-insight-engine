@@ -31,43 +31,7 @@ const Operations = () => {
 
   // Render specific content based on the current path
   const renderContent = () => {
-    if (location.pathname.includes('/shifts')) {
-      return (
-        <div className="container mx-auto py-8 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Clock className="w-6 h-6 text-primary" />
-            <h1 className="text-3xl font-bold">Turnos Inteligentes</h1>
-            <Badge variant="outline">{user.role}</Badge>
-          </div>
-          <div className="bg-card p-6 rounded-lg border">
-            <p className="text-muted-foreground mb-6">
-              Sistema inteligente de asignación automática de turnos basado en preferencias, carga de trabajo y métricas de bienestar.
-            </p>
-            <ShiftManagement />
-          </div>
-        </div>
-      );
-    }
-
-    if (location.pathname.includes('/flexible')) {
-      return (
-        <div className="container mx-auto py-8 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Calendar className="w-6 h-6 text-primary" />
-            <h1 className="text-3xl font-bold">Cultura Flexible</h1>
-            <Badge variant="outline">{user.role}</Badge>
-          </div>
-          <div className="bg-card p-6 rounded-lg border">
-            <p className="text-muted-foreground mb-6">
-              Gestión de modalidades de trabajo flexibles, solicitudes de teletrabajo y políticas de conciliación.
-            </p>
-            <FlexibleCulture />
-          </div>
-        </div>
-      );
-    }
-
-    // Default fallback - Main Operations Dashboard
+    // Always show the main dashboard with tabs instead of individual components
     return (
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex items-center gap-2 mb-6">
