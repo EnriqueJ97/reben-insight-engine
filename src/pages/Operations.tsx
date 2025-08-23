@@ -73,7 +73,7 @@ const Operations = () => {
               <MessageSquare className="w-5 h-5 text-primary" />
               <h2 className="text-xl font-semibold">Feedback 360º & Gestión del Desempeño</h2>
             </div>
-            <Performance360 />
+            <Performance360 showMetrics={false} />
           </TabsContent>
 
           <TabsContent value="integrations" className="space-y-4">

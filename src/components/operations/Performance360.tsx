@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const Performance360 = () => {
+const Performance360 = ({ showMetrics = true }) => {
   const { toast } = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState('Q4-2024');
   const [selectedEmployee, setSelectedEmployee] = useState('all');
@@ -141,68 +141,70 @@ const Performance360 = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header con métricas principales */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{performanceMetrics.teamProductivity}%</p>
-                <p className="text-xs text-muted-foreground">Productividad</p>
+      {/* Header con métricas principales - solo si showMetrics es true */}
+      {showMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-2xl font-bold">{performanceMetrics.teamProductivity}%</p>
+                  <p className="text-xs text-muted-foreground">Productividad</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-success" />
-              <div>
-                <p className="text-2xl font-bold">{performanceMetrics.objectiveCompletion}%</p>
-                <p className="text-xs text-muted-foreground">OKRs Logrados</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Target className="h-5 w-5 text-success" />
+                <div>
+                  <p className="text-2xl font-bold">{performanceMetrics.objectiveCompletion}%</p>
+                  <p className="text-xs text-muted-foreground">OKRs Logrados</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-info" />
-              <div>
-                <p className="text-2xl font-bold">{Math.round(performanceMetrics.wellnessAlignment * 100)}%</p>
-                <p className="text-xs text-muted-foreground">Alineación Bienestar</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-info" />
+                <div>
+                  <p className="text-2xl font-bold">{Math.round(performanceMetrics.wellnessAlignment * 100)}%</p>
+                  <p className="text-xs text-muted-foreground">Alineación Bienestar</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Star className="h-5 w-5 text-warning" />
-              <div>
-                <p className="text-2xl font-bold">{performanceMetrics.feedbackSentiment.toFixed(1)}</p>
-                <p className="text-xs text-muted-foreground">Feedback 360º</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Star className="h-5 w-5 text-warning" />
+                <div>
+                  <p className="text-2xl font-bold">{performanceMetrics.feedbackSentiment.toFixed(1)}</p>
+                  <p className="text-xs text-muted-foreground">Feedback 360º</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-secondary" />
-              <div>
-                <p className="text-2xl font-bold">{Math.round(performanceMetrics.retentionPrediction * 100)}%</p>
-                <p className="text-xs text-muted-foreground">Retención Pred.</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-secondary" />
+                <div>
+                  <p className="text-2xl font-bold">{Math.round(performanceMetrics.retentionPrediction * 100)}%</p>
+                  <p className="text-xs text-muted-foreground">Retención Pred.</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Tabs defaultValue="okrs" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
