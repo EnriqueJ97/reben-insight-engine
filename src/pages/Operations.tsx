@@ -4,8 +4,9 @@ import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Calendar, Shield, Settings, MessageSquare, BookOpen, Zap } from 'lucide-react';
+import { Clock, Calendar, Shield, Settings, MessageSquare, BookOpen, Zap, Calculator } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import SimuladorWhatIf from '@/components/operations/SimuladorWhatIf';
 import ShiftManagement from '@/components/operations/ShiftManagement';
 import FlexibleCulture from '@/components/operations/FlexibleCulture';
 import Performance360 from '@/components/operations/Performance360';
@@ -29,9 +30,18 @@ const Operations = () => {
     );
   }
 
-  // Render specific content based on the current path
+  // Always show the main dashboard with tabs - determines active tab from URL  
+  const getActiveTabFromPath = () => {
+    if (location.pathname.includes('/simulator')) return 'simulator';
+    if (location.pathname.includes('/360feedback')) return '360feedback';
+    if (location.pathname.includes('/integrations')) return 'integrations';
+    if (location.pathname.includes('/resources')) return 'resources';
+    if (location.pathname.includes('/shifts')) return 'shifts';
+    if (location.pathname.includes('/flexible')) return 'flexible';
+    return 'simulator'; // default
+  };
+
   const renderContent = () => {
-    // Always show the main dashboard with tabs instead of individual components
     return (
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex items-center gap-2 mb-6">
@@ -40,14 +50,23 @@ const Operations = () => {
           <Badge variant="outline">{user.role}</Badge>
         </div>
         
-        <Tabs defaultValue="360feedback" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs value={getActiveTabFromPath()} className="w-full">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="simulator">Simulador What-If</TabsTrigger>
             <TabsTrigger value="360feedback">360º & Performance</TabsTrigger>
             <TabsTrigger value="integrations">Integraciones</TabsTrigger>
             <TabsTrigger value="resources">Recursos</TabsTrigger>
             <TabsTrigger value="shifts">Turnos Inteligentes</TabsTrigger>
             <TabsTrigger value="flexible">Cultura Flexible</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="simulator" className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Calculator className="w-5 h-5 text-primary" />
+              <h2 className="text-xl font-semibold">Simulador What-If con IA</h2>
+            </div>
+            <SimuladorWhatIf />
+          </TabsContent>
 
           <TabsContent value="360feedback" className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
@@ -78,12 +97,7 @@ const Operations = () => {
               <Clock className="w-5 h-5 text-primary" />
               <h2 className="text-xl font-semibold">Gestión Inteligente de Turnos</h2>
             </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <p className="text-muted-foreground mb-6">
-                Sistema inteligente de asignación automática de turnos basado en preferencias, carga de trabajo y métricas de bienestar.
-              </p>
-              <ShiftManagement />
-            </div>
+            <ShiftManagement />
           </TabsContent>
 
           <TabsContent value="flexible" className="space-y-4">
@@ -91,12 +105,7 @@ const Operations = () => {
               <Calendar className="w-5 h-5 text-primary" />
               <h2 className="text-xl font-semibold">Cultura de Trabajo Flexible</h2>
             </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <p className="text-muted-foreground mb-6">
-                Gestión de modalidades de trabajo flexibles, solicitudes de teletrabajo y políticas de conciliación.
-              </p>
-              <FlexibleCulture />
-            </div>
+            <FlexibleCulture />
           </TabsContent>
         </Tabs>
       </div>
