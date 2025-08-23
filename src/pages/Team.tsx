@@ -3,10 +3,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { WellnessMetrics } from '@/components/ui/wellness-metrics';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Users, AlertTriangle, MessageSquare, TrendingUp, Heart, Calendar, UserCheck, Shield, Activity, Info, Eye, EyeOff } from 'lucide-react';
+import { Users, AlertTriangle, MessageSquare, TrendingUp, Heart, Calendar, UserCheck, Shield, Activity, Info, Eye, EyeOff, Award, Target } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAlerts } from '@/hooks/useAlerts';
@@ -14,6 +15,8 @@ import { useCheckins } from '@/hooks/useCheckins';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import RecognitionSystem from '@/components/team/RecognitionSystem';
+import TurnoverPrediction from '@/components/team/TurnoverPrediction';
 
 const Team = () => {
   const { user } = useAuth();
