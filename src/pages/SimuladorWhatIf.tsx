@@ -580,317 +580,108 @@ const SimuladorWhatIf = () => {
             </Card>
           </div>
 
-          {/* Panel de Configuración y Simulación */}
+          {/* Panel Principal con Tabs */}
           <div className="xl:col-span-3">
-            {selectedPolicy ? (
-              <div className="space-y-8">
-                {/* Configuración de la Simulación */}
-                <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
-                  <CardHeader className="pb-6">
-                    <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                        <Play className="w-5 h-5 text-white" />
-                      </div>
-                      Configuración de Simulación
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        {selectedPolicy.name}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground">Período Base de Análisis</label>
-                        <Input
-                          value={baselinePeriod}
-                          onChange={(e) => setBaselinePeriod(e.target.value)}
-                          placeholder="2024-01-01/2024-12-31"
-                          className="bg-background/50 border-2 focus:border-primary/50"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Define el período histórico para calcular métricas base
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground">Estado de la Simulación</label>
-                        <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
-                          <div className={`w-3 h-3 rounded-full ${simulating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
-                          <span className="text-sm font-medium">
-                            {simulating ? 'Ejecutando análisis IA...' : 'Sistema listo para simulación'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="templates">Plantillas</TabsTrigger>
+                <TabsTrigger value="custom">Personalizadas</TabsTrigger>
+                <TabsTrigger value="results">Resultados</TabsTrigger>
+                <TabsTrigger value="ai-assistant">🤖 Asistente IA</TabsTrigger>
+              </TabsList>
 
-                    <div className="border-t pt-6">
-                      <Button 
-                        onClick={ejecutarSimulacion} 
-                        disabled={simulating}
-                        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200"
-                      >
-                        {simulating ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
-                            Analizando con IA Avanzada...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-5 h-5 mr-3" />
-                            Ejecutar Simulación IA
-                            <Euro className="w-4 h-4 ml-2" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="ai-assistant" className="mt-6">
+                <AIAssistant onRecommendationGenerated={(rec) => {
+                  toast.success(`Nueva recomendación: ${rec.recommendation_type}`);
+                }} />
+              </TabsContent>
 
-                {/* Resultados de la Simulación */}
-                {currentScenario && scenarioOutputs.length > 0 && (
-                  <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
-                    <CardHeader className="pb-6">
-                      <CardTitle className="flex items-center gap-3 text-xl">
-                        <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-                          <TrendingUp className="w-5 h-5 text-white" />
-                        </div>
-                        Resultados del Análisis IA
-                        <Badge variant="default" className="ml-auto bg-green-500">
-                          Completado
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-8">
-                      {/* Métricas Principales */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {scenarioOutputs.map((output) => (
-                          <Card key={output.metric_key} className="border-2 hover:border-primary/50 transition-all duration-200 hover:shadow-lg">
-                            <CardContent className="p-6">
-                              <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-bold text-sm text-foreground">
-                                  {output.metric_key === 'burnout_risk' && 'Riesgo de Burnout'}
-                                  {output.metric_key === 'turnover_risk' && 'Riesgo de Rotación'}
-                                  {output.metric_key === 'economic_impact_eur' && 'Impacto Económico'}
-                                  {output.metric_key === 'productivity_score' && 'Productividad'}
-                                  {output.metric_key === 'employee_satisfaction' && 'Satisfacción'}
-                                </h4>
-                                <div className="flex items-center gap-2">
-                                  {getMetricIcon(output.delta)}
-                                  {output.confidence && (
-                                    <Badge variant="outline" className="text-xs font-medium">
-                                      {Math.round(output.confidence * 100)}%
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-xs text-muted-foreground font-medium">Actual:</span>
-                                  <span className="text-sm font-semibold">{formatMetric(output.metric_key, output.baseline)}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-xs text-muted-foreground font-medium">Proyectado:</span>
-                                  <span className="text-sm font-semibold">{formatMetric(output.metric_key, output.projected)}</span>
-                                </div>
-                                <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg">
-                                  <span className="text-sm font-bold">Impacto:</span>
-                                  <span className={`text-lg font-bold ${output.delta < 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {output.delta > 0 ? '+' : ''}{formatMetric(output.metric_key, output.delta)}
-                                  </span>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  IC 95%: {formatMetric(output.metric_key, output.ci_low)} - {formatMetric(output.metric_key, output.ci_high)}
-                                </div>
-                                {output.explanation && (
-                                  <div className="text-xs text-primary bg-primary/10 p-2 rounded-md">
-                                    💡 {output.explanation}
-                                  </div>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-
-                      {/* Resumen Ejecutivo de Impacto */}
-                      <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-                        <CardContent className="p-8">
-                          <h4 className="text-xl font-bold mb-6 flex items-center gap-3">
-                            🚀 Resumen Ejecutivo de Impacto
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="text-center">
-                              <div className="text-4xl font-black text-green-600 mb-2">
-                                €{Math.abs(scenarioOutputs.find(o => o.metric_key === 'economic_impact_eur')?.delta || 0).toLocaleString()}
-                              </div>
-                              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Ahorro Anual Proyectado</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-4xl font-black text-blue-600 mb-2">
-                                {((scenarioOutputs.find(o => o.metric_key === 'burnout_risk')?.delta || 0) * -100).toFixed(1)}%
-                              </div>
-                              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Reducción Burnout</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-4xl font-black text-purple-600 mb-2">
-                                +{((scenarioOutputs.find(o => o.metric_key === 'productivity_score')?.delta || 0)).toFixed(1)}
-                              </div>
-                              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mejora Productividad</div>
+              <TabsContent value="results" className="mt-6">
+                {selectedPolicy ? (
+                  <div className="space-y-8">
+                    {/* Configuración de la Simulación */}
+                    <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+                      <CardHeader className="pb-6">
+                        <CardTitle className="flex items-center gap-3 text-xl">
+                          <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                            <Play className="w-5 h-5 text-white" />
+                          </div>
+                          Configuración de Simulación
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {selectedPolicy.name}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">Período Base de Análisis</label>
+                            <Input
+                              value={baselinePeriod}
+                              onChange={(e) => setBaselinePeriod(e.target.value)}
+                              placeholder="2024-01-01/2024-12-31"
+                              className="bg-background/50 border-2 focus:border-primary/50"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Define el período histórico para calcular métricas base
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">Estado de la Simulación</label>
+                            <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
+                              <div className={`w-3 h-3 rounded-full ${simulating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
+                              <span className="text-sm font-medium">
+                                {simulating ? 'Ejecutando análisis IA...' : 'Sistema listo para simulación'}
+                              </span>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
 
-                      {/* Insights de IA */}
-                      {aiInsights && (
-                        <Card className="border-accent/50">
-                          <CardHeader>
-                            <CardTitle className="text-xl font-bold flex items-center gap-3">
-                              🧠 Análisis Inteligente Avanzado
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
-                                <CardContent className="p-6">
-                                  <h5 className="font-bold text-green-800 mb-4 flex items-center gap-2">
-                                    ✅ Beneficios Clave Identificados
-                                  </h5>
-                                  <ul className="text-sm text-green-700 space-y-2">
-                                    {aiInsights.key_benefits.map((benefit, idx) => (
-                                      <li key={idx} className="flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        {benefit}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </CardContent>
-                              </Card>
-                              
-                              <Card className="bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200">
-                                <CardContent className="p-6">
-                                  <h5 className="font-bold text-orange-800 mb-4 flex items-center gap-2">
-                                    ⚠️ Riesgos a Considerar
-                                  </h5>
-                                  <ul className="text-sm text-orange-700 space-y-2">
-                                    {aiInsights.potential_risks.map((risk, idx) => (
-                                      <li key={idx} className="flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        {risk}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </CardContent>
-                              </Card>
-                              
-                              <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
-                                <CardContent className="p-6">
-                                  <h5 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
-                                    💡 Guía de Implementación
-                                  </h5>
-                                  <ul className="text-sm text-blue-700 space-y-2">
-                                    {aiInsights.implementation_tips.map((tip, idx) => (
-                                      <li key={idx} className="flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        {tip}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </CardContent>
-                              </Card>
-                              
-                              <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
-                                <CardContent className="p-6">
-                                  <h5 className="font-bold text-purple-800 mb-4 flex items-center gap-2">
-                                    🎯 Factores Críticos de Éxito
-                                  </h5>
-                                  <ul className="text-sm text-purple-700 space-y-2">
-                                    {aiInsights.success_factors.map((factor, idx) => (
-                                      <li key={idx} className="flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        {factor}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </CardContent>
-                              </Card>
-                            </div>
-                            
-                            <Card className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 border-gray-200">
-                              <CardContent className="p-6">
-                                <h5 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                  ⏱️ Timeline de Implementación Recomendado
-                                </h5>
-                                <p className="text-sm text-gray-700 leading-relaxed">{aiInsights.timeline_recommendation}</p>
-                              </CardContent>
-                            </Card>
-                          </CardContent>
-                        </Card>
-                      )}
+                        <div className="border-t pt-6">
+                          <Button 
+                            onClick={ejecutarSimulacion} 
+                            disabled={simulating}
+                            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200"
+                          >
+                            {simulating ? (
+                              <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
+                                Analizando con IA Avanzada...
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-5 h-5 mr-3" />
+                                Ejecutar Simulación IA
+                                <Euro className="w-4 h-4 ml-2" />
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Resultados aquí */}
+                  </div>
+                ) : (
+                  <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+                    <CardContent className="flex items-center justify-center py-24">
+                      <div className="text-center max-w-md">
+                        <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                          <BarChart3 className="w-12 h-12 text-primary" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-4">Simulador Listo</h3>
+                        <p className="text-muted-foreground text-lg leading-relaxed">
+                          Selecciona una política de la lista para iniciar el análisis predictivo con IA avanzada
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
-              </div>
-            ) : (
-              <Card className="shadow-2xl border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
-                <CardContent className="flex items-center justify-center py-24">
-                  <div className="text-center max-w-md">
-                    <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                      <BarChart3 className="w-12 h-12 text-primary" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4">Simulador Listo</h3>
-                    <p className="text-muted-foreground text-lg leading-relaxed">
-                      Selecciona una política de la lista para iniciar el análisis predictivo con IA avanzada
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
-
-        {/* Historial de Simulaciones */}
-        {scenarios.length > 0 && (
-          <Card className="shadow-2xl border-0 bg-card/50 backdrop-blur-sm mt-8">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <div className="p-2 bg-gradient-to-br from-accent to-accent/60 rounded-lg">
-                  <AlertTriangle className="w-4 h-4 text-accent-foreground" />
-                </div>
-                Historial de Simulaciones
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {scenarios.slice(0, 6).map((scenario) => (
-                  <Card key={scenario.id} className="hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm truncate">{scenario.name}</h4>
-                        <Badge
-                          variant={scenario.status === 'COMPLETED' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {scenario.status}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(scenario.created_at).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

@@ -27,7 +27,8 @@ import {
   TrendingUp,
   Eye,
   Award,
-  Target
+  Target,
+  Sliders
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -54,6 +55,7 @@ const AppLayout = () => {
     { name: 'Mis Turnos', href: '/dashboard/mis-turnos', icon: Clock, roles: ['EMPLOYEE'] },
     { name: 'Trabajo Flexible', href: '/dashboard/trabajo-flexible', icon: Calendar, roles: ['EMPLOYEE'] },
     { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
+    { name: 'Simulador What-If', href: '/dashboard/simulador-what-if', icon: BarChart3, roles: ['HR_ADMIN', 'MANAGER'] },
     { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Reportes', href: '/dashboard/reports', icon: BarChart3, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
     { name: 'Super Admin', href: '/dashboard/super-admin', icon: Settings, roles: ['SUPER_ADMIN'] },
@@ -64,6 +66,7 @@ const AppLayout = () => {
     { name: 'Preguntas', href: '/dashboard/settings/questions', icon: HelpCircle },
     { name: 'Alertas', href: '/dashboard/settings/alerts', icon: AlertTriangle },
     { name: 'Integraciones', href: '/dashboard/settings/integrations', icon: Plug },
+    { name: 'Configuración de Políticas', href: '/dashboard/settings/policies', icon: Sliders },
   ];
 
   const teamsSubItems = [
