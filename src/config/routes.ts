@@ -16,7 +16,6 @@ import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter
 import EmployeeImport from '@/components/EmployeeImport';
 import AnonymousFeedback from '@/pages/AnonymousFeedback';
 import AdvancedOrganizationalAnalytics from '@/components/analytics/AdvancedOrganizationalAnalytics';
-import HROperationsHub from '@/components/operations/HROperationsHub';
 
 export interface RouteConfig {
   path: string;
@@ -173,14 +172,7 @@ export const routes: RouteConfig[] = [
         element: AdvancedOrganizationalAnalytics,
         protected: true,
         allowedRoles: ['HR_ADMIN'],
-        title: 'Análisis Organizacional Avanzado'
-      },
-      {
-        path: 'operations/basic-analytics',
-        element: HROperationsHub,
-        protected: true,
-        allowedRoles: ['HR_ADMIN'],
-        title: 'Análisis Organizacional Básico'
+        title: 'Análisis Organizacional'
       }
     ]
   },
