@@ -9,6 +9,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import PrivacyCompliantTeamView from '@/components/team/PrivacyCompliantTeamView';
 import RecognitionSystem from '@/components/team/RecognitionSystem';
 import TurnoverPrediction from '@/components/team/TurnoverPrediction';
+import ManagerPerformanceHub from '@/components/operations/ManagerPerformanceHub';
 
 const Team = () => {
   const { user } = useAuth();
@@ -61,7 +62,7 @@ const Team = () => {
               <Eye className="w-5 h-5 text-primary" />
               <h2 className="text-xl font-semibold">Vista General del Equipo</h2>
             </div>
-            <PrivacyCompliantTeamView />
+            <ManagerPerformanceHub />
           </TabsContent>
 
           <TabsContent value="recognition" className="space-y-4">

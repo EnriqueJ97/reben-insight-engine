@@ -4,13 +4,12 @@ import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Calendar, Shield, Settings, MessageSquare, BookOpen, Zap, Calculator, Users } from 'lucide-react';
+import { Clock, Calendar, Shield, Settings, MessageSquare, BookOpen, Zap, Calculator } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import SimuladorWhatIf from '@/components/operations/SimuladorWhatIf';
 import ShiftManagement from '@/components/operations/ShiftManagement';
 import FlexibleCulture from '@/components/operations/FlexibleCulture';
 import Performance360 from '@/components/operations/Performance360';
-import ManagerPerformanceHub from '@/components/operations/ManagerPerformanceHub';
 import IntegrationsHub from '@/components/operations/IntegrationsHub';
 import ManagerResources from '@/components/operations/ManagerResources';
 
@@ -33,7 +32,6 @@ const Operations = () => {
 
   const getActiveTabFromPath = () => {
     if (location.pathname.includes('/simulador')) return 'simulator';
-    if (location.pathname.includes('/performance')) return 'performance';
     if (location.pathname.includes('/360feedback')) return '360feedback';
     if (location.pathname.includes('/integrations')) return 'integrations';
     if (location.pathname.includes('/resources')) return 'resources';
@@ -61,16 +59,6 @@ const Operations = () => {
               <h2 className="text-xl font-semibold">Simulador What-If con IA</h2>
             </div>
             <SimuladorWhatIf />
-          </div>
-        )}
-
-        {currentTab === 'performance' && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold">Mi Equipo - Visión Operativa</h2>
-            </div>
-            <ManagerPerformanceHub />
           </div>
         )}
 
