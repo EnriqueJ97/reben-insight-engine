@@ -28,6 +28,7 @@ import {
   Eye,
   Award,
   Target,
+  Briefcase,
   Sliders
 } from 'lucide-react';
 import { useState } from 'react';
@@ -167,7 +168,7 @@ const AppLayout = () => {
             <Collapsible open={isOperationsOpen} onOpenChange={setIsOperationsOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
                 <div className="flex items-center space-x-2">
-                  <Settings className="w-4 h-4" />
+                  <Briefcase className="w-4 h-4" />
                   <span>Operaciones</span>
                 </div>
                 {isOperationsOpen ? (
