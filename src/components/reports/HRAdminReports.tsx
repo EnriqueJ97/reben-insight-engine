@@ -41,12 +41,12 @@ const HRAdminReports = () => {
 
   // Advanced filters
   const [filters, setFilters] = useState({
-    ageRange: '',
-    tenure: '',
-    gender: '',
-    contractType: '',
-    department: '',
-    location: ''
+    ageRange: 'all',
+    tenure: 'all',
+    gender: 'all',
+    contractType: 'all',
+    department: 'all',
+    location: 'all'
   });
 
   const loading = reportsLoading || teamLoading;
@@ -378,7 +378,7 @@ const HRAdminReports = () => {
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="18-25">18-25</SelectItem>
                       <SelectItem value="26-35">26-35</SelectItem>
                       <SelectItem value="36-45">36-45</SelectItem>
@@ -393,7 +393,7 @@ const HRAdminReports = () => {
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="0-1">0-1 años</SelectItem>
                       <SelectItem value="1-3">1-3 años</SelectItem>
                       <SelectItem value="3-5">3-5 años</SelectItem>
@@ -408,7 +408,7 @@ const HRAdminReports = () => {
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="M">Masculino</SelectItem>
                       <SelectItem value="F">Femenino</SelectItem>
                       <SelectItem value="O">Otro</SelectItem>
@@ -422,7 +422,7 @@ const HRAdminReports = () => {
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="indefinido">Indefinido</SelectItem>
                       <SelectItem value="temporal">Temporal</SelectItem>
                       <SelectItem value="freelance">Freelance</SelectItem>
@@ -436,7 +436,7 @@ const HRAdminReports = () => {
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="dev">Desarrollo</SelectItem>
                       <SelectItem value="ops">Operaciones</SelectItem>
                       <SelectItem value="sales">Ventas</SelectItem>
@@ -451,7 +451,7 @@ const HRAdminReports = () => {
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas</SelectItem>
+                      <SelectItem value="all">Todas</SelectItem>
                       <SelectItem value="madrid">Madrid</SelectItem>
                       <SelectItem value="barcelona">Barcelona</SelectItem>
                       <SelectItem value="valencia">Valencia</SelectItem>
