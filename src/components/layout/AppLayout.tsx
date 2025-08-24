@@ -82,7 +82,13 @@ const AppLayout = () => {
     { name: 'Recursos', href: '/dashboard/operations/resources', icon: HelpCircle },
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
-  ];
+  ].filter(item => {
+    // Solo HR_ADMIN puede ver el simulador
+    if (item.name === 'Simulador What-If') {
+      return user?.role === 'HR_ADMIN';
+    }
+    return true;
+  });
 
   const sustainabilitySubItems = [
     { name: 'CSRD Dashboard', href: '/dashboard/sustainability/csrd', icon: Leaf },

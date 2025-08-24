@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,8 +27,30 @@ import {
   XCircle
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import ManagerRiskInsights from './ManagerRiskInsights';
 
 const TurnoverPrediction = () => {
+  const { user } = useAuth();
+  
+  // Si es manager, mostrar la vista específica para managers
+  if (user?.role === 'MANAGER') {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold flex items-center justify-center space-x-2">
+            <Target className="h-8 w-8 text-primary" />
+            <span>Gestión de Riesgos del Equipo</span>
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Identifica riesgos y aplica microacciones para mantener a tu equipo motivado
+          </p>
+        </div>
+        <ManagerRiskInsights />
+      </div>
+    );
+  }
+  
+  // Vista original para HR_ADMIN y otros roles
   const [predictions, setPredictions] = useState([
     {
       id: '1',

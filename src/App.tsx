@@ -128,7 +128,7 @@ const AppRoutes = () => {
         <Route
           path="operations/simulador"
           element={
-            <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <Operations />
             </RoleProtectedRoute>
           }
