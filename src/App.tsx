@@ -174,6 +174,14 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="operations/hr-analytics"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
           path="mis-turnos"
           element={
             <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>

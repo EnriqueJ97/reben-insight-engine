@@ -12,6 +12,7 @@ import FlexibleCulture from '@/components/operations/FlexibleCulture';
 import Performance360 from '@/components/operations/Performance360';
 import IntegrationsHub from '@/components/operations/IntegrationsHub';
 import ManagerResources from '@/components/operations/ManagerResources';
+import HROperationsHub from '@/components/operations/HROperationsHub';
 
 const Operations = () => {
   const { user } = useAuth();
@@ -37,7 +38,8 @@ const Operations = () => {
     if (location.pathname.includes('/resources')) return 'resources';
     if (location.pathname.includes('/shifts')) return 'shifts';
     if (location.pathname.includes('/flexible')) return 'flexible';
-    return 'simulator'; // default
+    if (location.pathname.includes('/hr-analytics')) return 'hr-analytics';
+    return user?.role === 'HR_ADMIN' ? 'hr-analytics' : 'integrations'; // default based on role
   };
 
   const renderContent = () => {
@@ -72,17 +74,18 @@ const Operations = () => {
           </div>
         )}
 
-        {currentTab === 'integrations' && (
+        {currentTab === 'integrations' && user?.role === 'MANAGER' && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="w-5 h-5 text-primary" />
               <h2 className="text-xl font-semibold">Hub de Integraciones</h2>
+              <Badge variant="outline">Solo Lectura</Badge>
             </div>
             <IntegrationsHub />
           </div>
         )}
 
-        {currentTab === 'resources' && (
+        {currentTab === 'resources' && user?.role === 'MANAGER' && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="w-5 h-5 text-primary" />
@@ -90,6 +93,10 @@ const Operations = () => {
             </div>
             <ManagerResources />
           </div>
+        )}
+
+        {currentTab === 'hr-analytics' && user?.role === 'HR_ADMIN' && (
+          <HROperationsHub />
         )}
 
         {currentTab === 'shifts' && (

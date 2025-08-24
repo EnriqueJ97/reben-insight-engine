@@ -67,28 +67,23 @@ const AppLayout = () => {
     { name: 'Configuración de Políticas', href: '/dashboard/settings/policies', icon: Sliders },
   ];
 
-  const teamsSubItems = [
-    { name: 'Vista General', href: '/dashboard/team/overview', icon: Eye },
+  const teamsSubItems = user?.role === 'MANAGER' ? [
+    { name: 'Vista General', href: '/dashboard/team', icon: Eye },
     { name: 'Reconocimiento', href: '/dashboard/team/recognition', icon: Award },
-    { name: 'Predicción Rotación', href: '/dashboard/team/turnover', icon: Target },
+  ] : user?.role === 'HR_ADMIN' ? [
     { name: 'Gestión Equipo', href: '/dashboard/team/management', icon: Settings },
-    { name: 'Importar Empleados', href: '/dashboard/teams/import', icon: Upload },
-  ];
+    { name: 'Análisis Organizacional', href: '/dashboard/operations/hr-analytics', icon: TrendingUp },
+  ] : [];
 
-  const operationsSubItems = [
+  const operationsSubItems = user?.role === 'HR_ADMIN' ? [
     { name: 'Simulador What-If', href: '/dashboard/operations/simulador', icon: TrendingUp },
     { name: 'Insights Avanzados', href: '/dashboard/operations/360feedback', icon: BarChart3 },
-    { name: 'Integraciones', href: '/dashboard/operations/integrations', icon: Plug },
-    { name: 'Recursos', href: '/dashboard/operations/resources', icon: HelpCircle },
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
-  ].filter(item => {
-    // Solo HR_ADMIN puede ver el simulador e insights avanzados
-    if (item.name === 'Simulador What-If' || item.name === 'Insights Avanzados') {
-      return user?.role === 'HR_ADMIN';
-    }
-    return true;
-  });
+  ] : user?.role === 'MANAGER' ? [
+    { name: 'Integraciones', href: '/dashboard/operations/integrations', icon: Plug },
+    { name: 'Recursos', href: '/dashboard/operations/resources', icon: HelpCircle },
+  ] : [];
 
   const sustainabilitySubItems = [
     { name: 'CSRD Dashboard', href: '/dashboard/sustainability/csrd', icon: Leaf },
@@ -176,12 +171,12 @@ const AppLayout = () => {
           )}
           
           {/* Teams Collapsible Section - For MANAGER and HR_ADMIN */}
-          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
+          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && teamsSubItems.length > 0 && (
             <Collapsible open={isTeamsOpen} onOpenChange={setIsTeamsOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
                 <div className="flex items-center space-x-2">
                   <Users className="w-4 h-4" />
-                  <span>Mi Equipo</span>
+                  <span>{user?.role === 'HR_ADMIN' ? 'Analytics' : 'Mi Equipo'}</span>
                 </div>
                 {isTeamsOpen ? (
                   <ChevronDown className="w-4 h-4" />
@@ -208,7 +203,7 @@ const AppLayout = () => {
           )}
           
           {/* Operations Collapsible Section - For MANAGER and HR_ADMIN */}
-          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && (
+          {(user?.role === 'MANAGER' || user?.role === 'HR_ADMIN') && operationsSubItems.length > 0 && (
             <Collapsible open={isOperationsOpen} onOpenChange={setIsOperationsOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-4 space-x-2 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
                 <div className="flex items-center space-x-2">
