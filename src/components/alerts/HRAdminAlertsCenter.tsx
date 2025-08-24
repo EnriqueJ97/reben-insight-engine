@@ -437,9 +437,9 @@ export const HRAdminAlertsCenter = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="unassigned">Sin asignar</SelectItem>
-                          {availableManagers.map(manager => (
-                            <SelectItem key={manager.id} value={manager.id || ''}>{manager.name}</SelectItem>
-                          ))}
+                           {availableManagers.filter(manager => manager.id).map(manager => (
+                             <SelectItem key={manager.id} value={manager.id}>{manager.name}</SelectItem>
+                           ))}
                         </SelectContent>
                       </Select>
                     </div>
