@@ -134,9 +134,17 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="operations/360feedback"
+          path="operations/performance"
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER', 'HR_ADMIN']}>
+              <Operations />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/360feedback"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <Operations />
             </RoleProtectedRoute>
           }

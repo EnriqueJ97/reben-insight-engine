@@ -77,15 +77,20 @@ const AppLayout = () => {
 
   const operationsSubItems = [
     { name: 'Simulador What-If', href: '/dashboard/operations/simulador', icon: TrendingUp },
-    { name: '360º & Performance', href: '/dashboard/operations/360feedback', icon: Users },
+    { name: 'Mi Equipo', href: '/dashboard/operations/performance', icon: Users },
+    { name: 'Insights Avanzados', href: '/dashboard/operations/360feedback', icon: BarChart3 },
     { name: 'Integraciones', href: '/dashboard/operations/integrations', icon: Plug },
     { name: 'Recursos', href: '/dashboard/operations/resources', icon: HelpCircle },
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
   ].filter(item => {
-    // Solo HR_ADMIN puede ver el simulador
-    if (item.name === 'Simulador What-If') {
+    // Solo HR_ADMIN puede ver el simulador e insights avanzados
+    if (item.name === 'Simulador What-If' || item.name === 'Insights Avanzados') {
       return user?.role === 'HR_ADMIN';
+    }
+    // Solo managers y HR pueden ver Mi Equipo
+    if (item.name === 'Mi Equipo') {
+      return user?.role === 'MANAGER' || user?.role === 'HR_ADMIN';
     }
     return true;
   });
