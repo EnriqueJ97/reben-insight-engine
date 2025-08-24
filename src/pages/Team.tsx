@@ -1,19 +1,27 @@
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, AlertTriangle, MessageSquare, TrendingUp, Calendar, Award, Target, Settings, Eye } from 'lucide-react';
+import { Users, AlertTriangle, MessageSquare, TrendingUp, Calendar, Award, Target, Settings, Eye, ArrowLeft } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import PrivacyCompliantTeamView from '@/components/team/PrivacyCompliantTeamView';
 import RecognitionSystem from '@/components/team/RecognitionSystem';
 import TurnoverPrediction from '@/components/team/TurnoverPrediction';
 import ManagerPerformanceHub from '@/components/operations/ManagerPerformanceHub';
+import TeamObjectives from '@/components/team/TeamObjectives';
+import TeamEvaluations from '@/components/team/TeamEvaluations';
+import TeamDevelopment from '@/components/team/TeamDevelopment';
+import TeamOneOnOnes from '@/components/team/TeamOneOnOnes';
+import TeamFeedback from '@/components/team/TeamFeedback';
+import TeamAnalytics from '@/components/team/TeamAnalytics';
 
 const Team = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
 
   // Determine active tab from URL
   const getActiveTabFromPath = () => {
@@ -82,11 +90,35 @@ const Team = () => {
           </TabsContent>
 
           <TabsContent value="management" className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Settings className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold">Herramientas de Gestión</h2>
-            </div>
-            <TeamManagementTools />
+            {selectedTool ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSelectedTool(null)}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver a Herramientas
+                  </Button>
+                </div>
+                {selectedTool === 'objectives' && <TeamObjectives />}
+                {selectedTool === 'evaluations' && <TeamEvaluations />}
+                {selectedTool === 'development' && <TeamDevelopment />}
+                {selectedTool === 'oneonones' && <TeamOneOnOnes />}
+                {selectedTool === 'feedback' && <TeamFeedback />}
+                {selectedTool === 'analytics' && <TeamAnalytics />}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Settings className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Herramientas de Gestión</h2>
+                </div>
+                <TeamManagementTools onSelectTool={setSelectedTool} />
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -94,30 +126,11 @@ const Team = () => {
   );
 };
 
-const TeamManagementTools = () => {
+const TeamManagementTools = ({ onSelectTool }: { onSelectTool: (tool: string) => void }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* One-on-One Scheduling */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            One-on-Ones
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Programa reuniones individuales con tu equipo
-          </p>
-          <Button className="w-full">
-            <Calendar className="h-4 w-4 mr-2" />
-            Programar Reunión
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Goal Setting */}
-      <Card>
+      {/* Objetivos */}
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelectTool('objectives')}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
@@ -130,13 +143,13 @@ const TeamManagementTools = () => {
           </p>
           <Button className="w-full" variant="outline">
             <Target className="h-4 w-4 mr-2" />
-            Crear Objetivo
+            Gestionar OKRs
           </Button>
         </CardContent>
       </Card>
 
-      {/* Performance Reviews */}
-      <Card>
+      {/* Evaluaciones */}
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelectTool('evaluations')}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
@@ -154,8 +167,8 @@ const TeamManagementTools = () => {
         </CardContent>
       </Card>
 
-      {/* Team Development */}
-      <Card>
+      {/* Desarrollo */}
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelectTool('development')}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -173,8 +186,27 @@ const TeamManagementTools = () => {
         </CardContent>
       </Card>
 
-      {/* Feedback Management */}
-      <Card>
+      {/* One-on-Ones */}
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelectTool('oneonones')}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            One-on-Ones
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Programa reuniones individuales con tu equipo
+          </p>
+          <Button className="w-full" variant="outline">
+            <Calendar className="h-4 w-4 mr-2" />
+            Programar Reunión
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Feedback */}
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelectTool('feedback')}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -192,8 +224,8 @@ const TeamManagementTools = () => {
         </CardContent>
       </Card>
 
-      {/* Team Analytics */}
-      <Card>
+      {/* Analytics */}
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelectTool('analytics')}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
