@@ -62,7 +62,6 @@ const AppLayout = () => {
   const settingsSubItems = [
     { name: 'Campañas', href: '/dashboard/settings/campaigns', icon: Mail },
     { name: 'Preguntas', href: '/dashboard/settings/questions', icon: HelpCircle },
-    { name: 'Alertas', href: '/dashboard/settings/alerts', icon: AlertTriangle },
     { name: 'Integraciones', href: '/dashboard/settings/integrations', icon: Plug },
     { name: 'Configuración de Políticas', href: '/dashboard/settings/policies', icon: Sliders },
   ];
