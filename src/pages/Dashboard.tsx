@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
 import AdvancedManagerDashboard from '@/components/dashboard/AdvancedManagerDashboard';
 import EmployeeDashboard from '@/components/dashboard/EmployeeDashboard';
+import HRAdminDashboard from '@/components/dashboard/HRAdminDashboard';
 import { AIInsightsPanel } from '@/components/ai/AIInsightsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain } from 'lucide-react';
@@ -24,12 +25,14 @@ const Dashboard = () => {
     return <AdvancedManagerDashboard />;
   }
 
+  // If user is HR_ADMIN, show the strategic HR dashboard
+  if (user?.role === 'HR_ADMIN') {
+    return <HRAdminDashboard />;
+  }
   // If user is an employee, show the positive employee dashboard
   if (user?.role === 'EMPLOYEE') {
     return <EmployeeDashboard />;
   }
-  
-  const { getCheckinStats } = useCheckins();
   const { alerts, getAlertStats } = useAlerts();
   const { getTeamOverview } = useProfiles();
   

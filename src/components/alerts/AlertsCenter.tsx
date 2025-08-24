@@ -36,11 +36,24 @@ import { CreateAlertDialog } from './CreateAlertDialog';
 import { AlertMetrics } from './AlertMetrics';
 
 export const AlertsCenter = () => {
-  // Redirect to enhanced version for better UX
+  const { user } = useAuth();
+
+  // Route to role-specific alerts center
+  if (user?.role === 'MANAGER') {
+    return <ManagerAlertsCenter />;
+  }
+  
+  if (user?.role === 'HR_ADMIN') {
+    return <HRAdminAlertsCenter />;
+  }
+
+  // Default to enhanced version for other roles
   return <EnhancedAlertsCenter />;
 };
 
 import { EnhancedAlertsCenter } from './EnhancedAlertsCenter';
+import { ManagerAlertsCenter } from './ManagerAlertsCenter';
+import { HRAdminAlertsCenter } from './HRAdminAlertsCenter';
 
 export const OriginalAlertsCenter = () => {
   const { user } = useAuth();
