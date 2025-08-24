@@ -318,6 +318,14 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="teams/import"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'MANAGER']}>
+              <EmployeeImport />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
           path="employees/import"
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
