@@ -40,10 +40,31 @@ const EmployeeImport = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'complete'>('upload');
   const [progress, setProgress] = useState(0);
+  const [managerTeam, setManagerTeam] = useState<{id: string, name: string} | null>(null);
 
   // Alta manual
   const [manual, setManual] = useState({ nombre: '', email: '', rol: 'EMPLOYEE', equipo: '' });
   const [manualLoading, setManualLoading] = useState(false);
+
+  // Obtener equipo del manager si es manager
+  React.useEffect(() => {
+    const fetchManagerTeam = async () => {
+      if (user?.role === 'MANAGER') {
+        const { data: team } = await supabase
+          .from('teams')
+          .select('id, name')
+          .eq('manager_id', user.id)
+          .single();
+        
+        if (team) {
+          setManagerTeam(team);
+          setManual(prev => ({ ...prev, equipo: team.name }));
+        }
+      }
+    };
+    
+    fetchManagerTeam();
+  }, [user]);
 
   const validateCSVRow = async (row: any): Promise<{ valid: boolean; errors: string[] }> => {
     const errors: string[] = [];
@@ -60,9 +81,24 @@ const EmployeeImport = () => {
     }
     
     // Validar rol válido
-    const validRoles = ['EMPLOYEE', 'MANAGER', 'HR_ADMIN'];
+    let validRoles = ['EMPLOYEE', 'MANAGER', 'HR_ADMIN'];
+    // Si es manager, solo puede crear empleados
+    if (user?.role === 'MANAGER') {
+      validRoles = ['EMPLOYEE'];
+    }
+    
     if (row.rol && !validRoles.includes(row.rol.toUpperCase())) {
-      errors.push('Rol debe ser: EMPLOYEE, MANAGER o HR_ADMIN');
+      errors.push(user?.role === 'MANAGER' 
+        ? 'Los managers solo pueden crear empleados'
+        : 'Rol debe ser: EMPLOYEE, MANAGER o HR_ADMIN'
+      );
+    }
+    
+    // Si es manager, validar que el equipo coincida con su equipo
+    if (user?.role === 'MANAGER' && managerTeam) {
+      if (row.equipo && row.equipo !== managerTeam.name) {
+        errors.push(`Solo puedes importar empleados a tu equipo: ${managerTeam.name}`);
+      }
     }
     
     // Verificar si el email ya existe
@@ -267,10 +303,18 @@ const EmployeeImport = () => {
   };
 
   const downloadTemplate = () => {
-    const template = `id,nombre,email,rol,equipo
+    let template;
+    if (user?.role === 'MANAGER' && managerTeam) {
+      template = `id,nombre,email,rol,equipo
+emp_001,Juan Pérez,juan.perez@empresa.com,EMPLOYEE,${managerTeam.name}
+emp_002,María García,maria.garcia@empresa.com,EMPLOYEE,${managerTeam.name}
+emp_003,Carlos López,carlos.lopez@empresa.com,EMPLOYEE,${managerTeam.name}`;
+    } else {
+      template = `id,nombre,email,rol,equipo
 emp_001,Juan Pérez,juan.perez@empresa.com,EMPLOYEE,Desarrollo
 emp_002,María García,maria.garcia@empresa.com,MANAGER,Desarrollo
 emp_003,Carlos López,carlos.lopez@empresa.com,HR_ADMIN,RRHH`;
+    }
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -361,12 +405,12 @@ emp_003,Carlos López,carlos.lopez@empresa.com,HR_ADMIN,RRHH`;
     setProgress(0);
   };
 
-  if (user?.role !== 'HR_ADMIN') {
+  if (user?.role !== 'HR_ADMIN' && user?.role !== 'MANAGER') {
     return (
       <div className="text-center py-8">
         <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
         <h2 className="text-xl font-semibold">Acceso Denegado</h2>
-        <p className="text-muted-foreground">Solo los administradores de RRHH pueden importar empleados.</p>
+        <p className="text-muted-foreground">Solo los administradores de RRHH y managers pueden importar empleados.</p>
       </div>
     );
   }
@@ -445,20 +489,36 @@ emp_003,Carlos López,carlos.lopez@empresa.com,HR_ADMIN,RRHH`;
               </div>
               <div className="space-y-2">
                 <Label>Rol</Label>
-                <Select value={manual.rol} onValueChange={(v) => setManual({ ...manual, rol: v })}>
+                <Select 
+                  value={manual.rol} 
+                  onValueChange={(v) => setManual({ ...manual, rol: v })}
+                  disabled={user?.role === 'MANAGER'}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un rol" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="EMPLOYEE">Empleado</SelectItem>
-                    <SelectItem value="MANAGER">Manager</SelectItem>
-                    <SelectItem value="HR_ADMIN">HR Admin</SelectItem>
+                    {user?.role === 'HR_ADMIN' && (
+                      <>
+                        <SelectItem value="MANAGER">Manager</SelectItem>
+                        <SelectItem value="HR_ADMIN">HR Admin</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="manual-equipo">Equipo (opcional)</Label>
-                <Input id="manual-equipo" value={manual.equipo} onChange={(e) => setManual({ ...manual, equipo: e.target.value })} />
+                <Label htmlFor="manual-equipo">
+                  Equipo {user?.role === 'MANAGER' ? '' : '(opcional)'}
+                </Label>
+                <Input 
+                  id="manual-equipo" 
+                  value={manual.equipo} 
+                  onChange={(e) => setManual({ ...manual, equipo: e.target.value })}
+                  disabled={user?.role === 'MANAGER'}
+                  placeholder={user?.role === 'MANAGER' && managerTeam ? managerTeam.name : ''}
+                />
               </div>
               <div className="md:col-span-2 flex justify-end">
                 <Button onClick={handleManualInvite} disabled={manualLoading}>
