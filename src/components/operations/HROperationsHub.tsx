@@ -26,7 +26,7 @@ const HROperationsHub = () => {
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-2 mb-6">
         <Building className="w-6 h-6 text-primary" />
-        <h1 className="text-3xl font-bold">Análisis Organizacional</h1>
+        <h1 className="text-3xl font-bold">Análisis Organizacional Básico</h1>
         <Badge variant="outline">HR Admin</Badge>
       </div>
 
