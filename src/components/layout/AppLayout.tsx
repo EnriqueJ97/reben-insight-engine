@@ -72,7 +72,6 @@ const AppLayout = () => {
     { name: 'Reconocimiento', href: '/dashboard/team/recognition', icon: Award },
     { name: 'Predicción Rotación', href: '/dashboard/team/turnover', icon: Target },
     { name: 'Gestión Equipo', href: '/dashboard/team/management', icon: Settings },
-    { name: 'Equipos', href: '/dashboard/teams/manage', icon: Users },
     { name: 'Importar Empleados', href: '/dashboard/teams/import', icon: Upload },
   ];
 
