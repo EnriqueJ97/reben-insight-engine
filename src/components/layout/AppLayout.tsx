@@ -71,7 +71,8 @@ const AppLayout = () => {
     { name: 'Reconocimiento', href: '/dashboard/team/recognition', icon: Award },
   ] : user?.role === 'HR_ADMIN' ? [
     { name: 'Gestión Equipo', href: '/dashboard/team/management', icon: Settings },
-    { name: 'Análisis Organizacional', href: '/dashboard/operations/hr-analytics', icon: TrendingUp },
+    { name: 'Analytics Avanzado', href: '/dashboard/operations/hr-analytics', icon: TrendingUp },
+    { name: 'Analytics Básico', href: '/dashboard/operations/basic-analytics', icon: BarChart3 },
   ] : [];
 
   const operationsSubItems = user?.role === 'HR_ADMIN' ? [

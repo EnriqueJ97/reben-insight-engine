@@ -36,6 +36,8 @@ import DataHubESRS from '@/pages/sustainability/DataHubESRS';
 import TareasCompliance from '@/pages/sustainability/TareasCompliance';
 import ReportesCSRD from '@/pages/sustainability/ReportesCSRD';
 import SimuladorWhatIf from '@/pages/SimuladorWhatIf';
+import AdvancedOrganizationalAnalytics from '@/components/analytics/AdvancedOrganizationalAnalytics';
+import HROperationsHub from '@/components/operations/HROperationsHub';
 
 const queryClient = new QueryClient();
 
@@ -177,7 +179,15 @@ const AppRoutes = () => {
           path="operations/hr-analytics"
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
-              <Operations />
+              <AdvancedOrganizationalAnalytics />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/basic-analytics"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
+              <HROperationsHub />
             </RoleProtectedRoute>
           }
         />
