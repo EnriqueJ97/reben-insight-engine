@@ -26,6 +26,7 @@ import EmployeeImport from '@/components/EmployeeImport.tsx';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import InviteTeamMembers from '@/components/invitations/InviteTeamMembers';
 import OnboardingCheck from '@/components/onboarding/OnboardingCheck';
+import FlexibleCompensationHub from '@/components/compensation/FlexibleCompensationHub';
 import Operations from '@/pages/Operations';
 import MisTurnos from '@/pages/MisTurnos';
 import TrabajoFlexible from '@/pages/TrabajoFlexible';
@@ -203,6 +204,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>
               <TrabajoFlexible />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="mi-plan-flexible"
+          element={
+            <RoleProtectedRoute allowedRoles={['EMPLOYEE']}>
+              <FlexibleCompensationHub />
             </RoleProtectedRoute>
           }
         />

@@ -57,6 +57,7 @@ const AppLayout = () => {
     { name: 'Check-in', href: '/dashboard/checkin', icon: Heart, roles: ['EMPLOYEE'] },
     { name: 'Mis Turnos', href: '/dashboard/mis-turnos', icon: Clock, roles: ['EMPLOYEE'] },
     { name: 'Trabajo Flexible', href: '/dashboard/trabajo-flexible', icon: Calendar, roles: ['EMPLOYEE'] },
+    { name: 'Mi Plan Flexible', href: '/dashboard/mi-plan-flexible', icon: Euro, roles: ['EMPLOYEE'] },
     { name: 'Mi Equipo', href: '/dashboard/team', icon: Users, roles: ['MANAGER'] },
     { name: 'Análisis Organizacional', href: '/dashboard/operations/hr-analytics', icon: TrendingUp, roles: ['HR_ADMIN'] },
     { name: 'Alertas', href: '/dashboard/alerts', icon: AlertTriangle, roles: ['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
