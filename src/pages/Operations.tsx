@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Calendar, Shield, Settings, MessageSquare, BookOpen, Zap, Calculator } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CalculadoraROI from '@/pages/SimuladorWhatIf';
+import FlexibleCompensationHub from '@/components/compensation/FlexibleCompensationHub';
 import ShiftManagement from '@/components/operations/ShiftManagement';
 import FlexibleCulture from '@/components/operations/FlexibleCulture';
 import Performance360 from '@/components/operations/Performance360';
@@ -33,6 +34,7 @@ const Operations = () => {
 
   const getActiveTabFromPath = () => {
     if (location.pathname.includes('/simulador')) return 'simulator';
+    if (location.pathname.includes('/compensation')) return 'compensation';
     if (location.pathname.includes('/360feedback')) return '360feedback';
     if (location.pathname.includes('/integrations')) return 'integrations';
     if (location.pathname.includes('/resources')) return 'resources';
@@ -61,6 +63,12 @@ const Operations = () => {
               <h2 className="text-xl font-semibold">Calculadora ROI de Bienestar</h2>
             </div>
             <CalculadoraROI />
+          </div>
+        )}
+
+        {currentTab === 'compensation' && (
+          <div className="space-y-4">
+            <FlexibleCompensationHub />
           </div>
         )}
 

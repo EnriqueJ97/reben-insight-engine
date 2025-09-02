@@ -25,11 +25,14 @@ import {
   Calendar,
   Leaf,
   TrendingUp,
-  Eye,
-  Award,
-  Target,
+  Sliders,
   Briefcase,
-  Sliders
+  Euro,
+  Calculator,
+  Zap,
+  MessageSquare,
+  BookOpen,
+  Shield
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -69,6 +72,7 @@ const AppLayout = () => {
 
   const operationsSubItems = user?.role === 'HR_ADMIN' ? [
     { name: 'Calculadora ROI', href: '/dashboard/operations/simulador', icon: TrendingUp },
+    { name: 'Retribución Flexible', href: '/dashboard/operations/compensation', icon: Euro },
     { name: 'Insights Avanzados', href: '/dashboard/operations/360feedback', icon: BarChart3 },
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
