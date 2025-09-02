@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Settings, 
   BarChart3, 
@@ -22,13 +24,33 @@ import {
   Baby,
   GraduationCap,
   Laptop,
-  Activity
+  Activity,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const HRCompensationPanel = () => {
   const [maxFlexPercentage, setMaxFlexPercentage] = useState([30]);
   const [selectionWindow, setSelectionWindow] = useState({ start: 1, end: 10 });
+  const [isAddBenefitOpen, setIsAddBenefitOpen] = useState(false);
+  const [newBenefit, setNewBenefit] = useState({
+    name: '',
+    category: 'comida',
+    monthlyPrice: 0,
+    taxSaving: 30,
+    requiresApproval: false
+  });
+
+  const [benefits, setBenefits] = useState([
+    { id: '1', name: 'Tickets Comida', category: 'comida', monthlyPrice: 100, taxSaving: 30, requiresApproval: false, isActive: true },
+    { id: '2', name: 'Transporte Público', category: 'transporte', monthlyPrice: 80, taxSaving: 25, requiresApproval: false, isActive: true },
+    { id: '3', name: 'Seguro Médico Premium', category: 'salud', monthlyPrice: 120, taxSaving: 35, requiresApproval: true, isActive: true },
+    { id: '4', name: 'Cheques Guardería', category: 'guarderia', monthlyPrice: 200, taxSaving: 100, requiresApproval: true, isActive: false },
+    { id: '5', name: 'Cursos Online', category: 'formacion', monthlyPrice: 50, taxSaving: 100, requiresApproval: false, isActive: true },
+    { id: '6', name: 'Laptop Personal', category: 'tech', monthlyPrice: 150, taxSaving: 100, requiresApproval: true, isActive: true },
+    { id: '7', name: 'Gimnasio', category: 'wellness', monthlyPrice: 60, taxSaving: 100, requiresApproval: false, isActive: true },
+  ]);
 
   const benefitCategories = [
     { id: 'comida', name: 'Comida', icon: Utensils, color: '#10B981', maxLimit: 11 },
@@ -38,16 +60,6 @@ const HRCompensationPanel = () => {
     { id: 'formacion', name: 'Formación', icon: GraduationCap, color: '#8B5CF6', maxLimit: 0 },
     { id: 'tech', name: 'Tecnología', icon: Laptop, color: '#06B6D4', maxLimit: 0 },
     { id: 'wellness', name: 'Wellness', icon: Activity, color: '#84CC16', maxLimit: 0 },
-  ];
-
-  const benefits = [
-    { id: '1', name: 'Tickets Comida', category: 'comida', monthlyPrice: 100, taxSaving: 30, requiresApproval: false, isActive: true },
-    { id: '2', name: 'Transporte Público', category: 'transporte', monthlyPrice: 80, taxSaving: 25, requiresApproval: false, isActive: true },
-    { id: '3', name: 'Seguro Médico Premium', category: 'salud', monthlyPrice: 120, taxSaving: 35, requiresApproval: true, isActive: true },
-    { id: '4', name: 'Cheques Guardería', category: 'guarderia', monthlyPrice: 200, taxSaving: 100, requiresApproval: true, isActive: false },
-    { id: '5', name: 'Cursos Online', category: 'formacion', monthlyPrice: 50, taxSaving: 100, requiresApproval: false, isActive: true },
-    { id: '6', name: 'Laptop Personal', category: 'tech', monthlyPrice: 150, taxSaving: 100, requiresApproval: true, isActive: true },
-    { id: '7', name: 'Gimnasio', category: 'wellness', monthlyPrice: 60, taxSaving: 100, requiresApproval: false, isActive: true },
   ];
 
   // Mock analytics data
@@ -71,6 +83,39 @@ const HRCompensationPanel = () => {
   const getCategoryIcon = (categoryId: string) => {
     const category = benefitCategories.find(c => c.id === categoryId);
     return category ? category.icon : Utensils;
+  };
+
+  const handleAddBenefit = () => {
+    if (!newBenefit.name.trim()) return;
+    
+    const newId = (Math.max(...benefits.map(b => parseInt(b.id))) + 1).toString();
+    const benefitToAdd = {
+      id: newId,
+      ...newBenefit,
+      isActive: true
+    };
+    
+    setBenefits(prev => [...prev, benefitToAdd]);
+    setNewBenefit({
+      name: '',
+      category: 'comida',
+      monthlyPrice: 0,
+      taxSaving: 30,
+      requiresApproval: false
+    });
+    setIsAddBenefitOpen(false);
+  };
+
+  const handleDeleteBenefit = (benefitId: string) => {
+    setBenefits(prev => prev.filter(b => b.id !== benefitId));
+  };
+
+  const handleToggleBenefit = (benefitId: string) => {
+    setBenefits(prev => prev.map(benefit => 
+      benefit.id === benefitId 
+        ? { ...benefit, isActive: !benefit.isActive }
+        : benefit
+    ));
   };
 
   return (
@@ -170,10 +215,95 @@ const HRCompensationPanel = () => {
           {/* Benefits Catalog */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Catálogo de Beneficios
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Catálogo de Beneficios
+                </CardTitle>
+                <Dialog open={isAddBenefitOpen} onOpenChange={setIsAddBenefitOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Añadir Beneficio
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Añadir Nuevo Beneficio</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="benefit-name">Nombre del Beneficio</Label>
+                        <Input
+                          id="benefit-name"
+                          value={newBenefit.name}
+                          onChange={(e) => setNewBenefit(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Ej: Seguro Dental"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="benefit-category">Categoría</Label>
+                        <Select
+                          value={newBenefit.category}
+                          onValueChange={(value) => setNewBenefit(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {benefitCategories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="benefit-price">Precio/Mes (€)</Label>
+                          <Input
+                            id="benefit-price"
+                            type="number"
+                            value={newBenefit.monthlyPrice}
+                            onChange={(e) => setNewBenefit(prev => ({ ...prev, monthlyPrice: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="benefit-tax">Ahorro Fiscal (%)</Label>
+                          <Input
+                            id="benefit-tax"
+                            type="number"
+                            value={newBenefit.taxSaving}
+                            onChange={(e) => setNewBenefit(prev => ({ ...prev, taxSaving: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="requires-approval"
+                          checked={newBenefit.requiresApproval}
+                          onCheckedChange={(checked) => setNewBenefit(prev => ({ ...prev, requiresApproval: checked }))}
+                        />
+                        <Label htmlFor="requires-approval">Requiere aprobación</Label>
+                      </div>
+                      
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" onClick={() => setIsAddBenefitOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={handleAddBenefit}>
+                          Añadir Beneficio
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -187,7 +317,20 @@ const HRCompensationPanel = () => {
                             <IconComponent className="w-5 h-5 text-primary" />
                             <h3 className="font-medium">{benefit.name}</h3>
                           </div>
-                          <Switch checked={benefit.isActive} />
+                          <div className="flex items-center gap-2">
+                            <Switch 
+                              checked={benefit.isActive} 
+                              onCheckedChange={() => handleToggleBenefit(benefit.id)}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteBenefit(benefit.id)}
+                              className="text-red-500 hover:text-red-700 p-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                         
                         <div className="space-y-2 text-sm">
