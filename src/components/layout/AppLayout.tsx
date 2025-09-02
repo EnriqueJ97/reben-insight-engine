@@ -68,7 +68,7 @@ const AppLayout = () => {
 
 
   const operationsSubItems = user?.role === 'HR_ADMIN' ? [
-    { name: 'Simulador What-If', href: '/dashboard/operations/simulador', icon: TrendingUp },
+    { name: 'Calculadora ROI', href: '/dashboard/operations/simulador', icon: TrendingUp },
     { name: 'Insights Avanzados', href: '/dashboard/operations/360feedback', icon: BarChart3 },
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },

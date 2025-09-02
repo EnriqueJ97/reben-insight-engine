@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Calendar, Shield, Settings, MessageSquare, BookOpen, Zap, Calculator } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import SimuladorWhatIf from '@/components/operations/SimuladorWhatIf';
+import CalculadoraROI from '@/pages/SimuladorWhatIf';
 import ShiftManagement from '@/components/operations/ShiftManagement';
 import FlexibleCulture from '@/components/operations/FlexibleCulture';
 import Performance360 from '@/components/operations/Performance360';
@@ -58,9 +58,9 @@ const Operations = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Calculator className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold">Simulador What-If con IA</h2>
+              <h2 className="text-xl font-semibold">Calculadora ROI de Bienestar</h2>
             </div>
-            <SimuladorWhatIf />
+            <CalculadoraROI />
           </div>
         )}
 
