@@ -2,12 +2,66 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Users, TrendingUp, Shield, Settings, AlertTriangle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Building, Users, TrendingUp, Shield, Settings, AlertTriangle, FileText, Download, Calendar, Clock, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 const HROperationsHub = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState('complete');
+  const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+
+  const reportTypes = [
+    { value: 'complete', label: 'Reporte Completo', description: 'Análisis completo organizacional' },
+    { value: 'teams', label: 'Comparativa de Equipos', description: 'Rendimiento por equipos' },
+    { value: 'patterns', label: 'Patrones y Tendencias', description: 'Insights organizacionales' },
+    { value: 'risks', label: 'Análisis de Riesgos', description: 'Identificación de riesgos' }
+  ];
+
+  const reportHistory = [
+    { id: '1', type: 'Reporte Completo', date: '2024-01-15', status: 'completed', format: 'PDF' },
+    { id: '2', type: 'Comparativa de Equipos', date: '2024-01-10', status: 'completed', format: 'Excel' },
+    { id: '3', type: 'Análisis de Riesgos', date: '2024-01-08', status: 'completed', format: 'PDF' },
+    { id: '4', type: 'Patrones y Tendencias', date: '2024-01-05', status: 'scheduled', format: 'PDF' }
+  ];
+
+  const handleGenerateReport = async (format: 'pdf' | 'excel') => {
+    setGeneratingReport(true);
+    
+    try {
+      // Simular generación de reporte
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Reporte generado exitosamente",
+        description: `Reporte ${selectedReportType} en formato ${format.toUpperCase()} está listo para descargar`
+      });
+      
+      // Aquí se implementaría la descarga real del archivo
+      console.log(`Generating ${selectedReportType} report in ${format} format`);
+      
+    } catch (error) {
+      toast({
+        title: "Error al generar reporte",
+        description: "Inténtalo de nuevo más tarde",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  const handleScheduleReport = () => {
+    toast({
+      title: "Reporte programado",
+      description: `Reporte ${selectedReportType} programado para generarse ${selectedPeriod}`
+    });
+  };
 
   if (user?.role !== 'HR_ADMIN') {
     return (
@@ -31,10 +85,11 @@ const HROperationsHub = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Vista General</TabsTrigger>
           <TabsTrigger value="teams">Comparativa Equipos</TabsTrigger>
           <TabsTrigger value="patterns">Patrones Globales</TabsTrigger>
+          <TabsTrigger value="reports">Reportes</TabsTrigger>
           <TabsTrigger value="privacy">Control de Privacidad</TabsTrigger>
         </TabsList>
 
@@ -153,6 +208,176 @@ const HROperationsHub = () => {
                 <h4 className="font-semibold text-red-700">Riesgo Identificado</h4>
                 <p className="text-sm">5 equipos muestran signos tempranos de burnout colectivo</p>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Generador de Reportes */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Generar Nuevo Reporte
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Tipo de Reporte</label>
+                  <Select value={selectedReportType} onValueChange={setSelectedReportType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {reportTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          <div>
+                            <div className="font-medium">{type.label}</div>
+                            <div className="text-xs text-muted-foreground">{type.description}</div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleGenerateReport('pdf')}
+                    disabled={generatingReport}
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {generatingReport ? 'Generando...' : 'Generar PDF'}
+                  </Button>
+                  <Button 
+                    onClick={() => handleGenerateReport('excel')}
+                    disabled={generatingReport}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Excel
+                  </Button>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Programar Reporte Automático</label>
+                    <div className="flex gap-2">
+                      <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="weekly">Semanal</SelectItem>
+                          <SelectItem value="monthly">Mensual</SelectItem>
+                          <SelectItem value="quarterly">Trimestral</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={handleScheduleReport} variant="outline">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Programar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Historial de Reportes */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Historial de Reportes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {reportHistory.map((report) => (
+                    <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{report.type}</p>
+                        <p className="text-sm text-muted-foreground">{report.date}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={report.status === 'completed' ? 'default' : 'outline'}
+                          className={report.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
+                        >
+                          {report.status === 'completed' ? 'Completado' : 'Programado'}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {report.format}
+                        </Badge>
+                        {report.status === 'completed' && (
+                          <Button size="sm" variant="ghost">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Configuración Avanzada de Reportes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Configuración Avanzada de Reportes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <h4 className="font-medium">Distribución Automática</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Envío por email a directivos</span>
+                      <Badge variant="outline" className="bg-green-50 text-green-700">Activo</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Notificaciones Slack</span>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">Activo</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Dashboard ejecutivo automático</span>
+                      <Badge variant="outline">Inactivo</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-medium">Métricas Incluidas</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Análisis de bienestar</span>
+                      <Badge variant="outline" className="bg-green-50 text-green-700">Incluido</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Métricas de productividad</span>
+                      <Badge variant="outline" className="bg-green-50 text-green-700">Incluido</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Predicciones de rotación</span>
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700">Beta</Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Alert>
+                <Mail className="h-4 w-4" />
+                <AlertDescription>
+                  Los reportes se envían automáticamente cada {selectedPeriod === 'weekly' ? 'lunes' : selectedPeriod === 'monthly' ? '1er día del mes' : 'inicio de trimestre'} a las 8:00 AM a los destinatarios configurados.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         </TabsContent>
