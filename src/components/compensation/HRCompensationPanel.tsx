@@ -28,7 +28,12 @@ import {
   Laptop,
   Activity,
   Plus,
-  Trash2
+  Trash2,
+  FileDown,
+  Target,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
@@ -38,6 +43,7 @@ const HRCompensationPanel = () => {
   const [maxFlexPercentage, setMaxFlexPercentage] = useState([30]);
   const [selectionWindow, setSelectionWindow] = useState({ start: 1, end: 10 });
   const [isAddBenefitOpen, setIsAddBenefitOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('general');
   const [newBenefit, setNewBenefit] = useState({
     name: '',
     category: 'comida',
@@ -57,30 +63,50 @@ const HRCompensationPanel = () => {
   ]);
 
   const benefitCategories = [
-    { id: 'comida', name: 'Comida', icon: Utensils, color: '#10B981', maxLimit: 11 },
+    { id: 'comida', name: 'Comida', icon: Utensils, color: '#10B981', maxLimit: 110 },
     { id: 'transporte', name: 'Transporte', icon: Car, color: '#3B82F6', maxLimit: 136.36 },
     { id: 'salud', name: 'Salud', icon: Heart, color: '#EF4444', maxLimit: 60 },
-    { id: 'guarderia', name: 'Guardería', icon: Baby, color: '#F59E0B', maxLimit: 0 },
-    { id: 'formacion', name: 'Formación', icon: GraduationCap, color: '#8B5CF6', maxLimit: 0 },
-    { id: 'tech', name: 'Tecnología', icon: Laptop, color: '#06B6D4', maxLimit: 0 },
-    { id: 'wellness', name: 'Wellness', icon: Activity, color: '#84CC16', maxLimit: 0 },
+    { id: 'guarderia', name: 'Guardería', icon: Baby, color: '#F59E0B', maxLimit: 1000 },
+    { id: 'formacion', name: 'Formación', icon: GraduationCap, color: '#8B5CF6', maxLimit: 500 },
+    { id: 'tech', name: 'Tecnología', icon: Laptop, color: '#06B6D4', maxLimit: 300 },
+    { id: 'wellness', name: 'Wellness', icon: Activity, color: '#84CC16', maxLimit: 100 },
   ];
 
-  // Mock analytics data
+  const flexPlans = [
+    { id: 'general', name: 'Plan General', targetGroup: 'Todos los empleados', maxFlex: 30, employees: 145 },
+    { id: 'executives', name: 'Plan Directivos', targetGroup: 'C-Level y Directors', maxFlex: 40, employees: 12 },
+    { id: 'sales', name: 'Plan Comercial', targetGroup: 'Equipo de ventas', maxFlex: 35, employees: 28 },
+    { id: 'junior', name: 'Plan Junior', targetGroup: 'Empleados < 2 años', maxFlex: 25, employees: 34 },
+  ];
+
+  const pendingApprovals = [
+    { id: '1', employeeName: 'Ana García', benefit: 'Seguro Médico Premium', amount: 120, date: '2024-01-15' },
+    { id: '2', employeeName: 'Carlos López', benefit: 'Cheques Guardería', amount: 300, date: '2024-01-14' },
+    { id: '3', employeeName: 'María Rodríguez', benefit: 'Laptop Personal', amount: 150, date: '2024-01-13' },
+  ];
+
+  // Analytics data with benchmarks
   const adoptionData = [
-    { name: 'Tickets Comida', adoption: 85, cost: 12500 },
-    { name: 'Transporte', adoption: 65, cost: 8600 },
-    { name: 'Seguro Médico', adoption: 45, cost: 15400 },
-    { name: 'Formación', adoption: 35, cost: 4200 },
-    { name: 'Tecnología', adoption: 25, cost: 7800 },
-    { name: 'Wellness', adoption: 40, cost: 5100 },
+    { name: 'Tickets Comida', adoption: 85, cost: 12500, benchmark: 78 },
+    { name: 'Transporte', adoption: 65, cost: 8600, benchmark: 72 },
+    { name: 'Seguro Médico', adoption: 45, cost: 15400, benchmark: 52 },
+    { name: 'Formación', adoption: 35, cost: 4200, benchmark: 28 },
+    { name: 'Tecnología', adoption: 25, cost: 7800, benchmark: 31 },
+    { name: 'Wellness', adoption: 40, cost: 5100, benchmark: 36 },
   ];
 
   const impactData = [
-    { metric: 'Motivación', current: 72, withFlex: 85 },
-    { metric: 'Retención', current: 78, withFlex: 89 },
-    { metric: 'Burnout', current: 35, withFlex: 22 },
+    { metric: 'Motivación', current: 72, withFlex: 85, benchmark: 79 },
+    { metric: 'Retención', current: 78, withFlex: 89, benchmark: 82 },
+    { metric: 'Burnout', current: 35, withFlex: 22, benchmark: 28 },
   ];
+
+  const sectorBenchmark = {
+    totalCost: 58300,
+    avgSaving: 203,
+    adoptionRate: 71,
+    satisfactionScore: 4.2
+  };
 
   const COLORS = ['#10B981', '#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#06B6D4'];
 
@@ -135,6 +161,20 @@ const HRCompensationPanel = () => {
     });
   };
 
+  const handleApproval = (approvalId: string, approved: boolean) => {
+    toast({
+      title: approved ? "Beneficio aprobado" : "Beneficio rechazado",
+      description: `La solicitud ha sido ${approved ? 'aprobada' : 'rechazada'} correctamente.`,
+    });
+  };
+
+  const handleExportCSRD = () => {
+    toast({
+      title: "Exportando a CSRD",
+      description: "Generando reporte de condiciones laborales y conciliación para ESRS...",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -142,14 +182,20 @@ const HRCompensationPanel = () => {
           <h1 className="text-3xl font-bold">Compensación y Beneficios</h1>
           <p className="text-muted-foreground">Configura y analiza el plan de retribución flexible</p>
         </div>
-        <Button variant="outline" onClick={handleSimulateROI}>
-          <TrendingUp className="w-4 h-4 mr-2" />
-          Simular en ROI
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSRD}>
+            <FileDown className="w-4 h-4 mr-2" />
+            Export CSRD
+          </Button>
+          <Button variant="outline" onClick={handleSimulateROI}>
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Simular en ROI
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="configuration" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="configuration">
             <Settings className="w-4 h-4 mr-2" />
             Configuración
@@ -157,6 +203,10 @@ const HRCompensationPanel = () => {
           <TabsTrigger value="analytics">
             <BarChart3 className="w-4 h-4 mr-2" />
             Analítica
+          </TabsTrigger>
+          <TabsTrigger value="approvals">
+            <Shield className="w-4 h-4 mr-2" />
+            Aprobaciones
           </TabsTrigger>
         </TabsList>
 
@@ -170,7 +220,23 @@ const HRCompensationPanel = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label>Plan seleccionado</Label>
+                  <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {flexPlans.map((plan) => (
+                        <SelectItem key={plan.id} value={plan.id}>
+                          {plan.name} ({plan.employees} empleados)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Límite máximo de retribución flexible</Label>
                   <div className="px-4">
@@ -226,6 +292,42 @@ const HRCompensationPanel = () => {
                   <Settings className="w-4 h-4 mr-2" />
                   Guardar Configuración
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Category Limits */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Topes por Categoría
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {benefitCategories.map((category) => {
+                  const IconComponent = category.icon;
+                  return (
+                    <Card key={category.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <IconComponent className="w-5 h-5" style={{ color: category.color }} />
+                          <h3 className="font-medium">{category.name}</h3>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`limit-${category.id}`} className="text-sm">Límite máximo (€/mes)</Label>
+                          <Input
+                            id={`limit-${category.id}`}
+                            type="number"
+                            value={category.maxLimit}
+                            className="text-sm"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -377,8 +479,8 @@ const HRCompensationPanel = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Key Metrics with Benchmarks */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2">
@@ -386,6 +488,7 @@ const HRCompensationPanel = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Adopción Total</p>
                     <p className="text-2xl font-bold">68%</p>
+                    <p className="text-xs text-green-600">vs. 63% sector</p>
                   </div>
                 </div>
               </CardContent>
@@ -398,6 +501,7 @@ const HRCompensationPanel = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Coste Total/Mes</p>
                     <p className="text-2xl font-bold">53.6K€</p>
+                    <p className="text-xs text-red-600">vs. 58.3K€ sector</p>
                   </div>
                 </div>
               </CardContent>
@@ -410,6 +514,7 @@ const HRCompensationPanel = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Ahorro Medio</p>
                     <p className="text-2xl font-bold">187€</p>
+                    <p className="text-xs text-red-600">vs. 203€ sector</p>
                   </div>
                 </div>
               </CardContent>
@@ -422,6 +527,20 @@ const HRCompensationPanel = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Impacto Bienestar</p>
                     <p className="text-2xl font-bold">+24%</p>
+                    <p className="text-xs text-green-600">vs. +19% sector</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Satisfacción</p>
+                    <p className="text-2xl font-bold">4.5/5</p>
+                    <p className="text-xs text-green-600">vs. 4.2/5 sector</p>
                   </div>
                 </div>
               </CardContent>
@@ -429,10 +548,10 @@ const HRCompensationPanel = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Adoption Chart */}
+            {/* Adoption Chart with Benchmark */}
             <Card>
               <CardHeader>
-                <CardTitle>Adopción por Beneficio</CardTitle>
+                <CardTitle>Adopción vs. Benchmark Sectorial</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -441,7 +560,9 @@ const HRCompensationPanel = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="adoption" fill="#3B82F6" />
+                    <Legend />
+                    <Bar dataKey="adoption" fill="#3B82F6" name="Nuestra Adopción" />
+                    <Bar dataKey="benchmark" fill="#94A3B8" name="Benchmark Sectorial" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -450,7 +571,7 @@ const HRCompensationPanel = () => {
             {/* Cost Distribution */}
             <Card>
               <CardHeader>
-                <CardTitle>Distribución de Costes</CardTitle>
+                <CardTitle>Distribución de Costes Deducibles</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -468,17 +589,17 @@ const HRCompensationPanel = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [`${value}€`, 'Coste']} />
+                    <Tooltip formatter={(value) => [`${value}€`, 'Coste Deducible']} />
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
 
-          {/* Impact Analysis */}
+          {/* Impact Analysis with Benchmarks */}
           <Card>
             <CardHeader>
-              <CardTitle>Impacto en Bienestar</CardTitle>
+              <CardTitle>Impacto en KPIs de RRHH vs. Sector</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -488,10 +609,75 @@ const HRCompensationPanel = () => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="current" fill="#94A3B8" name="Actual" />
+                  <Bar dataKey="current" fill="#94A3B8" name="Situación Actual" />
                   <Bar dataKey="withFlex" fill="#10B981" name="Con Retribución Flexible" />
+                  <Bar dataKey="benchmark" fill="#F59E0B" name="Benchmark Sectorial" />
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="approvals" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Solicitudes Pendientes de Aprobación
+                </div>
+                <Badge variant="secondary">{pendingApprovals.length} pendientes</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {pendingApprovals.map((approval) => (
+                  <Card key={approval.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <h3 className="font-medium">{approval.employeeName}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {approval.benefit} - {approval.amount}€/mes
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Solicitado el {approval.date}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleApproval(approval.id, false)}
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                          >
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Rechazar
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => handleApproval(approval.id, true)}
+                            className="text-green-600 bg-green-50 border-green-200 hover:bg-green-100"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Aprobar
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {pendingApprovals.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>No hay solicitudes pendientes de aprobación</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
