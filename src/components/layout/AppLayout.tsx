@@ -16,7 +16,9 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight,
+  ChevronRight
+} from 'lucide-react';
+import {
   Mail,
   HelpCircle,
   Plug,
