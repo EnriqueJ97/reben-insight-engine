@@ -73,6 +73,7 @@ const AppLayout = () => {
     { name: 'Turnos Inteligentes', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Cultura Flexible', href: '/dashboard/operations/flexible', icon: Calendar },
   ] : user?.role === 'MANAGER' ? [
+    { name: 'Turnos de mi Equipo', href: '/dashboard/operations/shifts', icon: Clock },
     { name: 'Integraciones', href: '/dashboard/operations/integrations', icon: Plug },
     { name: 'Recursos', href: '/dashboard/operations/resources', icon: HelpCircle },
   ] : [];
