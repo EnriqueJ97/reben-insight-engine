@@ -6,7 +6,7 @@ export interface CheckIn {
   score: number;
   timestamp: string;
   question_text: string;
-  category: 'burnout' | 'turnover' | 'satisfaction' | 'extra';
+  category: 'burnout' | 'turnover' | 'satisfaction' | 'wellbeing' | 'flexibility' | 'diversity' | 'leadership' | 'engagement' | 'sustainability' | 'extra';
 }
 
 export interface WellnessAlert {
@@ -40,7 +40,7 @@ export interface TeamMetrics {
 export interface Question {
   id: string;
   text: string;
-  category: 'burnout' | 'turnover' | 'satisfaction' | 'extra';
+  category: 'burnout' | 'turnover' | 'satisfaction' | 'wellbeing' | 'flexibility' | 'diversity' | 'leadership' | 'engagement' | 'sustainability' | 'extra';
   subcategory: string;
   scale_description: string;
 }

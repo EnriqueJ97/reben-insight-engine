@@ -53,7 +53,37 @@ export const WELLNESS_QUESTIONS: Question[] = [
   { id: 'S14', text: 'Tengo los recursos necesarios para hacer mi trabajo.', category: 'satisfaction', subcategory: 'recursos', scale_description: '0=Nunca, 4=Siempre' },
   { id: 'S15', text: 'Me comunican bien los cambios que afectan a mi trabajo.', category: 'satisfaction', subcategory: 'comunicacion', scale_description: '0=Nunca, 4=Siempre' },
   
-  // Extra (Extra1-Extra2)
+  // Bienestar y Energía (BE1-BE3)
+  { id: 'BE1', text: '¿Has sentido que tu carga de trabajo ha sido manejable esta semana?', category: 'wellbeing', subcategory: 'energia', scale_description: '0=Nunca, 4=Siempre' },
+  { id: 'BE2', text: '¿Cuántos días te has sentido con energía suficiente para afrontar tu jornada?', category: 'wellbeing', subcategory: 'energia', scale_description: '0=Ningún día, 4=Todos los días' },
+  { id: 'BE3', text: '¿Has podido desconectar adecuadamente fuera del horario laboral?', category: 'wellbeing', subcategory: 'desconexion', scale_description: '0=Nunca, 4=Siempre' },
+  
+  // Flexibilidad y Conciliación (FC1-FC3)
+  { id: 'FC1', text: '¿Tu horario actual te permite conciliar tu vida personal y profesional?', category: 'flexibility', subcategory: 'conciliacion', scale_description: '0=Nada, 4=Completamente' },
+  { id: 'FC2', text: '¿Te sientes cómodo con el grado de flexibilidad horaria de tu puesto?', category: 'flexibility', subcategory: 'horarios', scale_description: '0=Nada cómodo, 4=Muy cómodo' },
+  { id: 'FC3', text: '¿Qué tan satisfecho estás con la posibilidad de teletrabajo/híbrido?', category: 'flexibility', subcategory: 'remoto', scale_description: '0=Nada satisfecho, 4=Muy satisfecho' },
+  
+  // Diversidad e Inclusión (DI1-DI3)
+  { id: 'DI1', text: '¿Sientes que tu opinión es valorada sin importar tu género, edad o procedencia?', category: 'diversity', subcategory: 'valoracion', scale_description: '0=Nunca, 4=Siempre' },
+  { id: 'DI2', text: '¿Percibes que la empresa fomenta un entorno inclusivo y respetuoso?', category: 'diversity', subcategory: 'inclusion', scale_description: '0=Nada, 4=Completamente' },
+  { id: 'DI3', text: '¿Consideras que las oportunidades de crecimiento son iguales para todos?', category: 'diversity', subcategory: 'oportunidades', scale_description: '0=Nada, 4=Completamente' },
+  
+  // Liderazgo y Cultura Organizacional (LC1-LC3)
+  { id: 'LC1', text: '¿Tu manager inmediato te apoya cuando tienes dificultades?', category: 'leadership', subcategory: 'apoyo', scale_description: '0=Nunca, 4=Siempre' },
+  { id: 'LC2', text: '¿Sientes que la cultura de la empresa promueve la colaboración?', category: 'leadership', subcategory: 'cultura', scale_description: '0=Nada, 4=Completamente' },
+  { id: 'LC3', text: '¿Recibes feedback constructivo de manera regular?', category: 'leadership', subcategory: 'feedback', scale_description: '0=Nunca, 4=Siempre' },
+  
+  // Engagement y Motivación (EM1-EM3)
+  { id: 'EM1', text: '¿Te sientes motivado por los proyectos en los que trabajas actualmente?', category: 'engagement', subcategory: 'motivacion', scale_description: '0=Nada motivado, 4=Muy motivado' },
+  { id: 'EM2', text: '¿Qué tan orgulloso te sientes de trabajar en esta empresa?', category: 'engagement', subcategory: 'orgullo', scale_description: '0=Nada orgulloso, 4=Muy orgulloso' },
+  { id: 'EM3', text: '¿Percibes que tu trabajo aporta valor al propósito de la organización?', category: 'engagement', subcategory: 'proposito', scale_description: '0=Nada, 4=Completamente' },
+  
+  // Sostenibilidad y Responsabilidad Social (SR1-SR3)
+  { id: 'SR1', text: '¿Crees que la empresa se preocupa por el impacto medioambiental de su actividad?', category: 'sustainability', subcategory: 'medioambiente', scale_description: '0=Nada, 4=Completamente' },
+  { id: 'SR2', text: '¿Sientes que la compañía fomenta prácticas responsables y éticas?', category: 'sustainability', subcategory: 'etica', scale_description: '0=Nada, 4=Completamente' },
+  { id: 'SR3', text: '¿La empresa comunica de forma transparente sus acciones de sostenibilidad?', category: 'sustainability', subcategory: 'transparencia', scale_description: '0=Nunca, 4=Siempre' },
+
+  // Extra (demanda laboral y recuperación)
   { id: 'Extra1', text: 'Mi carga de trabajo diaria es excesiva.', category: 'extra', subcategory: 'demanda_laboral', scale_description: '0=Nunca, 4=Siempre' },
   { id: 'Extra2', text: 'Puedo desconectar mentalmente después del trabajo.', category: 'extra', subcategory: 'recuperacion', scale_description: '0=Nunca, 4=Siempre' }
 ];
