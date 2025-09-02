@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CalendarView from '@/components/shifts/CalendarView';
-import DropdownPreferences from '@/components/shifts/DropdownPreferences';
+import { QuickShiftPreferences } from '@/components/shifts/QuickShiftPreferences';
 
 const MisTurnos = () => {
   const { user } = useAuth();
@@ -273,11 +273,9 @@ const MisTurnos = () => {
         </TabsContent>
 
         <TabsContent value="preferencias" className="space-y-6">
-          <DropdownPreferences
-            plantillasTurnos={plantillasTurnos}
-            preferencias={preferencias}
-            onUpdatePreference={actualizarPreferencia}
-          />
+          <div className="max-w-md mx-auto">
+            <QuickShiftPreferences />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

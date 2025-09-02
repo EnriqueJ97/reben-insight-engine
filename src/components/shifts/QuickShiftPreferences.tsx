@@ -66,7 +66,7 @@ export const QuickShiftPreferences: React.FC = () => {
         .single();
 
       if (data?.preferences) {
-        setPreferences(data.preferences);
+        setPreferences(data.preferences as unknown as DayPreferences);
       }
     } catch (error) {
       console.log('No hay preferencias guardadas previamente');
@@ -109,11 +109,19 @@ export const QuickShiftPreferences: React.FC = () => {
 
     setLoading(true);
     try {
+      // Obtener el tenant_id del usuario
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single();
+
       const { error } = await supabase
         .from('shift_preferences')
         .upsert({
           user_id: user.id,
-          preferences: preferences,
+          tenant_id: profile?.tenant_id,
+          preferences: preferences as any,
           updated_at: new Date().toISOString()
         });
 
