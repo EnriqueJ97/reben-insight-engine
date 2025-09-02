@@ -172,7 +172,7 @@ const Landing = () => {
             <Card className="p-6">
               <CardContent className="space-y-4">
                 <Brain className="h-10 w-10 text-primary" />
-                <h3 className="text-xl font-semibold">Chat IA</h3>
+                <h3 className="text-xl font-semibold">Chat Inteligente</h3>
                 <p className="text-muted-strong">Asistente inteligente para insights instantáneos</p>
               </CardContent>
             </Card>
@@ -363,7 +363,7 @@ const Landing = () => {
                     { name: 'Pulsos temáticos configurables', vals: ['','✅','✅','✅'] },
                     { name: 'Registro horario con autoevaluación', vals: ['','✅','✅','✅'] },
                     { name: 'Dashboard segmentado por equipo', vals: ['','✅','✅','✅'] },
-                    { name: 'Chat IA básico', vals: ['','✅','✅','✅'] },
+                    { name: 'Chat Inteligente básico', vals: ['','✅','✅','✅'] },
                     { name: 'Alertas proactivas simples', vals: ['','✅','✅','✅'] },
                     { name: 'Diagnóstico burnout y cultura organizacional', vals: ['','','✅','✅'] },
                     { name: 'Score de bienestar organizacional', vals: ['','','✅','✅'] },

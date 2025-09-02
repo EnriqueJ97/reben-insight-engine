@@ -190,7 +190,7 @@ const SimuladorWhatIf = () => {
       <Alert className="border-primary/30 bg-primary/5">
         <Brain className="h-4 w-4" />
         <AlertDescription>
-          <strong>Simulador What-If con IA:</strong> Modelo predictivo que calcula el ROI de inversiones 
+          <strong>Simulador What-If con Sistema Inteligente:</strong> Modelo predictivo que calcula el ROI de inversiones
           en bienestar, usando datos reales de tu organización y algoritmos de machine learning.
         </AlertDescription>
       </Alert>
@@ -253,7 +253,7 @@ const SimuladorWhatIf = () => {
           <TabsTrigger value="parameters">Parámetros</TabsTrigger>
           <TabsTrigger value="scenarios">Escenarios</TabsTrigger>
           <TabsTrigger value="results">Resultados</TabsTrigger>
-          <TabsTrigger value="insights">Insights IA</TabsTrigger>
+          <TabsTrigger value="insights">Insights Inteligentes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="parameters" className="space-y-6">
@@ -351,7 +351,7 @@ const SimuladorWhatIf = () => {
                   ) : (
                     <>
                       <PlayCircle className="h-4 w-4 mr-2" />
-                      Ejecutar Simulación IA
+                      Ejecutar Simulación Inteligente
                     </>
                   )}
                 </Button>
@@ -546,7 +546,7 @@ const SimuladorWhatIf = () => {
 
         <TabsContent value="insights" className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Insights y Recomendaciones de IA</h3>
+            <h3 className="text-lg font-semibold mb-2">Insights y Recomendaciones Inteligentes</h3>
             <p className="text-sm text-muted-foreground mb-6">
               Análisis inteligente basado en patrones de datos y mejores prácticas del sector
             </p>

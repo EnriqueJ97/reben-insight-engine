@@ -55,7 +55,7 @@ export const useAIAnalysis = () => {
       } else if (result.fallback) {
         // Use fallback data when API fails
         toast({
-          title: "Análisis IA básico",
+          title: "Análisis Inteligente básico",
           description: "API con limitaciones, usando datos básicos.",
           variant: "default"
         });
@@ -66,7 +66,7 @@ export const useAIAnalysis = () => {
     } catch (error) {
       console.error('AI Analysis error:', error);
       toast({
-        title: "Error en análisis IA",
+        title: "Error en análisis inteligente",
         description: "Sistema funcionando en modo básico.",
         variant: "default"
       });
@@ -159,7 +159,7 @@ export const useAIAnalysis = () => {
 
       if (result.success) {
         toast({
-          title: "Análisis IA completado",
+          title: "Análisis Inteligente completado",
           description: "Se han generado insights y recomendaciones inteligentes"
         });
         return result.analysis;
@@ -169,7 +169,7 @@ export const useAIAnalysis = () => {
     } catch (error) {
       console.error('Comprehensive report error:', error);
       toast({
-        title: "Error en reporte IA",
+        title: "Error en reporte inteligente",
         description: "No se pudo generar el análisis completo",
         variant: "destructive"
       });

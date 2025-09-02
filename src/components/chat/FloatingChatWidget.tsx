@@ -177,7 +177,7 @@ const FloatingChatWidget: React.FC = () => {
                     <Brain className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-sm">Asistente IA RRHH</CardTitle>
+                    <CardTitle className="text-sm">Asistente Inteligente RRHH</CardTitle>
                     <p className="text-xs text-muted-foreground">
                       Especialista en bienestar organizacional
                     </p>

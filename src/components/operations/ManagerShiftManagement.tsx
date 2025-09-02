@@ -327,7 +327,7 @@ const ManagerShiftManagement = () => {
                     <div className="p-3 bg-info/10 border border-info/20 rounded-lg">
                       <div className="flex items-center space-x-2 mb-1">
                         <Brain className="h-4 w-4 text-info" />
-                        <span className="text-sm font-medium text-info">Recomendación IA:</span>
+                        <span className="text-sm font-medium text-info">Recomendación Inteligente:</span>
                       </div>
                       <p className="text-sm">{employee.recommendedAction}</p>
                     </div>

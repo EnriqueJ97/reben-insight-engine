@@ -283,7 +283,7 @@ const LongTermTrends = ({ reportData, period, scope }: LongTermTrendsProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              Predicciones IA - Próximos 6 Meses
+              Predicciones Inteligentes - Próximos 6 Meses
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Proyecciones basadas en modelos de tendencias históricas

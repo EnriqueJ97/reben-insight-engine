@@ -78,7 +78,7 @@ export const AIInsightsPanel = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Brain className="h-5 w-5 text-primary" />
-            <span>Análisis IA de Bienestar</span>
+            <span>Análisis Inteligente de Bienestar</span>
             {aiLoading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />}
           </CardTitle>
           <CardDescription>
@@ -148,14 +148,14 @@ export const AIInsightsPanel = () => {
             <div className="text-center py-8">
               <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
-                Haz clic para generar análisis con IA
+                Haz clic para generar análisis inteligente
               </p>
               <Button 
                 onClick={generateAIInsights} 
                 disabled={aiLoading}
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                Generar Análisis IA
+                Generar Análisis Inteligente
               </Button>
             </div>
           )}
@@ -171,7 +171,7 @@ export const AIInsightsPanel = () => {
               <span>Recomendaciones para tu Equipo</span>
             </CardTitle>
             <CardDescription>
-              Sugerencias específicas generadas por IA
+              Sugerencias específicas generadas automáticamente
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -205,7 +205,7 @@ export const AIInsightsPanel = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <TrendingUp className="h-5 w-5" />
-            <span>Rendimiento IA</span>
+            <span>Rendimiento Inteligente</span>
           </CardTitle>
         </CardHeader>
         <CardContent>

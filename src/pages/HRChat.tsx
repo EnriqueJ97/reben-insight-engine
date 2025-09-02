@@ -153,7 +153,7 @@ const HRChat = () => {
         <div>
           <h1 className="text-3xl font-bold flex items-center space-x-2">
             <Brain className="h-8 w-8 text-primary" />
-            <span>Asistente IA para RRHH</span>
+            <span>Asistente Inteligente para RRHH</span>
           </h1>
           <p className="text-muted-foreground mt-1">
             Consultor especializado en bienestar organizacional y gestión de talento

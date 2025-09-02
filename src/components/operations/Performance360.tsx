@@ -495,7 +495,7 @@ const Performance360 = ({ showMetrics = true }) => {
 
             <Card className="p-6">
               <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-lg">Recomendaciones IA</CardTitle>
+                <CardTitle className="text-lg">Recomendaciones Inteligentes</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="space-y-3">

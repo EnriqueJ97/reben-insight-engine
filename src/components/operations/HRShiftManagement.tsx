@@ -221,7 +221,7 @@ const HRShiftManagement = () => {
               <Brain className="h-5 w-5 text-success" />
               <div>
                 <p className="text-2xl font-bold text-success">{globalMetrics.aiEfficiency}%</p>
-                <p className="text-xs text-muted-foreground">IA Global</p>
+                <p className="text-xs text-muted-foreground">Sistema Inteligente</p>
               </div>
             </div>
           </CardContent>
@@ -240,7 +240,7 @@ const HRShiftManagement = () => {
           </TabsTrigger>
           <TabsTrigger value="configuration" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
-            Configuración IA
+            Configuración Inteligente
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
@@ -440,9 +440,9 @@ const HRShiftManagement = () => {
 
         <TabsContent value="configuration" className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Configuración de IA Global</h3>
+            <h3 className="text-lg font-semibold mb-2">Configuración del Sistema Inteligente</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Ajusta los parámetros de la inteligencia artificial para toda la organización
+              Ajusta los parámetros del sistema inteligente para toda la organización
             </p>
           </div>
 
@@ -546,7 +546,7 @@ const HRShiftManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Rendimiento Global IA</CardTitle>
+                <CardTitle>Rendimiento Global Inteligente</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -600,7 +600,7 @@ const HRShiftManagement = () => {
                   <span className="font-bold text-info">8</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Satisfacción IA</span>
+                  <span>Satisfacción del Sistema</span>
                   <span className="font-bold text-primary">94%</span>
                 </div>
               </CardContent>

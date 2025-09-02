@@ -260,7 +260,7 @@ const AppLayout = () => {
       {/* Onboarding para empleados */}
       <EmployeeOnboarding />
 
-      {/* Widget flotante de Chat IA */}
+      {/* Widget flotante de Chat Inteligente */}
       <FloatingChatWidget />
     </div>
   );

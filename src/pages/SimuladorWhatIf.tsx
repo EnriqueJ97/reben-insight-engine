@@ -587,7 +587,7 @@ const SimuladorWhatIf = () => {
                 <TabsTrigger value="templates">Plantillas</TabsTrigger>
                 <TabsTrigger value="custom">Personalizadas</TabsTrigger>
                 <TabsTrigger value="results">Resultados</TabsTrigger>
-                <TabsTrigger value="ai-assistant">🤖 Asistente IA</TabsTrigger>
+                <TabsTrigger value="ai-assistant">🤖 Asistente Inteligente</TabsTrigger>
               </TabsList>
 
               <TabsContent value="ai-assistant" className="mt-6">

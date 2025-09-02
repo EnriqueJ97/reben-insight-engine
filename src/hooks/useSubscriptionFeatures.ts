@@ -210,7 +210,7 @@ export function useSubscriptionFeatures() {
     const limitations: string[] = [];
 
     if (!hasFeature('ai_chat.enabled')) {
-      limitations.push('Chat IA no disponible');
+      limitations.push('Chat Inteligente no disponible');
     }
     if (!hasFeature('dashboard.executive')) {
       limitations.push('Dashboard ejecutivo no disponible');

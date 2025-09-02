@@ -183,7 +183,7 @@ const TeamAnalytics = () => {
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="performance">Rendimiento</TabsTrigger>
           <TabsTrigger value="wellbeing">Bienestar</TabsTrigger>
-          <TabsTrigger value="insights">Insights IA</TabsTrigger>
+          <TabsTrigger value="insights">Insights Inteligentes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">

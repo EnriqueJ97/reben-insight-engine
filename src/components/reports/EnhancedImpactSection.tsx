@@ -295,7 +295,7 @@ export const EnhancedImpactSection = ({ impactData, period }: EnhancedImpactSect
             </Card>
           </div>
 
-          {/* AI Recommendations Section - New Professional Component */}
+          {/* Intelligent Recommendations Section - New Professional Component */}
           <ROIRecommendationsCard
             metrics={metrics}
             impactData={impactData}

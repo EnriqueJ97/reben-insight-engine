@@ -99,7 +99,7 @@ const AIAssistant: React.FC<AIAnalysisProps> = ({ onRecommendationGenerated }) =
       if (error) throw error;
 
       if (data.success && data.recommendation_id) {
-        toast.success('🤖 Análisis IA completado');
+        toast.success('🤖 Análisis Inteligente completado');
         loadRecommendations();
         if (onRecommendationGenerated) {
           // Find the new recommendation
@@ -121,7 +121,7 @@ const AIAssistant: React.FC<AIAnalysisProps> = ({ onRecommendationGenerated }) =
       }
     } catch (error) {
       console.error('Error generating analysis:', error);
-      toast.error('Error generando análisis IA');
+      toast.error('Error generando análisis inteligente');
     } finally {
       setAnalyzing(false);
       setShowAnalysisModal(false);
@@ -202,7 +202,7 @@ const AIAssistant: React.FC<AIAnalysisProps> = ({ onRecommendationGenerated }) =
               </div>
               <div>
                 <CardTitle className="text-xl text-purple-900">
-                  Asistente IA de Políticas
+                  Asistente Inteligente de Políticas
                 </CardTitle>
                 <p className="text-purple-700">
                   Análisis inteligente basado en datos de rotación y satisfacción
@@ -219,7 +219,7 @@ const AIAssistant: React.FC<AIAnalysisProps> = ({ onRecommendationGenerated }) =
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Tipo de Análisis IA</DialogTitle>
+                  <DialogTitle>Tipo de Análisis Inteligente</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-3">
                   <Button 
@@ -274,7 +274,7 @@ const AIAssistant: React.FC<AIAnalysisProps> = ({ onRecommendationGenerated }) =
                 {analyzing && (
                   <div className="flex items-center gap-2 mt-4">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                    <span className="text-sm">Generando análisis IA...</span>
+                    <span className="text-sm">Generando análisis inteligente...</span>
                   </div>
                 )}
               </DialogContent>
@@ -384,7 +384,7 @@ const AIAssistant: React.FC<AIAnalysisProps> = ({ onRecommendationGenerated }) =
             <Brain className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No hay recomendaciones activas</h3>
             <p className="text-muted-foreground mb-6">
-              El asistente IA está listo para analizar tus datos y generar recomendaciones personalizadas.
+              El asistente inteligente está listo para analizar tus datos y generar recomendaciones personalizadas.
             </p>
             <Button onClick={() => setShowAnalysisModal(true)} className="bg-purple-600 hover:bg-purple-700">
               <Play className="w-4 h-4 mr-2" />

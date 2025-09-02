@@ -124,7 +124,7 @@ const CheckIn = () => {
         description: responses.message,
       });
 
-      // Trigger AI recommendations (non-blocking)
+      // Trigger intelligent recommendations (non-blocking)
       try {
         setAiLoading(true);
         const analysis = await generateComprehensiveReport({
