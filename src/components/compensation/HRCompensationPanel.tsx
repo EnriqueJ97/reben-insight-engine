@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Settings, 
   BarChart3, 
@@ -31,6 +33,8 @@ import {
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const HRCompensationPanel = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [maxFlexPercentage, setMaxFlexPercentage] = useState([30]);
   const [selectionWindow, setSelectionWindow] = useState({ start: 1, end: 10 });
   const [isAddBenefitOpen, setIsAddBenefitOpen] = useState(false);
@@ -118,6 +122,19 @@ const HRCompensationPanel = () => {
     ));
   };
 
+  const handleSimulateROI = () => {
+    // Redirigir a la calculadora ROI
+    navigate('/dashboard/operations/simulador');
+  };
+
+  const handleSaveConfiguration = () => {
+    // Simular guardado de configuración
+    toast({
+      title: "Configuración guardada",
+      description: "Los cambios en el plan de retribución flexible han sido guardados correctamente.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -125,16 +142,10 @@ const HRCompensationPanel = () => {
           <h1 className="text-3xl font-bold">Compensación y Beneficios</h1>
           <p className="text-muted-foreground">Configura y analiza el plan de retribución flexible</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Simular en ROI
-          </Button>
-          <Button>
-            <Settings className="w-4 h-4 mr-2" />
-            Guardar Configuración
-          </Button>
-        </div>
+        <Button variant="outline" onClick={handleSimulateROI}>
+          <TrendingUp className="w-4 h-4 mr-2" />
+          Simular en ROI
+        </Button>
       </div>
 
       <Tabs defaultValue="configuration" className="space-y-6">
@@ -208,6 +219,13 @@ const HRCompensationPanel = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+              
+              <div className="flex justify-end pt-4 border-t">
+                <Button onClick={handleSaveConfiguration}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Guardar Configuración
+                </Button>
               </div>
             </CardContent>
           </Card>
