@@ -268,7 +268,7 @@ const ManagerReports = () => {
                   </h4>
                   <ul className="space-y-1">
                     {teamInsights.strengths.map((strength, index) => (
-                      <li key={index} className="text-sm text-foreground">
+                      <li key={index} className="text-sm text-muted-foreground">
                         • {strength}
                       </li>
                     ))}
