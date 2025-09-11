@@ -36,6 +36,8 @@ export const useAdvancedWellnessAnalysis = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [wellness, setWellness] = useState<AdvancedWellnessMetrics | null>(null);
+  const [burnout, setBurnout] = useState<BurnoutRiskML | null>(null);
 
   const calculateMultifactorialWellness = async (userId: string, teamId?: string, period: number = 30): Promise<AdvancedWellnessMetrics | null> => {
     if (!user) return null;
@@ -460,9 +462,23 @@ export const useAdvancedWellnessAnalysis = () => {
     return contributors.length > 0 ? contributors : ['Perfil de riesgo dentro de rangos normales'];
   };
 
+  const calculateAndSetWellness = async (userId: string, teamId?: string, period: number = 30) => {
+    const result = await calculateMultifactorialWellness(userId, teamId, period);
+    setWellness(result);
+    return result;
+  };
+
+  const calculateAndSetBurnout = async (userId: string, period: number = 30) => {
+    const result = await calculateBurnoutRiskML(userId, period);
+    setBurnout(result);
+    return result;
+  };
+
   return {
     loading,
-    calculateMultifactorialWellness,
-    calculateBurnoutRiskML
+    wellness,
+    burnout,
+    calculateMultifactorialWellness: calculateAndSetWellness,
+    calculateBurnoutRiskML: calculateAndSetBurnout
   };
 };

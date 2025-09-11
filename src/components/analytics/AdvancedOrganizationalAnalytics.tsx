@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Building, Shield, TrendingUp, Users, BarChart3, 
   Zap, GitCompare, Scale, Clock, MessageSquare,
-  Download, RefreshCw, AlertTriangle
+  Download, RefreshCw, AlertTriangle, Activity
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CorrelationAnalysis from './CorrelationAnalysis';
@@ -18,6 +18,10 @@ import DiversityEquityAnalysis from './DiversityEquityAnalysis';
 import LongTermTrends from './LongTermTrends';
 import PrivacyComplianceAnalysis from './PrivacyComplianceAnalysis';
 import QualitativeAnalysis from './QualitativeAnalysis';
+import MultifactorialWellnessPanel from './MultifactorialWellnessPanel';
+import AnomalyDetectionPanel from './AnomalyDetectionPanel';
+import DynamicBenchmarkPanel from './DynamicBenchmarkPanel';
+import AttritionPredictionPanel from './AttritionPredictionPanel';
 
 const AdvancedOrganizationalAnalytics = () => {
   const { user } = useAuth();
@@ -180,7 +184,7 @@ const AdvancedOrganizationalAnalytics = () => {
 
       {/* Advanced Analytics Tabs */}
       <Tabs defaultValue="correlations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="correlations" className="flex items-center gap-2">
             <Zap className="w-4 h-4" />
             Correlaciones
@@ -204,6 +208,22 @@ const AdvancedOrganizationalAnalytics = () => {
           <TabsTrigger value="qualitative" className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4" />
             Cualitativo
+          </TabsTrigger>
+          <TabsTrigger value="advanced-wellness" className="flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            Wellness Avanzado
+          </TabsTrigger>
+          <TabsTrigger value="anomaly-detection" className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            Anomalías
+          </TabsTrigger>
+          <TabsTrigger value="dynamic-benchmark" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmarks
+          </TabsTrigger>
+          <TabsTrigger value="attrition-prediction" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Predicción Rotación
           </TabsTrigger>
         </TabsList>
 
@@ -247,13 +267,36 @@ const AdvancedOrganizationalAnalytics = () => {
           />
         </TabsContent>
 
-        <TabsContent value="qualitative" className="space-y-6">
-          <QualitativeAnalysis 
-            reportData={reportData} 
-            period={selectedPeriod}
-            scope={selectedScope}
-          />
-        </TabsContent>
+        <>
+          {/* New Analytics Tabs */}
+          <TabsContent value="advanced-wellness" className="space-y-6">
+            <MultifactorialWellnessPanel 
+              period={selectedPeriod}
+              scope={selectedScope}
+            />
+          </TabsContent>
+
+          <TabsContent value="anomaly-detection" className="space-y-6">
+            <AnomalyDetectionPanel 
+              period={selectedPeriod}
+              scope={selectedScope}
+            />
+          </TabsContent>
+
+          <TabsContent value="dynamic-benchmark" className="space-y-6">
+            <DynamicBenchmarkPanel 
+              period={selectedPeriod}
+              scope={selectedScope}
+            />
+          </TabsContent>
+
+          <TabsContent value="attrition-prediction" className="space-y-6">
+            <AttritionPredictionPanel 
+              period={selectedPeriod}
+              scope={selectedScope}
+            />
+          </TabsContent>
+        </>
       </Tabs>
     </div>
   );
