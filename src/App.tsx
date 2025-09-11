@@ -38,6 +38,7 @@ import TareasCompliance from '@/pages/sustainability/TareasCompliance';
 import ReportesCSRD from '@/pages/sustainability/ReportesCSRD';
 import SimuladorWhatIf from '@/pages/SimuladorWhatIf';
 import AdvancedOrganizationalAnalytics from '@/components/analytics/AdvancedOrganizationalAnalytics';
+import REBENExplained from '@/pages/REBENExplained';
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['MANAGER']}>
               <Team />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="reben-explained"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'MANAGER', 'EMPLOYEE', 'SUPER_ADMIN']}>
+              <REBENExplained />
             </RoleProtectedRoute>
           }
         />

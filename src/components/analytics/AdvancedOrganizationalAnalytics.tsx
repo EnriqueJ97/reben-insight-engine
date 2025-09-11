@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { useTeamReports } from '@/hooks/useTeamReports';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Building, Shield, TrendingUp, Users, BarChart3, 
   Zap, GitCompare, Scale, Clock, MessageSquare,
-  Download, RefreshCw, AlertTriangle, Activity
+  Download, RefreshCw, AlertTriangle, Activity, BookOpen
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CorrelationAnalysis from './CorrelationAnalysis';
@@ -108,6 +109,17 @@ const AdvancedOrganizationalAnalytics = () => {
             <Download className="w-4 h-4 mr-2" />
             Exportar
           </Button>
+
+          <Link to="/dashboard/reben-explained">
+            <Button 
+              variant="default"
+              size="sm"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Cómo Funciona REBEN
+            </Button>
+          </Link>
         </div>
       </div>
 
