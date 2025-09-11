@@ -38,6 +38,7 @@ import TareasCompliance from '@/pages/sustainability/TareasCompliance';
 import ReportesCSRD from '@/pages/sustainability/ReportesCSRD';
 import SimuladorWhatIf from '@/pages/SimuladorWhatIf';
 import AdvancedOrganizationalAnalytics from '@/components/analytics/AdvancedOrganizationalAnalytics';
+import MetricsExplanation from '@/pages/MetricsExplanation';
 
 const queryClient = new QueryClient();
 
@@ -188,6 +189,14 @@ const AppRoutes = () => {
           element={
             <RoleProtectedRoute allowedRoles={['HR_ADMIN']}>
               <AdvancedOrganizationalAnalytics />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="operations/metrics-explanation"
+          element={
+            <RoleProtectedRoute allowedRoles={['HR_ADMIN', 'MANAGER']}>
+              <MetricsExplanation />
             </RoleProtectedRoute>
           }
         />
