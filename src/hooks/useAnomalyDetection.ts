@@ -465,10 +465,23 @@ export const useAnomalyDetection = () => {
     }
   };
 
+  const detectAnomaliesSimple = async (periodDays: number = 30) => {
+    const config: AnomalyDetectionConfig = {
+      sudden_drop_threshold: 0.15,
+      sudden_drop_days: 7,
+      consistent_decline_slope: -0.5,
+      consistent_decline_duration: 21,
+      volatility_threshold: 2.0,
+      team_deviation_zscore: 1.5,
+      min_data_points: 5
+    };
+    return await detectAnomalies(config);
+  };
+
   return {
     loading,
     anomalies,
-    detectAnomalies,
+    detectAnomalies: detectAnomaliesSimple,
     defaultConfig
   };
 };
