@@ -136,11 +136,7 @@ export const useAdvancedWellnessAnalysis = () => {
 
     } catch (error) {
       console.error('Advanced wellness calculation error:', error);
-      toast({
-        title: "Error en análisis avanzado",
-        description: "No se pudo calcular el índice multifactorial",
-        variant: "destructive"
-      });
+      setWellness(null);
       return null;
     } finally {
       setLoading(false);
@@ -257,6 +253,7 @@ export const useAdvancedWellnessAnalysis = () => {
 
     } catch (error) {
       console.error('ML Burnout prediction error:', error);
+      setBurnout(null);
       return null;
     } finally {
       setLoading(false);

@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAdvancedWellnessAnalysis } from '@/hooks/useAdvancedWellnessAnalysis';
 import { useAuth } from '@/contexts/AuthContext';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Brain, Heart, Zap, Users, Shield, TrendingUp } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Brain, Heart, Zap, Users, Shield, TrendingUp, AlertCircle } from 'lucide-react';
 
 interface MultifactorialWellnessPanelProps {
   period?: string;
@@ -15,20 +17,51 @@ interface MultifactorialWellnessPanelProps {
 const MultifactorialWellnessPanel = ({ period = '30', scope = 'all' }: MultifactorialWellnessPanelProps) => {
   const { user } = useAuth();
   const { loading, wellness, burnout, calculateMultifactorialWellness, calculateBurnoutRiskML } = useAdvancedWellnessAnalysis();
+  const { handleAsyncError } = useErrorHandler();
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
-      const periodDays = parseInt(period.replace('d', ''));
-      calculateMultifactorialWellness(user.id, undefined, periodDays);
-      calculateBurnoutRiskML(user.id, periodDays);
-    }
-  }, [user?.id, period, calculateMultifactorialWellness, calculateBurnoutRiskML]);
+    const loadData = async () => {
+      if (user?.id) {
+        setHasError(false);
+        const periodDays = parseInt(period.replace('d', ''));
+        
+        const wellnessResult = await handleAsyncError(
+          () => calculateMultifactorialWellness(user.id, undefined, periodDays),
+          { showToast: false }
+        );
+        
+        const burnoutResult = await handleAsyncError(
+          () => calculateBurnoutRiskML(user.id, periodDays),
+          { showToast: false }
+        );
+
+        if (!wellnessResult && !burnoutResult) {
+          setHasError(true);
+        }
+      }
+    };
+
+    loadData();
+  }, [user?.id, period, calculateMultifactorialWellness, calculateBurnoutRiskML, handleAsyncError]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
       </div>
+    );
+  }
+
+  if (hasError || (!loading && !wellness && !burnout)) {
+    return (
+      <Alert className="mx-auto max-w-lg">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          No hay datos de bienestar disponibles en este momento. 
+          Asegúrate de que los empleados hayan completado algunos check-ins recientes.
+        </AlertDescription>
+      </Alert>
     );
   }
 
