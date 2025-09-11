@@ -130,7 +130,7 @@ const REBENExplained = () => {
                 <div>
                   <h4 className="font-medium">Score Multifactorial</h4>
                   <p className="text-sm text-muted-foreground">
-                    35% ánimo + 25% compromiso + 20% carga + 15% relaciones + 5% autonomía
+                    Algoritmo propietario basado en 5 dimensiones con pesos optimizados por contexto
                   </p>
                 </div>
               </div>
@@ -139,7 +139,7 @@ const REBENExplained = () => {
                 <div>
                   <h4 className="font-medium">Ajustes Temporales</h4>
                   <p className="text-sm text-muted-foreground">
-                    Suavizado exponencial (14d), factor consistencia, intervalos confianza
+                    Modelos adaptativos con memoria temporal y corrección por volatilidad
                   </p>
                 </div>
               </div>
@@ -291,7 +291,7 @@ const REBENExplained = () => {
               <ArrowRight className="w-4 h-4 text-muted-foreground ml-2" />
               <div className="flex items-center gap-2">
                 <Badge variant="outline">Procesamiento</Badge>
-                <span className="text-sm">EIE Core: Score = 0.35×30 + 0.25×40 + 0.20×20 + 0.15×40 + 0.05×30 = 31.5</span>
+                <span className="text-sm">EIE Core: Algoritmo propietario → Score = 31.5 (riesgo detectado)</span>
               </div>
               <ArrowRight className="w-4 h-4 text-muted-foreground ml-2" />
               <div className="flex items-center gap-2">
