@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamReports } from '@/hooks/useTeamReports';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Building, Shield, TrendingUp, Users, BarChart3, 
   Zap, GitCompare, Scale, Clock, MessageSquare,
-  Download, RefreshCw, AlertTriangle, Activity, BookOpen
+  Download, RefreshCw, AlertTriangle, Activity
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CorrelationAnalysis from './CorrelationAnalysis';
@@ -109,17 +108,6 @@ const AdvancedOrganizationalAnalytics = () => {
             <Download className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-
-          <Link to="/dashboard/operations/metrics-explanation">
-            <Button 
-              variant="default"
-              size="sm"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Cómo Funcionan las Métricas
-            </Button>
-          </Link>
         </div>
       </div>
 
