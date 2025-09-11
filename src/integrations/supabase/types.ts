@@ -155,6 +155,90 @@ export type Database = {
           },
         ]
       }
+      analytics_cache: {
+        Row: {
+          ci_high: number | null
+          ci_low: number | null
+          context: Json | null
+          created_at: string
+          drivers: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          metric_key: string
+          n_effective: number | null
+          tenant_id: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          ci_high?: number | null
+          ci_low?: number | null
+          context?: Json | null
+          created_at?: string
+          drivers?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          metric_key: string
+          n_effective?: number | null
+          tenant_id: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          ci_high?: number | null
+          ci_low?: number | null
+          context?: Json | null
+          created_at?: string
+          drivers?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metric_key?: string
+          n_effective?: number | null
+          tenant_id?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      analytics_qos: {
+        Row: {
+          created_at: string
+          date_collected: string
+          days_advance_median: number | null
+          ece_score: number | null
+          id: string
+          kpis_csrd_covered_pct: number | null
+          precision_c_index: number | null
+          recommendations_applied_pct: number | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_collected?: string
+          days_advance_median?: number | null
+          ece_score?: number | null
+          id?: string
+          kpis_csrd_covered_pct?: number | null
+          precision_c_index?: number | null
+          recommendations_applied_pct?: number | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          date_collected?: string
+          days_advance_median?: number | null
+          ece_score?: number | null
+          id?: string
+          kpis_csrd_covered_pct?: number | null
+          precision_c_index?: number | null
+          recommendations_applied_pct?: number | null
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       anonymous_feedback: {
         Row: {
           category: string
@@ -339,6 +423,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      benchmarks_ref: {
+        Row: {
+          created_at: string
+          ecdf_data: Json
+          id: string
+          industry: string
+          metric_key: string
+          region: string
+          sample_n: number
+          size_bucket: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ecdf_data: Json
+          id?: string
+          industry: string
+          metric_key: string
+          region?: string
+          sample_n: number
+          size_bucket: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ecdf_data?: Json
+          id?: string
+          industry?: string
+          metric_key?: string
+          region?: string
+          sample_n?: number
+          size_bucket?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       billing_invoices: {
         Row: {
@@ -2480,6 +2603,7 @@ export type Database = {
           created_at: string
           description: string | null
           domain: string | null
+          eie_v2_enabled: boolean | null
           id: string
           industry: string | null
           max_users: number | null
@@ -2501,6 +2625,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           domain?: string | null
+          eie_v2_enabled?: boolean | null
           id?: string
           industry?: string | null
           max_users?: number | null
@@ -2522,6 +2647,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           domain?: string | null
+          eie_v2_enabled?: boolean | null
           id?: string
           industry?: string | null
           max_users?: number | null
