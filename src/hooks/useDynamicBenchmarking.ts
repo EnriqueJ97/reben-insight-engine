@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -267,10 +267,10 @@ export const useDynamicBenchmarking = () => {
     }
   };
 
-  const refreshBenchmarks = async () => {
+  const refreshBenchmarks = useCallback(async () => {
     const data = await fetchBenchmarkData();
     setBenchmarkData(data);
-  };
+  }, []);
 
   useEffect(() => {
     if (user?.tenant_id) {

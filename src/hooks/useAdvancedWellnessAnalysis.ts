@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +39,7 @@ export const useAdvancedWellnessAnalysis = () => {
   const [wellness, setWellness] = useState<AdvancedWellnessMetrics | null>(null);
   const [burnout, setBurnout] = useState<BurnoutRiskML | null>(null);
 
-  const calculateMultifactorialWellness = async (userId: string, teamId?: string, period: number = 30): Promise<AdvancedWellnessMetrics | null> => {
+  const calculateMultifactorialWellness = useCallback(async (userId: string, teamId?: string, period: number = 30): Promise<AdvancedWellnessMetrics | null> => {
     if (!user) return null;
 
     setLoading(true);
@@ -141,9 +141,9 @@ export const useAdvancedWellnessAnalysis = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const calculateBurnoutRiskML = async (userId: string, period: number = 30): Promise<BurnoutRiskML | null> => {
+  const calculateBurnoutRiskML = useCallback(async (userId: string, period: number = 30): Promise<BurnoutRiskML | null> => {
     if (!user) return null;
 
     setLoading(true);
@@ -258,7 +258,7 @@ export const useAdvancedWellnessAnalysis = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   // Funciones auxiliares
   const getComponentFromQuestionId = (questionId: string): 'mood' | 'engagement' | 'workload' | 'relationships' | 'autonomy' | null => {
@@ -459,17 +459,17 @@ export const useAdvancedWellnessAnalysis = () => {
     return contributors.length > 0 ? contributors : ['Perfil de riesgo dentro de rangos normales'];
   };
 
-  const calculateAndSetWellness = async (userId: string, teamId?: string, period: number = 30) => {
+  const calculateAndSetWellness = useCallback(async (userId: string, teamId?: string, period: number = 30) => {
     const result = await calculateMultifactorialWellness(userId, teamId, period);
     setWellness(result);
     return result;
-  };
+  }, [calculateMultifactorialWellness]);
 
-  const calculateAndSetBurnout = async (userId: string, period: number = 30) => {
+  const calculateAndSetBurnout = useCallback(async (userId: string, period: number = 30) => {
     const result = await calculateBurnoutRiskML(userId, period);
     setBurnout(result);
     return result;
-  };
+  }, [calculateBurnoutRiskML]);
 
   return {
     loading,
