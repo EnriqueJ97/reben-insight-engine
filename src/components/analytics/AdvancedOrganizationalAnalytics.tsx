@@ -184,46 +184,46 @@ const AdvancedOrganizationalAnalytics = () => {
 
       {/* Advanced Analytics Tabs */}
       <Tabs defaultValue="correlations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10">
-          <TabsTrigger value="correlations" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            Correlaciones
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-10 gap-1">
+          <TabsTrigger value="correlations" className="flex items-center gap-1 text-xs">
+            <Zap className="w-3 h-3" />
+            <span className="hidden sm:inline">Correlaciones</span>
           </TabsTrigger>
-          <TabsTrigger value="comparison" className="flex items-center gap-2">
-            <GitCompare className="w-4 h-4" />
-            Comparativas
+          <TabsTrigger value="comparison" className="flex items-center gap-1 text-xs">
+            <GitCompare className="w-3 h-3" />
+            <span className="hidden sm:inline">Comparativas</span>
           </TabsTrigger>
-          <TabsTrigger value="diversity" className="flex items-center gap-2">
-            <Scale className="w-4 h-4" />
-            Diversidad
+          <TabsTrigger value="diversity" className="flex items-center gap-1 text-xs">
+            <Scale className="w-3 h-3" />
+            <span className="hidden sm:inline">Diversidad</span>
           </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Tendencias
+          <TabsTrigger value="trends" className="flex items-center gap-1 text-xs">
+            <Clock className="w-3 h-3" />
+            <span className="hidden sm:inline">Tendencias</span>
           </TabsTrigger>
-          <TabsTrigger value="compliance" className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            Privacidad
+          <TabsTrigger value="compliance" className="flex items-center gap-1 text-xs">
+            <Shield className="w-3 h-3" />
+            <span className="hidden sm:inline">Privacidad</span>
           </TabsTrigger>
-          <TabsTrigger value="qualitative" className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            Cualitativo
+          <TabsTrigger value="qualitative" className="flex items-center gap-1 text-xs">
+            <MessageSquare className="w-3 h-3" />
+            <span className="hidden sm:inline">Cualitativo</span>
           </TabsTrigger>
-          <TabsTrigger value="advanced-wellness" className="flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Wellness Avanzado
+          <TabsTrigger value="advanced-wellness" className="flex items-center gap-1 text-xs">
+            <Activity className="w-3 h-3" />
+            <span className="hidden md:inline">Wellness</span>
           </TabsTrigger>
-          <TabsTrigger value="anomaly-detection" className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
-            Anomalías
+          <TabsTrigger value="anomaly-detection" className="flex items-center gap-1 text-xs">
+            <AlertTriangle className="w-3 h-3" />
+            <span className="hidden md:inline">Anomalías</span>
           </TabsTrigger>
-          <TabsTrigger value="dynamic-benchmark" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Benchmarks
+          <TabsTrigger value="dynamic-benchmark" className="flex items-center gap-1 text-xs">
+            <BarChart3 className="w-3 h-3" />
+            <span className="hidden lg:inline">Benchmarks</span>
           </TabsTrigger>
-          <TabsTrigger value="attrition-prediction" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Predicción Rotación
+          <TabsTrigger value="attrition-prediction" className="flex items-center gap-1 text-xs">
+            <Users className="w-3 h-3" />
+            <span className="hidden lg:inline">Rotación</span>
           </TabsTrigger>
         </TabsList>
 
