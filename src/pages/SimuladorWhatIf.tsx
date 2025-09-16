@@ -5,9 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calculator, TrendingUp, TrendingDown, Euro, Users, RotateCcw, Sparkles, Target, Shield, Lightbulb } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Euro, Users, RotateCcw, Sparkles, Target, Shield, Lightbulb, Activity, FileBarChart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useROITracking } from '@/hooks/useROITracking';
+import { InteractiveROI } from '@/components/reports/InteractiveROI';
 
 interface InputParams {
   teamSize: number;
@@ -269,6 +272,8 @@ const POLICY_CATEGORIES: PolicyCategory[] = [
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'];
 
 const CalculadoraROI = () => {
+  const { roiSummary, roiEvents, loading: roiLoading, generateCSRDReport } = useROITracking();
+  
   const [inputs, setInputs] = useState<InputParams>({
     teamSize: 50,
     currentTurnoverRate: 15,
@@ -485,7 +490,15 @@ const CalculadoraROI = () => {
       </div>
 
       <div className="container mx-auto px-6 -mt-6 pb-12">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <Tabs defaultValue="simulator" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="simulator">Simulador de Políticas</TabsTrigger>
+            <TabsTrigger value="tracking">ROI Tracking Real</TabsTrigger>
+            <TabsTrigger value="reports">Reportes CSRD</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="simulator">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           
           {/* Section 1: Parámetros */}
           <div className="space-y-6">
@@ -748,7 +761,169 @@ const CalculadoraROI = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tracking">
+            <div className="space-y-6">
+              {/* ROI Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">ROI Mensual</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {roiSummary?.roi_percentage || 0}%
+                        </p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-primary" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Ahorro Anual</p>
+                        <p className="text-2xl font-bold text-success">
+                          €{roiSummary?.annual_projection?.toLocaleString() || 0}
+                        </p>
+                      </div>
+                      <Euro className="h-8 w-8 text-success" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Eventos ROI</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {roiSummary?.events_count || 0}
+                        </p>
+                      </div>
+                      <Activity className="h-8 w-8 text-blue-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Inversión</p>
+                        <p className="text-2xl font-bold text-amber-600">
+                          €{roiSummary?.investment_cost?.toLocaleString() || 0}
+                        </p>
+                      </div>
+                      <Target className="h-8 w-8 text-amber-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* ROI Events Log */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Activity className="h-5 w-5" />
+                    <span>Eventos de ROI Registrados</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {roiEvents.map((event) => (
+                      <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Badge variant="outline" className="text-xs">
+                              {event.type === 'ROTACION_EVITADA' ? 'Retención' : 
+                               event.type === 'ABSENTISMO_EVITADO' ? 'Absentismo' : 'Productividad'}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(event.calculated_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm">{event.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-success">
+                            €{event.estimated_savings.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {roiEvents.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        No hay eventos de ROI registrados aún
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Interactive ROI Calculator */}
+              <InteractiveROI reportData={{
+                wellness_score: 75,
+                team_breakdown: [{ unique_employees: inputs.teamSize }]
+              }} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileBarChart className="h-5 w-5" />
+                    <span>Reportes de Compliance</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Reporte CSRD Automático</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Genera un reporte completo de sostenibilidad según los estándares CSRD/ESRS
+                      con los datos de ROI capturados automáticamente.
+                    </p>
+                    <Button 
+                      onClick={generateCSRDReport}
+                      disabled={roiLoading}
+                      className="w-full sm:w-auto"
+                    >
+                      <FileBarChart className="h-4 w-4 mr-2" />
+                      {roiLoading ? 'Generando...' : 'Generar Reporte CSRD'}
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 border rounded-lg text-center">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {roiSummary?.events_count || 0}
+                      </div>
+                      <p className="text-sm text-muted-foreground">Indicadores ESRS-S1</p>
+                    </div>
+                    <div className="p-4 border rounded-lg text-center">
+                      <div className="text-2xl font-bold text-green-600 mb-1">
+                        €{Math.round((roiSummary?.annual_projection || 0) / 1000)}K
+                      </div>
+                      <p className="text-sm text-muted-foreground">Impacto Económico</p>
+                    </div>
+                    <div className="p-4 border rounded-lg text-center">
+                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                        {roiSummary?.roi_percentage || 0}%
+                      </div>
+                      <p className="text-sm text-muted-foreground">ROI Medido</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

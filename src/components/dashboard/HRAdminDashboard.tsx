@@ -104,13 +104,13 @@ const HRAdminDashboard = () => {
         changePercent: riskLevel <= 5 ? '-8.2%' : '+12.5%'
       },
       { 
-        title: 'ROI Bienestar', 
-        value: 185, 
+        title: 'Equipos Activos', 
+        value: activeTeams, 
         trend: 'up',
         status: 'good',
-        description: 'K€ ahorrados en retención',
-        icon: TrendingUp,
-        changePercent: '+23.4%'
+        description: 'Equipos colaborando',
+        icon: Building,
+        changePercent: '+8.1%'
       }
     ]);
   };
@@ -275,8 +275,8 @@ const HRAdminDashboard = () => {
             <div className="text-sm text-muted-foreground">Retención Global</div>
           </div>
           <div className="bg-white/50 dark:bg-black/20 p-4 rounded-lg border border-white/20">
-            <div className="text-2xl font-bold text-purple-600">+185K€</div>
-            <div className="text-sm text-muted-foreground">ROI Bienestar</div>
+            <div className="text-2xl font-bold text-purple-600">78%</div>
+            <div className="text-sm text-muted-foreground">Bienestar Global</div>
           </div>
           <div className="bg-white/50 dark:bg-black/20 p-4 rounded-lg border border-white/20">
             <div className="text-2xl font-bold text-amber-600">12</div>
@@ -289,8 +289,8 @@ const HRAdminDashboard = () => {
       <WellnessMetrics metrics={metrics} />
 
       <Tabs defaultValue="reben" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="reben">REBEN ROI</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="reben">Risk Score</TabsTrigger>
           <TabsTrigger value="overview">Vista General</TabsTrigger>
           <TabsTrigger value="teams">Comparativa Equipos</TabsTrigger>
           <TabsTrigger value="trends">Tendencias Globales</TabsTrigger>
