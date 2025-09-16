@@ -20,11 +20,11 @@ export default function Settings() {
   // Extract the active tab from URL path
   const getActiveTabFromPath = (path: string) => {
     if (path.includes('/campaigns')) return 'campaigns';
-    if (path.includes('/questions')) return 'questions';
+    if (path.includes('/evaluations')) return 'evaluations';
     if (path.includes('/alerts')) return 'alerts';
     if (path.includes('/integrations')) return 'integrations';
     if (path.includes('/policies')) return 'policies';
-    return 'campaigns'; // default
+    return 'evaluations'; // default
   };
 
   const [activeTab, setActiveTab] = useState(() => getActiveTabFromPath(location.pathname));
@@ -38,7 +38,7 @@ export default function Settings() {
   // Navigate to first tab if on base settings page
   useEffect(() => {
     if (location.pathname === '/dashboard/settings') {
-      navigate('/dashboard/settings/campaigns', { replace: true });
+      navigate('/dashboard/settings/evaluations', { replace: true });
     }
   }, [location.pathname, navigate]);
 
@@ -65,7 +65,7 @@ export default function Settings() {
       );
     }
 
-    if (location.pathname.includes('/questions')) {
+    if (location.pathname.includes('/evaluations')) {
       return (
         <div className="container mx-auto py-8 space-y-6">
           <div className="flex items-center gap-2 mb-6">

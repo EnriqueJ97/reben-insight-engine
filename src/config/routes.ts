@@ -131,11 +131,11 @@ export const routes: RouteConfig[] = [
             title: 'Campañas'
           },
           {
-            path: 'questions',
+            path: 'evaluations',
             element: Settings,
             protected: true,
             allowedRoles: ['HR_ADMIN'],
-            title: 'Preguntas'
+            title: 'Evaluaciones'
           },
           {
             path: 'alerts',

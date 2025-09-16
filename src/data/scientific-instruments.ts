@@ -144,7 +144,7 @@ export const SCIENTIFIC_INSTRUMENTS: ScientificInstrument[] = [
   // ORGANIZATIONAL CLIMATE
   {
     id: 'litwin_stringer',
-    name: 'Organizational Climate Questionnaire',
+    name: 'Litwin & Stringer Organizational Climate Questionnaire',
     abbreviation: 'OCQ',
     category: 'climate',
     authors: 'Litwin & Stringer',
@@ -168,6 +168,50 @@ export const SCIENTIFIC_INSTRUMENTS: ScientificInstrument[] = [
       { id: 'ocq_identity', name: 'Identidad', items: 6, description: 'Orgullo y pertenencia organizacional', itemIds: ['ocq_9', 'ocq_18', 'ocq_27', 'ocq_36', 'ocq_45', 'ocq_50'] }
     ],
     references: ['Litwin, G. H., & Stringer, R. A. (1968). Motivation and organizational climate.']
+  },
+  {
+    id: 'denison',
+    name: 'Denison Organizational Culture Survey',
+    abbreviation: 'DOCS',
+    category: 'climate',
+    authors: 'Denison',
+    yearDeveloped: 1990,
+    totalItems: 60,
+    estimatedMinutes: 18,
+    validated: true,
+    benchmarksAvailable: true,
+    scaleType: 'agreement',
+    scaleDescription: '1=Totalmente en desacuerdo, 5=Totalmente de acuerdo',
+    description: 'Mide cultura organizacional en 4 dimensiones fundamentales que impactan el rendimiento.',
+    dimensions: [
+      { id: 'denison_mission', name: 'Misión', items: 15, description: 'Dirección estratégica clara y propósito organizacional', itemIds: ['den_1', 'den_2', 'den_3', 'den_4', 'den_5', 'den_6', 'den_7', 'den_8', 'den_9', 'den_10', 'den_11', 'den_12', 'den_13', 'den_14', 'den_15'] },
+      { id: 'denison_adaptability', name: 'Adaptabilidad', items: 15, description: 'Capacidad de cambio y respuesta al entorno', itemIds: ['den_16', 'den_17', 'den_18', 'den_19', 'den_20', 'den_21', 'den_22', 'den_23', 'den_24', 'den_25', 'den_26', 'den_27', 'den_28', 'den_29', 'den_30'] },
+      { id: 'denison_involvement', name: 'Involucramiento', items: 15, description: 'Participación y compromiso de los empleados', itemIds: ['den_31', 'den_32', 'den_33', 'den_34', 'den_35', 'den_36', 'den_37', 'den_38', 'den_39', 'den_40', 'den_41', 'den_42', 'den_43', 'den_44', 'den_45'] },
+      { id: 'denison_consistency', name: 'Consistencia', items: 15, description: 'Integración y coordinación interna', itemIds: ['den_46', 'den_47', 'den_48', 'den_49', 'den_50', 'den_51', 'den_52', 'den_53', 'den_54', 'den_55', 'den_56', 'den_57', 'den_58', 'den_59', 'den_60'] }
+    ],
+    references: ['Denison, D. R. (1990). Corporate Culture and Organizational Effectiveness.']
+  },
+  {
+    id: 'ocai',
+    name: 'Competing Values Framework (OCAI)',
+    abbreviation: 'OCAI',
+    category: 'climate',
+    authors: 'Cameron & Quinn',
+    yearDeveloped: 1999,
+    totalItems: 24,
+    estimatedMinutes: 10,
+    validated: true,
+    benchmarksAvailable: true,
+    scaleType: 'custom',
+    scaleDescription: 'Distribución de 100 puntos entre 4 alternativas',
+    description: 'Identifica el tipo de cultura organizacional predominante según el marco de valores competitivos.',
+    dimensions: [
+      { id: 'ocai_clan', name: 'Clan', items: 6, description: 'Cultura colaborativa y de apoyo mutuo', itemIds: ['ocai_1a', 'ocai_2a', 'ocai_3a', 'ocai_4a', 'ocai_5a', 'ocai_6a'] },
+      { id: 'ocai_adhocracy', name: 'Adhocracia', items: 6, description: 'Cultura innovadora y emprendedora', itemIds: ['ocai_1b', 'ocai_2b', 'ocai_3b', 'ocai_4b', 'ocai_5b', 'ocai_6b'] },
+      { id: 'ocai_market', name: 'Mercado', items: 6, description: 'Cultura competitiva orientada a resultados', itemIds: ['ocai_1c', 'ocai_2c', 'ocai_3c', 'ocai_4c', 'ocai_5c', 'ocai_6c'] },
+      { id: 'ocai_hierarchy', name: 'Jerarquía', items: 6, description: 'Cultura controlada y estructurada', itemIds: ['ocai_1d', 'ocai_2d', 'ocai_3d', 'ocai_4d', 'ocai_5d', 'ocai_6d'] }
+    ],
+    references: ['Cameron, K. S., & Quinn, R. E. (1999). Diagnosing and changing organizational culture.']
   },
 
   // LEADERSHIP

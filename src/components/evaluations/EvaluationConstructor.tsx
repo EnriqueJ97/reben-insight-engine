@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { SCIENTIFIC_INSTRUMENTS, getInstrumentsByCategory } from '@/data/scientific-instruments';
+import { ProfessionalInstrumentSelector } from './ProfessionalInstrumentSelector';
 import { EvaluationTemplate, EvaluationComponent, EvaluationConfiguration, ScientificInstrument } from '@/types/evaluations';
 // Drag and drop functionality will be implemented later
 import { 
@@ -167,133 +168,14 @@ export const EvaluationConstructor = () => {
   );
 
   return (
-    <div className="flex gap-6 h-full">
-      {/* Catalog Panel */}
-      <div className="w-96 space-y-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              Catálogo Científico
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Input
-              placeholder="Buscar instrumentos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
-
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="validated">Validados</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all" className="space-y-3 max-h-96 overflow-y-auto">
-                <Accordion type="multiple" className="w-full">
-                  {Object.entries(CATEGORY_CONFIG).map(([categoryKey, config]) => {
-                    const categoryInstruments = getInstrumentsByCategory(categoryKey as any).filter(inst =>
-                      inst.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      inst.abbreviation.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
-                    
-                    if (categoryInstruments.length === 0) return null;
-
-                    return (
-                      <AccordionItem key={categoryKey} value={categoryKey}>
-                        <AccordionTrigger className="text-sm">
-                          <div className="flex items-center gap-2">
-                            <span>{config.icon}</span>
-                            <span>{config.label}</span>
-                            <Badge variant="secondary">{categoryInstruments.length}</Badge>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="space-y-2">
-                          {categoryInstruments.map((instrument) => (
-                            <Card key={instrument.id} className={`${config.color} cursor-pointer hover:shadow-md transition-shadow`}>
-                              <CardContent className="p-3">
-                                <div className="space-y-2">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <h4 className="font-medium text-sm">{instrument.abbreviation}</h4>
-                                      <p className="text-xs text-muted-foreground">{instrument.name}</p>
-                                      <p className="text-xs text-muted-foreground">{instrument.authors} ({instrument.yearDeveloped})</p>
-                                    </div>
-                                    <div className="text-right text-xs">
-                                      <Badge className={config.badge}>{instrument.totalItems} ítems</Badge>
-                                      <p className="text-muted-foreground mt-1">{instrument.estimatedMinutes} min</p>
-                                    </div>
-                                  </div>
-                                  
-                                  <p className="text-xs leading-relaxed">{instrument.description}</p>
-                                  
-                                  <div className="space-y-1">
-                                    <div className="flex gap-1 flex-wrap">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-xs h-6 px-2"
-                                        onClick={() => addInstrumentToEvaluation(instrument, 'full')}
-                                      >
-                                        <Plus className="w-3 h-3 mr-1" />
-                                        Completo
-                                      </Button>
-                                      {instrument.dimensions.map((dimension) => (
-                                        <Button
-                                          key={dimension.id}
-                                          size="sm"
-                                          variant="ghost"
-                                          className="text-xs h-6 px-2"
-                                          onClick={() => addInstrumentToEvaluation(instrument, 'dimension', dimension.id)}
-                                        >
-                                          {dimension.name} ({dimension.items})
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </AccordionContent>
-                      </AccordionItem>
-                    );
-                  })}
-                </Accordion>
-              </TabsContent>
-              
-              <TabsContent value="validated" className="space-y-3 max-h-96 overflow-y-auto">
-                {filteredInstruments.filter(i => i.validated).map((instrument) => {
-                  const config = CATEGORY_CONFIG[instrument.category];
-                  return (
-                    <Card key={instrument.id} className={`${config.color} cursor-pointer hover:shadow-md transition-shadow`}>
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium text-sm">{instrument.abbreviation}</h4>
-                            <p className="text-xs text-muted-foreground">{instrument.authors}</p>
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={() => addInstrumentToEvaluation(instrument, 'full')}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-6">
+      <ProfessionalInstrumentSelector 
+        onInstrumentSelect={addInstrumentToEvaluation}
+        selectedInstruments={selectedInstruments}
+      />
 
       {/* Constructor Panel */}
-      <div className="flex-1 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <Card>
           <CardHeader>
