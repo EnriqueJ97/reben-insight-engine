@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { SCIENTIFIC_INSTRUMENTS, getInstrumentsByCategory } from '@/data/scientific-instruments';
 import { ProfessionalInstrumentSelector } from './ProfessionalInstrumentSelector';
+import { InstrumentDebugPanel } from './InstrumentDebugPanel';
 import { EvaluationTemplate, EvaluationComponent, EvaluationConfiguration, ScientificInstrument } from '@/types/evaluations';
 // Drag and drop functionality will be implemented later
 import { 
@@ -169,6 +170,7 @@ export const EvaluationConstructor = () => {
 
   return (
     <div className="space-y-6">
+      <InstrumentDebugPanel />
       <ProfessionalInstrumentSelector 
         onInstrumentSelect={addInstrumentToEvaluation}
         selectedInstruments={selectedInstruments}

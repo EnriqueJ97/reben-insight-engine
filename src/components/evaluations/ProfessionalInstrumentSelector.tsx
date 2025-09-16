@@ -334,6 +334,7 @@ export const ProfessionalInstrumentSelector: React.FC<ProfessionalInstrumentSele
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>Mostrando {filteredInstruments.length} de {SCIENTIFIC_INSTRUMENTS.length} instrumentos</span>
             <Badge variant="outline">{filteredInstruments.filter(i => i.validated).length} validados científicamente</Badge>
+            <Badge variant="outline">{filteredInstruments.filter(i => i.category === 'climate').length} de clima</Badge>
           </div>
         </CardContent>
       </Card>
