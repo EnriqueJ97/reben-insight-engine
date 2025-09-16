@@ -1163,6 +1163,228 @@ export type Database = {
           },
         ]
       }
+      evaluation_analytics: {
+        Row: {
+          benchmark_data: Json | null
+          calculated_at: string
+          campaign_id: string
+          confidence_interval: Json | null
+          created_at: string
+          dimension_id: string | null
+          id: string
+          instrument_id: string
+          metric_key: string
+          percentile: number | null
+          risk_level: string | null
+          sample_size: number
+          score: number
+          team_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          benchmark_data?: Json | null
+          calculated_at?: string
+          campaign_id: string
+          confidence_interval?: Json | null
+          created_at?: string
+          dimension_id?: string | null
+          id?: string
+          instrument_id: string
+          metric_key: string
+          percentile?: number | null
+          risk_level?: string | null
+          sample_size?: number
+          score: number
+          team_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          benchmark_data?: Json | null
+          calculated_at?: string
+          campaign_id?: string
+          confidence_interval?: Json | null
+          created_at?: string
+          dimension_id?: string | null
+          id?: string
+          instrument_id?: string
+          metric_key?: string
+          percentile?: number | null
+          risk_level?: string | null
+          sample_size?: number
+          score?: number
+          team_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_analytics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evaluation_campaigns: {
+        Row: {
+          anonymous: boolean
+          completed_responses: number | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          frequency: string
+          id: string
+          launch_date: string | null
+          name: string
+          status: string
+          target_audience: Json
+          template_data: Json
+          tenant_id: string
+          total_participants: number | null
+          updated_at: string
+        }
+        Insert: {
+          anonymous?: boolean
+          completed_responses?: number | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          launch_date?: string | null
+          name: string
+          status?: string
+          target_audience?: Json
+          template_data?: Json
+          tenant_id: string
+          total_participants?: number | null
+          updated_at?: string
+        }
+        Update: {
+          anonymous?: boolean
+          completed_responses?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          launch_date?: string | null
+          name?: string
+          status?: string
+          target_audience?: Json
+          template_data?: Json
+          tenant_id?: string
+          total_participants?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      evaluation_notifications: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          notification_type: string
+          opened_at: string | null
+          sent_at: string | null
+          status: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_notifications_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evaluation_responses: {
+        Row: {
+          campaign_id: string
+          completed_at: string | null
+          completion_status: string
+          created_at: string
+          device_info: Json | null
+          id: string
+          responses: Json
+          started_at: string
+          tenant_id: string
+          time_spent_minutes: number | null
+          updated_at: string
+          user_alias: string | null
+          user_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          responses?: Json
+          started_at?: string
+          tenant_id: string
+          time_spent_minutes?: number | null
+          updated_at?: string
+          user_alias?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          responses?: Json
+          started_at?: string
+          tenant_id?: string
+          time_spent_minutes?: number | null
+          updated_at?: string
+          user_alias?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_responses_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence_files: {
         Row: {
           checksum: string | null
@@ -2796,6 +3018,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_evaluation_scores: {
+        Args: { campaign_uuid: string }
+        Returns: undefined
+      }
       calculate_tenant_pricing: {
         Args: { tenant_uuid: string }
         Returns: {
@@ -2812,6 +3038,10 @@ export type Database = {
       }
       create_employee_alias: {
         Args: { employee_id: string }
+        Returns: string
+      }
+      generate_evaluation_alias: {
+        Args: { campaign_uuid: string; user_uuid: string }
         Returns: string
       }
       get_current_user_role: {

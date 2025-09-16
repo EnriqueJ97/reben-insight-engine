@@ -15,6 +15,8 @@ import { SCIENTIFIC_INSTRUMENTS, getInstrumentsByCategory } from '@/data/scienti
 import { ProfessionalInstrumentSelector } from './ProfessionalInstrumentSelector';
 import { InstrumentDebugPanel } from './InstrumentDebugPanel';
 import { EvaluationTemplate, EvaluationComponent, EvaluationConfiguration, ScientificInstrument } from '@/types/evaluations';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 // Drag and drop functionality will be implemented later
 import { 
   Plus, 
@@ -45,6 +47,7 @@ const CATEGORY_CONFIG = {
 };
 
 export const EvaluationConstructor = () => {
+  const { user } = useAuth();
   const [template, setTemplate] = useState<Partial<EvaluationTemplate>>({
     name: '',
     description: '',
@@ -128,7 +131,7 @@ export const EvaluationConstructor = () => {
     }, 0);
   };
 
-  const saveTemplate = () => {
+  const saveTemplate = async () => {
     if (!template.name || !template.components?.length) {
       toast({
         title: "Error",
@@ -138,14 +141,41 @@ export const EvaluationConstructor = () => {
       return;
     }
 
-    // Here you would save to Supabase
-    toast({
-      title: "Plantilla guardada",
-      description: `"${template.name}" se guardó correctamente`,
-    });
+    try {
+      const { data, error } = await supabase
+        .from('evaluation_campaigns')
+        .insert({
+          name: template.name,
+          description: template.description,
+          template_data: {
+            components: template.components,
+            configuration: template.configuration
+          } as any,
+          status: 'draft',
+          target_audience: template.configuration?.targeting || { allEmployees: true },
+          anonymous: template.configuration?.anonymous || true,
+          frequency: template.configuration?.frequency || 'one_time',
+          created_by: user?.id!,
+          tenant_id: user?.tenant_id!
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Plantilla guardada",
+        description: `"${template.name}" se guardó correctamente`,
+      });
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar la plantilla",
+        variant: "destructive"
+      });
+    }
   };
 
-  const launchEvaluation = () => {
+  const launchEvaluation = async () => {
     if (!template.name || !template.components?.length) {
       toast({
         title: "Error",
@@ -155,11 +185,65 @@ export const EvaluationConstructor = () => {
       return;
     }
 
-    // Here you would create and launch the campaign
-    toast({
-      title: "Evaluación lanzada",
-      description: `"${template.name}" se lanzó exitosamente`,
-    });
+    try {
+      // First save as draft
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('evaluation_campaigns')
+        .insert({
+          name: template.name,
+          description: template.description,
+          template_data: {
+            components: template.components,
+            configuration: template.configuration
+          } as any,
+          status: 'active',
+          launch_date: new Date().toISOString(),
+          target_audience: template.configuration?.targeting || { allEmployees: true },
+          anonymous: template.configuration?.anonymous || true,
+          frequency: template.configuration?.frequency || 'one_time',
+          created_by: user?.id!,
+          tenant_id: user?.tenant_id!
+        })
+        .select()
+        .single();
+
+      if (campaignError) throw campaignError;
+
+      // Launch the campaign (send notifications to employees)
+      const { error: launchError } = await supabase.functions.invoke('launch-evaluation', {
+        body: { campaignId: campaignData.id }
+      });
+
+      if (launchError) throw launchError;
+
+      toast({
+        title: "Evaluación lanzada",
+        description: `"${template.name}" se lanzó exitosamente`,
+      });
+
+      // Reset form
+      setTemplate({
+        name: '',
+        description: '',
+        components: [],
+        configuration: {
+          anonymous: true,
+          frequency: 'one_time',
+          scheduling: {},
+          targeting: { allEmployees: true },
+          gamification: { enabled: true, progressBar: true, motivationalMessages: true, rewards: false },
+          notifications: { email: true, slack: false, teams: false, inApp: true }
+        }
+      });
+
+    } catch (error) {
+      console.error('Error launching evaluation:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo lanzar la evaluación",
+        variant: "destructive"
+      });
+    }
   };
 
   const filteredInstruments = SCIENTIFIC_INSTRUMENTS.filter(instrument =>

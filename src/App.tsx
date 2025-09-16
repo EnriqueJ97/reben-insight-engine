@@ -36,6 +36,7 @@ import Materialidad from '@/pages/sustainability/Materialidad';
 import DataHubESRS from '@/pages/sustainability/DataHubESRS';
 import TareasCompliance from '@/pages/sustainability/TareasCompliance';
 import ReportesCSRD from '@/pages/sustainability/ReportesCSRD';
+import EvaluationResponse from '@/pages/EvaluationResponse';
 import SimuladorWhatIf from '@/pages/SimuladorWhatIf';
 import AdvancedOrganizationalAnalytics from '@/components/analytics/AdvancedOrganizationalAnalytics';
 import REBENExplained from '@/pages/REBENExplained';
@@ -367,6 +368,10 @@ const AppRoutes = () => {
               <EmployeeImport />
             </RoleProtectedRoute>
           }
+        />
+        <Route
+          path="evaluations/:campaignId/respond"
+          element={<EvaluationResponse />}
         />
         <Route
           path="super-admin"
