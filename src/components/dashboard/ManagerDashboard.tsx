@@ -7,6 +7,7 @@ import { EnhancedWellnessMetrics } from '@/components/ui/enhanced-wellness-metri
 import { EnhancedTrendChart } from '@/components/ui/enhanced-trend-chart';
 import { AlertResolutionModal } from '@/components/alerts/AlertResolutionModal';
 import { QuickActionsPanel } from '@/components/actions/QuickActionsPanel';
+import RiskScoreDashboard from './RiskScoreDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -328,13 +329,18 @@ const ManagerDashboard = () => {
       {/* Enhanced Metrics */}
       <EnhancedWellnessMetrics metrics={metrics} />
 
-      <Tabs defaultValue="team" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="risk" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="risk">Score de Riesgo</TabsTrigger>
           <TabsTrigger value="team">Mi Equipo</TabsTrigger>
           <TabsTrigger value="trends">Tendencias</TabsTrigger>
           <TabsTrigger value="alerts">Alertas</TabsTrigger>
           <TabsTrigger value="actions">Acciones</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="risk" className="space-y-6">
+          <RiskScoreDashboard userRole="MANAGER" />
+        </TabsContent>
 
         <TabsContent value="team" className="space-y-6">
           {/* Privacy Compliance Notice */}

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalProgressPanel from './PersonalProgressPanel';
+import RiskScoreDashboard from './RiskScoreDashboard';
 import { 
   Heart, 
   Calendar, 
@@ -20,7 +21,8 @@ import {
   Clock,
   Users,
   BarChart3,
-  Home
+  Home,
+  Shield
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -158,10 +160,14 @@ const EmployeeDashboard = () => {
 
       {/* Tabs para organizar el contenido */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <Home className="h-4 w-4" />
             <span>Resumen del Día</span>
+          </TabsTrigger>
+          <TabsTrigger value="risk" className="flex items-center space-x-2">
+            <Shield className="h-4 w-4" />
+            <span>Mi Score</span>
           </TabsTrigger>
           <TabsTrigger value="progress" className="flex items-center space-x-2">
             <BarChart3 className="h-4 w-4" />
@@ -309,6 +315,10 @@ const EmployeeDashboard = () => {
           </CardContent>
         </Card>
         
+        </TabsContent>
+
+        <TabsContent value="risk" className="mt-6">
+          <RiskScoreDashboard userRole="EMPLOYEE" />
         </TabsContent>
 
         <TabsContent value="progress" className="mt-6">

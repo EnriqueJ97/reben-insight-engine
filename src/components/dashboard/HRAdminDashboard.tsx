@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useProfiles } from '@/hooks/useProfiles';
+import RiskScoreDashboard from './RiskScoreDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -287,13 +288,18 @@ const HRAdminDashboard = () => {
       {/* Organizational Metrics */}
       <WellnessMetrics metrics={metrics} />
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="reben" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="reben">REBEN ROI</TabsTrigger>
           <TabsTrigger value="overview">Vista General</TabsTrigger>
           <TabsTrigger value="teams">Comparativa Equipos</TabsTrigger>
           <TabsTrigger value="trends">Tendencias Globales</TabsTrigger>
           <TabsTrigger value="actions">Acciones Estratégicas</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="reben" className="space-y-6">
+          <RiskScoreDashboard userRole="HR_ADMIN" />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
