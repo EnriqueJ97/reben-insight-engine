@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { EmailCampaignManager } from '@/components/emails/EmailCampaignManager';
-import { QuestionManager } from '@/components/questions/QuestionManager';
+import { ScientificEvaluationsManager } from '@/components/evaluations/ScientificEvaluationsManager';
 import { AlertsCenter } from '@/components/alerts/AlertsCenter';
 import { IntegrationsCenter } from '@/components/integrations/IntegrationsCenter';
 import PolicyConfigurator from '@/components/settings/PolicyConfigurator';
@@ -70,18 +70,18 @@ export default function Settings() {
         <div className="container mx-auto py-8 space-y-6">
           <div className="flex items-center gap-2 mb-6">
             <HelpCircle className="w-6 h-6" />
-            <h1 className="text-3xl font-bold">Gestión de Preguntas</h1>
+            <h1 className="text-3xl font-bold">Evaluaciones Científicas</h1>
             <Badge variant="outline">HR_ADMIN</Badge>
           </div>
           {isHRAdmin ? (
-            <QuestionManager />
+            <ScientificEvaluationsManager />
           ) : (
             <Card>
               <CardContent className="text-center py-8">
                 <HelpCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">Acceso Restringido</h3>
                 <p className="text-muted-foreground">
-                  Solo los administradores HR pueden gestionar las preguntas del sistema.
+                  Solo los administradores HR pueden gestionar las evaluaciones científicas del sistema.
                 </p>
               </CardContent>
             </Card>
