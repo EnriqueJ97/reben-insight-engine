@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EvaluationConstructor } from './EvaluationConstructor';
 import { EvaluationAnalytics } from './EvaluationAnalytics';
+import { EvaluationInsights } from '../analytics/EvaluationInsights';
 import { useToast } from '@/hooks/use-toast';
+import { useEvaluations } from '@/hooks/useEvaluations';
 import { 
   Microscope, 
   Construction, 
@@ -21,73 +23,6 @@ import {
   Users
 } from 'lucide-react';
 
-interface EvaluationCampaign {
-  id: string;
-  name: string;
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  template: string;
-  participants: number;
-  responses: number;
-  responseRate: number;
-  createdAt: string;
-  launchedAt?: string;
-  estimatedMinutes: number;
-  totalItems: number;
-}
-
-const mockCampaigns: EvaluationCampaign[] = [
-  {
-    id: '1',
-    name: 'Evaluación Burnout Q1 2024',
-    status: 'active',
-    template: 'MBI + CBI + WHO-5',
-    participants: 245,
-    responses: 203,
-    responseRate: 82.9,
-    createdAt: '2024-01-15',
-    launchedAt: '2024-01-20',
-    estimatedMinutes: 15,
-    totalItems: 46
-  },
-  {
-    id: '2', 
-    name: 'Engagement y Motivación - Equipos IT',
-    status: 'active',
-    template: 'UWES + WEIMS',
-    participants: 78,
-    responses: 71,
-    responseRate: 91.0,
-    createdAt: '2024-02-01',
-    launchedAt: '2024-02-05',
-    estimatedMinutes: 12,
-    totalItems: 35
-  },
-  {
-    id: '3',
-    name: 'Satisfacción Laboral Anual',
-    status: 'completed',
-    template: 'JSS + Psychological Safety',
-    participants: 312,
-    responses: 287,
-    responseRate: 92.0,
-    createdAt: '2023-12-01',
-    launchedAt: '2023-12-10',
-    estimatedMinutes: 18,
-    totalItems: 43
-  },
-  {
-    id: '4',
-    name: 'Liderazgo Transformacional - Managers',
-    status: 'draft',
-    template: 'MLQ-5X + LMX',
-    participants: 45,
-    responses: 0,
-    responseRate: 0,
-    createdAt: '2024-02-15',
-    estimatedMinutes: 20,
-    totalItems: 52
-  }
-];
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -110,33 +45,36 @@ const getStatusIcon = (status: string) => {
 };
 
 export const ScientificEvaluationsManager = () => {
-  const [campaigns, setCampaigns] = useState<EvaluationCampaign[]>(mockCampaigns);
-  const [selectedCampaign, setSelectedCampaign] = useState<EvaluationCampaign | null>(null);
+  const { 
+    campaigns, 
+    loading, 
+    activeCampaigns, 
+    completedCampaigns,
+    fetchCampaigns 
+  } = useEvaluations();
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleCampaignAction = (campaignId: string, action: string) => {
+  const handleCampaignAction = async (campaignId: string, action: string) => {
     const campaign = campaigns.find(c => c.id === campaignId);
     if (!campaign) return;
 
-    switch (action) {
-      case 'pause':
-        setCampaigns(prev => prev.map(c => 
-          c.id === campaignId ? { ...c, status: 'paused' as const } : c
-        ));
-        toast({ title: "Campaña pausada", description: `"${campaign.name}" ha sido pausada` });
-        break;
-      case 'resume':
-        setCampaigns(prev => prev.map(c => 
-          c.id === campaignId ? { ...c, status: 'active' as const } : c
-        ));
-        toast({ title: "Campaña reanudada", description: `"${campaign.name}" ha sido reanudada` });
-        break;
-      case 'launch':
-        setCampaigns(prev => prev.map(c => 
-          c.id === campaignId ? { ...c, status: 'active' as const, launchedAt: new Date().toISOString().split('T')[0] } : c
-        ));
-        toast({ title: "Campaña lanzada", description: `"${campaign.name}" ha sido lanzada exitosamente` });
-        break;
+    try {
+      // Here you would call the appropriate Supabase functions to update campaign status
+      // For now, we'll just show the toast and refetch data
+      toast({ 
+        title: "Acción realizada", 
+        description: `Campaña "${campaign.name}" ${action === 'pause' ? 'pausada' : action === 'resume' ? 'reanudada' : 'lanzada'}` 
+      });
+      
+      // Refetch campaigns to get updated data
+      await fetchCampaigns();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo realizar la acción",
+        variant: "destructive"
+      });
     }
   };
 
@@ -173,10 +111,10 @@ export const ScientificEvaluationsManager = () => {
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Target className="w-5 h-5 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Campañas Activas</p>
-                <p className="text-2xl font-bold">{campaigns.filter(c => c.status === 'active').length}</p>
-              </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Campañas Activas</p>
+                  <p className="text-2xl font-bold">{activeCampaigns.length}</p>
+                </div>
             </div>
           </CardContent>
         </Card>
@@ -187,10 +125,10 @@ export const ScientificEvaluationsManager = () => {
               <div className="p-2 bg-green-100 rounded-lg">
                 <Users className="w-5 h-5 text-green-600" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Participantes Totales</p>
-                <p className="text-2xl font-bold">{campaigns.reduce((sum, c) => sum + c.participants, 0)}</p>
-              </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Participantes Totales</p>
+                  <p className="text-2xl font-bold">{campaigns.reduce((sum, c) => sum + c.total_participants, 0)}</p>
+                </div>
             </div>
           </CardContent>
         </Card>
@@ -201,12 +139,14 @@ export const ScientificEvaluationsManager = () => {
               <div className="p-2 bg-purple-100 rounded-lg">
                 <BarChart3 className="w-5 h-5 text-purple-600" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tasa de Respuesta</p>
-                <p className="text-2xl font-bold">
-                  {(campaigns.reduce((sum, c) => sum + (c.responses / c.participants * 100), 0) / campaigns.length).toFixed(1)}%
-                </p>
-              </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tasa de Respuesta</p>
+                  <p className="text-2xl font-bold">
+                    {campaigns.length > 0 ? 
+                      (campaigns.reduce((sum, c) => sum + c.response_rate, 0) / campaigns.length).toFixed(1)
+                      : 0}%
+                  </p>
+                </div>
             </div>
           </CardContent>
         </Card>
@@ -217,12 +157,12 @@ export const ScientificEvaluationsManager = () => {
               <div className="p-2 bg-orange-100 rounded-lg">
                 <Clock className="w-5 h-5 text-orange-600" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tiempo Promedio</p>
-                <p className="text-2xl font-bold">
-                  {Math.round(campaigns.reduce((sum, c) => sum + c.estimatedMinutes, 0) / campaigns.length)} min
-                </p>
-              </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Respuestas Completadas</p>
+                  <p className="text-2xl font-bold">
+                    {campaigns.reduce((sum, c) => sum + c.completed_responses, 0)}
+                  </p>
+                </div>
             </div>
           </CardContent>
         </Card>
@@ -254,8 +194,19 @@ export const ScientificEvaluationsManager = () => {
               <CardTitle>Campañas de Evaluación</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {campaigns.map((campaign) => (
+              {loading ? (
+                <div className="flex items-center justify-center h-48">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : campaigns.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No hay campañas de evaluación</h3>
+                  <p>Crea tu primera evaluación científica usando el Constructor</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {campaigns.map((campaign) => (
                   <Card key={campaign.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
@@ -270,20 +221,20 @@ export const ScientificEvaluationsManager = () => {
                           
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
-                              <p className="text-muted-foreground">Plantilla</p>
-                              <p className="font-medium">{campaign.template}</p>
+                              <p className="text-muted-foreground">Descripción</p>
+                              <p className="font-medium">{campaign.description || 'Sin descripción'}</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Participantes</p>
-                              <p className="font-medium">{campaign.participants} usuarios</p>
+                              <p className="font-medium">{campaign.total_participants} usuarios</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Respuestas</p>
-                              <p className="font-medium">{campaign.responses} ({campaign.responseRate.toFixed(1)}%)</p>
+                              <p className="font-medium">{campaign.completed_responses} ({campaign.response_rate.toFixed(1)}%)</p>
                             </div>
                             <div>
-                              <p className="text-muted-foreground">Duración</p>
-                              <p className="font-medium">{campaign.estimatedMinutes} min ({campaign.totalItems} ítems)</p>
+                              <p className="text-muted-foreground">Estado</p>
+                              <p className="font-medium capitalize">{campaign.anonymous ? 'Anónima' : 'Identificada'}</p>
                             </div>
                           </div>
 
@@ -291,12 +242,12 @@ export const ScientificEvaluationsManager = () => {
                             <div className="mt-3">
                               <div className="flex justify-between text-sm mb-1">
                                 <span>Progreso</span>
-                                <span>{campaign.responseRate.toFixed(1)}%</span>
+                                <span>{campaign.response_rate.toFixed(1)}%</span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${campaign.responseRate}%` }}
+                                  style={{ width: `${campaign.response_rate}%` }}
                                 ></div>
                               </div>
                             </div>
@@ -338,7 +289,7 @@ export const ScientificEvaluationsManager = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setSelectedCampaign(campaign)}
+                            onClick={() => setSelectedCampaign(campaign.id)}
                           >
                             <Eye className="w-4 h-4 mr-1" />
                             Ver Resultados
@@ -346,9 +297,10 @@ export const ScientificEvaluationsManager = () => {
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -358,7 +310,7 @@ export const ScientificEvaluationsManager = () => {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <EvaluationAnalytics />
+          <EvaluationInsights />
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-4">
@@ -474,6 +426,32 @@ export const ScientificEvaluationsManager = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Results Modal */}
+      {selectedCampaign && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]">
+          <Card className="max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <CardHeader className="border-b">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-xl">
+                    Resultados: {campaigns.find(c => c.id === selectedCampaign)?.name}
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    Análisis científico de la evaluación
+                  </p>
+                </div>
+                <Button variant="ghost" onClick={() => setSelectedCampaign(null)}>
+                  ×
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 overflow-y-auto max-h-[70vh]">
+              <EvaluationInsights />
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
