@@ -246,11 +246,26 @@ export const EvaluationConstructor = () => {
     }
   };
 
-  const filteredInstruments = SCIENTIFIC_INSTRUMENTS.filter(instrument =>
-    instrument.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    instrument.abbreviation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    instrument.authors.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getCompletionPercentage = () => {
+    let completed = 0;
+    let total = 4;
+    
+    // Basic info (25%)
+    if (template.name && template.description) completed += 1;
+    
+    // Has instruments (25%)
+    if (template.components && template.components.length > 0) completed += 1;
+    
+    // Targeting configured (25%)
+    if (template.configuration?.targeting?.allEmployees || 
+        (template.configuration?.targeting?.specificTeams?.length > 0) ||
+        (template.configuration?.targeting?.specificRoles?.length > 0)) completed += 1;
+    
+    // Notifications configured (25%)
+    if (template.configuration?.notifications?.email) completed += 1;
+    
+    return (completed / total) * 100;
+  };
 
   return (
     <div className="space-y-6">
@@ -261,87 +276,129 @@ export const EvaluationConstructor = () => {
 
       {/* Constructor Panel */}
       <div className="space-y-6">
-        {/* Header */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-6 h-6" />
-                  Constructor de Evaluaciones
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Selecciona instrumentos científicos validados para crear evaluaciones profesionales
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={saveTemplate}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar Plantilla
-                </Button>
-                <Button onClick={launchEvaluation}>
-                  <Play className="w-4 h-4 mr-2" />
-                  Lanzar Evaluación
-                </Button>
-              </div>
+      {/* Header */}
+      <Card className="border-2 border-primary/20">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <Target className="w-7 h-7 text-primary" />
+                Constructor de Evaluaciones Científicas
+              </CardTitle>
+              <p className="text-muted-foreground mt-2">
+                Cree evaluaciones profesionales usando instrumentos científicos validados
+              </p>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={saveTemplate} disabled={!template.name || !template.components?.length}>
+                <Save className="w-4 h-4 mr-2" />
+                Guardar Borrador
+              </Button>
+              <Button 
+                onClick={launchEvaluation} 
+                disabled={!template.name || !template.components?.length}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Lanzar Evaluación
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {/* Progress Indicator */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Progreso de Configuración</span>
+              <span className="text-sm text-muted-foreground">{Math.round(getCompletionPercentage())}% completado</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${getCompletionPercentage()}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>Básico</span>
+              <span>Instrumentos</span>
+              <span>Configuración</span>
+              <span>¡Listo!</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Nombre de la Evaluación</Label>
+                <Label htmlFor="name" className="text-base font-medium">Nombre de la Evaluación</Label>
                 <Input
                   id="name"
                   value={template.name || ''}
                   onChange={(e) => setTemplate(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="ej. Evaluación Burnout Q1 2024"
+                  className="mt-1"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-primary">{getTotalItems()}</p>
-                  <p className="text-xs text-muted-foreground">ítems totales</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-primary">{Math.round(getEstimatedTime())}</p>
-                  <p className="text-xs text-muted-foreground">minutos</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-primary">{template.components?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground">instrumentos</p>
-                </div>
+              
+              <div>
+                <Label htmlFor="description" className="text-base font-medium">Descripción</Label>
+                <Textarea
+                  id="description"
+                  value={template.description || ''}
+                  onChange={(e) => setTemplate(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describa el objetivo y contexto de esta evaluación..."
+                  rows={3}
+                  className="mt-1"
+                />
               </div>
             </div>
             
-            <div>
-              <Label htmlFor="description">Descripción</Label>
-              <Textarea
-                id="description"
-                value={template.description || ''}
-                onChange={(e) => setTemplate(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe el objetivo y contexto de esta evaluación..."
-                rows={2}
-              />
+            <div className="grid grid-cols-3 gap-4">
+              <Card className="text-center p-4 bg-blue-50 border-blue-200">
+                <div className="text-2xl font-bold text-blue-600">{getTotalItems()}</div>
+                <div className="text-sm text-blue-700 font-medium">Ítems Totales</div>
+                <div className="text-xs text-muted-foreground">preguntas científicas</div>
+              </Card>
+              <Card className="text-center p-4 bg-green-50 border-green-200">
+                <div className="text-2xl font-bold text-green-600">{Math.round(getEstimatedTime())}</div>
+                <div className="text-sm text-green-700 font-medium">Minutos</div>
+                <div className="text-xs text-muted-foreground">tiempo estimado</div>
+              </Card>
+              <Card className="text-center p-4 bg-purple-50 border-purple-200">
+                <div className="text-2xl font-bold text-purple-600">{template.components?.length || 0}</div>
+                <div className="text-sm text-purple-700 font-medium">Instrumentos</div>
+                <div className="text-xs text-muted-foreground">científicos validados</div>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Components */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              Instrumentos Seleccionados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {(!template.components || template.components.length === 0) ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No hay instrumentos seleccionados</h3>
-                <p>Selecciona instrumentos del catálogo científico para comenzar a construir tu evaluación</p>
+      {/* Instruments Panel */}
+      <Card className="border-primary/20">
+        <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <BookOpen className="w-6 h-6 text-green-600" />
+            Instrumentos Seleccionados
+            <Badge variant="secondary" className="ml-2">
+              {template.components?.length || 0} añadidos
+            </Badge>
+          </CardTitle>
+          {template.components?.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              ✨ Excelente selección. Tiempo estimado: <strong>{Math.round(getEstimatedTime())} minutos</strong>
+            </p>
+          )}
+        </CardHeader>
+        <CardContent className="p-6">
+          {(!template.components || template.components.length === 0) ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+                <BookOpen className="w-10 h-10 text-blue-500" />
               </div>
-            ) : (
+              <h3 className="text-lg font-medium mb-2">Comience seleccionando instrumentos</h3>
+              <p>Explore el catálogo científico arriba y seleccione los instrumentos que mejor se adapten a sus objetivos de evaluación</p>
+            </div>
+          ) : (
               <div className="space-y-3">
                       {template.components?.map((component, index) => {
                         const instrument = SCIENTIFIC_INSTRUMENTS.find(i => i.id === component.instrumentId);
@@ -351,74 +408,80 @@ export const EvaluationConstructor = () => {
                         
                         if (!instrument || !config) return null;
 
-                        return (
-                          <Card
-                            key={component.id}
-                            className={config.color}
-                          >
-                                <CardContent className="p-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className="cursor-grab">
-                                      <GripVertical className="w-4 h-4 text-muted-foreground" />
-                                    </div>
-                                    
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-lg">{config.icon}</span>
-                                        <Badge className={config.badge}>
-                                          {instrument.abbreviation}
-                                        </Badge>
-                                        {dimension && (
-                                          <Badge variant="outline" className="text-xs">
-                                            {dimension.name}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <h4 className="font-medium">{instrument.name}</h4>
-                                      <p className="text-sm text-muted-foreground">
-                                        {dimension ? dimension.description : instrument.description}
-                                      </p>
-                                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1">
-                                          <Target className="w-3 h-3" />
-                                          {dimension ? dimension.items : instrument.totalItems} ítems
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                          <Clock className="w-3 h-3" />
-                                          {dimension ? 
-                                            Math.round(instrument.estimatedMinutes * (dimension.items / instrument.totalItems)) :
-                                            instrument.estimatedMinutes} min
-                                        </span>
-                                      </div>
-                                    </div>
+                    return (
+                      <Card
+                        key={component.id}
+                        className={`${config.color} hover:shadow-lg transition-all duration-200 border-2`}
+                      >
+                        <CardContent className="p-5">
+                          <div className="flex items-center gap-4">
+                            <div className="cursor-grab hover:cursor-grabbing">
+                              <GripVertical className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-2xl">{config.icon}</span>
+                                <Badge className={`${config.badge} font-medium`}>
+                                  {instrument.abbreviation}
+                                </Badge>
+                                {dimension && (
+                                  <Badge variant="outline" className="text-xs font-medium">
+                                    📊 {dimension.name}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h4 className="font-semibold text-lg mb-1">{instrument.name}</h4>
+                              <p className="text-sm text-muted-foreground mb-3">
+                                {dimension ? dimension.description : instrument.description}
+                              </p>
+                              <div className="flex items-center gap-6 text-sm">
+                                <span className="flex items-center gap-2 bg-white/60 px-3 py-1 rounded-full">
+                                  <Target className="w-4 h-4 text-primary" />
+                                  <span className="font-medium">{dimension ? dimension.items : instrument.totalItems}</span>
+                                  <span className="text-muted-foreground">ítems</span>
+                                </span>
+                                <span className="flex items-center gap-2 bg-white/60 px-3 py-1 rounded-full">
+                                  <Clock className="w-4 h-4 text-primary" />
+                                  <span className="font-medium">
+                                    {dimension ? 
+                                      Math.round(instrument.estimatedMinutes * (dimension.items / instrument.totalItems)) :
+                                      instrument.estimatedMinutes}
+                                  </span>
+                                  <span className="text-muted-foreground">min</span>
+                                </span>
+                              </div>
+                            </div>
 
-                                    <div className="flex items-center gap-2">
-                                      <Switch
-                                        checked={component.required}
-                                        onCheckedChange={(checked) => {
-                                          setTemplate(prev => ({
-                                            ...prev,
-                                            components: prev.components?.map(c =>
-                                              c.id === component.id ? { ...c, required: checked } : c
-                                            ) || []
-                                          }));
-                                        }}
-                                      />
-                                      <Label className="text-xs">Requerido</Label>
-                                      
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => removeComponent(component.id)}
-                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                        );
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={component.required}
+                                  onCheckedChange={(checked) => {
+                                    setTemplate(prev => ({
+                                      ...prev,
+                                      components: prev.components?.map(c =>
+                                        c.id === component.id ? { ...c, required: checked } : c
+                                      ) || []
+                                    }));
+                                  }}
+                                />
+                                <Label className="text-sm font-medium">Obligatorio</Label>
+                              </div>
+                              
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => removeComponent(component.id)}
+                                className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
                       })}
               </div>
             )}
@@ -529,18 +592,255 @@ export const EvaluationConstructor = () => {
               </TabsContent>
 
               <TabsContent value="scheduling" className="space-y-4">
-                <p className="text-sm text-muted-foreground">Configure cuándo y cómo se enviará la evaluación</p>
-                {/* Add scheduling configuration here */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium">Frecuencia de Evaluación</Label>
+                    <p className="text-sm text-muted-foreground mb-3">¿Con qué frecuencia se ejecutará esta evaluación?</p>
+                    <Select 
+                      value={template.configuration?.frequency || 'one_time'} 
+                      onValueChange={(value) => setTemplate(prev => ({
+                        ...prev,
+                        configuration: { ...prev.configuration!, frequency: value as any }
+                      }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="one_time">Una vez</SelectItem>
+                        <SelectItem value="weekly">Semanal</SelectItem>
+                        <SelectItem value="monthly">Mensual</SelectItem>
+                        <SelectItem value="quarterly">Trimestral</SelectItem>
+                        <SelectItem value="yearly">Anual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-base font-medium">Lanzamiento</Label>
+                    <p className="text-sm text-muted-foreground mb-3">¿Cuándo quiere lanzar esta evaluación?</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="launch-type">Tipo de Lanzamiento</Label>
+                        <Select defaultValue="immediate">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="immediate">Inmediato</SelectItem>
+                            <SelectItem value="scheduled">Programado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="duration">Duración Disponible</Label>
+                        <Select defaultValue="30">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="7">7 días</SelectItem>
+                            <SelectItem value="14">14 días</SelectItem>
+                            <SelectItem value="30">30 días</SelectItem>
+                            <SelectItem value="60">60 días</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                      <span className="font-medium text-blue-900">Vista Previa del Timeline</span>
+                    </div>
+                    <p className="text-sm text-blue-700">
+                      📅 <strong>Lanzamiento:</strong> Inmediato (al hacer clic en "Lanzar")<br/>
+                      ⏱️ <strong>Disponible hasta:</strong> 30 días después del lanzamiento<br/>
+                      🔄 <strong>Recordatorios:</strong> A los 7, 14 y 21 días
+                    </p>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="targeting" className="space-y-4">
-                <p className="text-sm text-muted-foreground">Seleccione quién recibirá la evaluación</p>
-                {/* Add targeting configuration here */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium">Audiencia Objetivo</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Seleccione quién participará en esta evaluación</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="all-employees"
+                        checked={template.configuration?.targeting?.allEmployees || false}
+                        onCheckedChange={(checked) => setTemplate(prev => ({
+                          ...prev,
+                          configuration: {
+                            ...prev.configuration!,
+                            targeting: { ...prev.configuration!.targeting, allEmployees: checked === true }
+                          }
+                        }))}
+                      />
+                      <Label htmlFor="all-employees" className="font-medium">Todos los empleados</Label>
+                    </div>
+
+                    {!template.configuration?.targeting?.allEmployees && (
+                      <div className="ml-6 space-y-3 border-l-2 border-gray-200 pl-4">
+                        <div>
+                          <Label>Equipos Específicos</Label>
+                          <p className="text-xs text-muted-foreground mb-2">Seleccione los equipos que participarán</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {['Desarrollo', 'Marketing', 'Ventas', 'RRHH', 'Finanzas', 'Operaciones'].map(team => (
+                              <div key={team} className="flex items-center space-x-2">
+                                <Checkbox id={team} />
+                                <Label htmlFor={team} className="text-sm">{team}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Roles Específicos</Label>
+                          <p className="text-xs text-muted-foreground mb-2">Filtre por roles organizacionales</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {['Managers', 'Empleados', 'Seniors', 'Juniors'].map(role => (
+                              <div key={role} className="flex items-center space-x-2">
+                                <Checkbox id={role} />
+                                <Label htmlFor={role} className="text-sm">{role}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="w-4 h-4 text-green-600" />
+                      <span className="font-medium text-green-900">Participantes Estimados</span>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      👥 <strong>Total:</strong> {template.configuration?.targeting?.allEmployees ? 'Todos los empleados (~250)' : 'Equipos seleccionados (~85)'}<br/>
+                      📧 <strong>Invitaciones:</strong> Se enviarán automáticamente por email<br/>
+                      🔒 <strong>Privacidad:</strong> {template.configuration?.anonymous ? 'Anónima' : 'Identificada'}
+                    </p>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="notifications" className="space-y-4">
-                <p className="text-sm text-muted-foreground">Configure cómo se notificará a los participantes</p>
-                {/* Add notification configuration here */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium">Canales de Notificación</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Configure cómo se notificará a los participantes</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <span className="text-lg">📧</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Email</h4>
+                            <p className="text-sm text-muted-foreground">Invitaciones y recordatorios por correo</p>
+                          </div>
+                        </div>
+                        <Switch 
+                          checked={template.configuration?.notifications?.email || true}
+                          onCheckedChange={(checked) => setTemplate(prev => ({
+                            ...prev,
+                            configuration: {
+                              ...prev.configuration!,
+                              notifications: { ...prev.configuration!.notifications, email: checked }
+                            }
+                          }))}
+                        />
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <span className="text-lg">💬</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Slack</h4>
+                            <p className="text-sm text-muted-foreground">Mensajes directos en Slack</p>
+                          </div>
+                        </div>
+                        <Switch 
+                          checked={template.configuration?.notifications?.slack || false}
+                          onCheckedChange={(checked) => setTemplate(prev => ({
+                            ...prev,
+                            configuration: {
+                              ...prev.configuration!,
+                              notifications: { ...prev.configuration!.notifications, slack: checked }
+                            }
+                          }))}
+                        />
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-100 rounded-lg">
+                            <span className="text-lg">🔔</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Notificaciones In-App</h4>
+                            <p className="text-sm text-muted-foreground">Notificaciones en la plataforma</p>
+                          </div>
+                        </div>
+                        <Switch 
+                          checked={template.configuration?.notifications?.inApp !== false}
+                          onCheckedChange={(checked) => setTemplate(prev => ({
+                            ...prev,
+                            configuration: {
+                              ...prev.configuration!,
+                              notifications: { ...prev.configuration!.notifications, inApp: checked }
+                            }
+                          }))}
+                        />
+                      </div>
+                    </Card>
+                  </div>
+
+                  <div>
+                    <Label className="text-base font-medium">Programación de Recordatorios</Label>
+                    <p className="text-sm text-muted-foreground mb-3">¿Cuándo enviar recordatorios automáticos?</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { days: 7, label: 'A los 7 días' },
+                        { days: 14, label: 'A los 14 días' },
+                        { days: 21, label: 'A los 21 días' }
+                      ].map(reminder => (
+                        <div key={reminder.days} className="flex items-center space-x-2">
+                          <Checkbox id={`reminder-${reminder.days}`} defaultChecked />
+                          <Label htmlFor={`reminder-${reminder.days}`} className="text-sm">{reminder.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bell className="w-4 h-4 text-purple-600" />
+                      <span className="font-medium text-purple-900">Plan de Comunicación</span>
+                    </div>
+                    <p className="text-sm text-purple-700">
+                      📬 <strong>Invitación inicial:</strong> Email + notificación in-app<br/>
+                      🔔 <strong>Recordatorios:</strong> Cada 7 días por los canales activos<br/>
+                      ⚡ <strong>Notificación final:</strong> 24h antes del cierre
+                    </p>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
