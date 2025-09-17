@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { SCIENTIFIC_INSTRUMENTS, getInstrumentsByCategory } from '@/data/scientific-instruments';
 import { ProfessionalInstrumentSelector } from './ProfessionalInstrumentSelector';
-import { InstrumentDebugPanel } from './InstrumentDebugPanel';
+
 import { EvaluationTemplate, EvaluationComponent, EvaluationConfiguration, ScientificInstrument } from '@/types/evaluations';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -254,8 +254,7 @@ export const EvaluationConstructor = () => {
 
   return (
     <div className="space-y-6">
-      <InstrumentDebugPanel />
-      <ProfessionalInstrumentSelector 
+      <ProfessionalInstrumentSelector
         onInstrumentSelect={addInstrumentToEvaluation}
         selectedInstruments={selectedInstruments}
       />
@@ -272,7 +271,7 @@ export const EvaluationConstructor = () => {
                   Constructor de Evaluaciones
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Arrastra instrumentos científicos para crear evaluaciones personalizadas
+                  Selecciona instrumentos científicos validados para crear evaluaciones profesionales
                 </p>
               </div>
               <div className="flex gap-2">
@@ -340,7 +339,7 @@ export const EvaluationConstructor = () => {
               <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No hay instrumentos seleccionados</h3>
-                <p>Arrastra instrumentos desde el catálogo para comenzar a construir tu evaluación</p>
+                <p>Selecciona instrumentos del catálogo científico para comenzar a construir tu evaluación</p>
               </div>
             ) : (
               <div className="space-y-3">
