@@ -3057,7 +3057,7 @@ export type Database = {
         Returns: boolean
       }
       is_founder_email: {
-        Args: { email: string }
+        Args: { user_email: string }
         Returns: boolean
       }
       send_intervention_message: {
