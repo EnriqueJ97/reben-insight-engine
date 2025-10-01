@@ -23,11 +23,13 @@ import {
   Save,
   Eye,
   EyeOff,
-  Activity
+  Activity,
+  Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WebhookManager } from './WebhookManager';
 import { IntegrationLogs } from './IntegrationLogs';
+import { CalendarIntegration } from './CalendarIntegration';
 
 interface Integration {
   id: string;
@@ -426,6 +428,22 @@ export const IntegrationsCenter = () => {
         </TabsList>
 
         <TabsContent value="integrations" className="space-y-6">
+          {/* Google Calendar Integration - Featured */}
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <span>Detección de Burnout con IA</span>
+                <Badge variant="default" className="bg-primary">Nuevo</Badge>
+              </CardTitle>
+              <CardDescription>
+                Analiza patrones de reuniones para detectar señales tempranas de burnout
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CalendarIntegration />
+            </CardContent>
+          </Card>
           {/* Communication Integrations */}
           <Card>
             <CardHeader>
