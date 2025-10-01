@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { SimplifiedHRDashboard } from '@/components/dashboard/SimplifiedHRDashboard';
+import { SimplifiedManagerDashboard } from '@/components/dashboard/SimplifiedManagerDashboard';
+import { SimplifiedEmployeeDashboard } from '@/components/dashboard/SimplifiedEmployeeDashboard';
 import { useCheckins } from '@/hooks/useCheckins';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -22,21 +25,20 @@ const Dashboard = () => {
   
   // SUPER_ADMIN debe ir a su dashboard especial
   if (user?.role === 'SUPER_ADMIN') {
-    return <Navigate to="/super-admin" replace />;
+    return <Navigate to="/dashboard/super-admin" replace />;
   }
   
-  // If user is a manager, show the advanced manager dashboard
+  // Dashboards simplificados por rol
   if (user?.role === 'MANAGER') {
-    return <AdvancedManagerDashboard />;
+    return <SimplifiedManagerDashboard />;
   }
 
-  // If user is HR_ADMIN, show the strategic HR dashboard
   if (user?.role === 'HR_ADMIN') {
-    return <HRAdminDashboard />;
+    return <SimplifiedHRDashboard />;
   }
-  // If user is an employee, show the positive employee dashboard
+  
   if (user?.role === 'EMPLOYEE') {
-    return <EmployeeDashboard />;
+    return <SimplifiedEmployeeDashboard />;
   }
   const { alerts, getAlertStats } = useAlerts();
   const { getTeamOverview } = useProfiles();

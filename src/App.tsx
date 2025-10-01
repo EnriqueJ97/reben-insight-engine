@@ -51,16 +51,6 @@ const AppRoutes = () => {
       <Route path="/landing" element={<Landing />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
-        path="/super-admin"
-        element={
-          <ProtectedRoute>
-            <RoleProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-              <SuperAdmin />
-            </RoleProtectedRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
@@ -71,6 +61,14 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route
+          path="super-admin"
+          element={
+            <RoleProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+              <SuperAdmin />
+            </RoleProtectedRoute>
+          }
+        />
         <Route
           path="checkin"
           element={
