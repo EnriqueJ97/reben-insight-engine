@@ -6,16 +6,45 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Upload, Download, AlertCircle, CheckCircle2, Users } from 'lucide-react';
+import { Upload, Download, AlertCircle, CheckCircle2, Users, Sparkles, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 interface EmployeeImportWizardProps {
   onComplete: () => void;
 }
 
+interface AIAnalysis {
+  columnMapping: {
+    detectedColumns: string[];
+    suggestions: Record<string, string>;
+  };
+  dataQuality: {
+    validRows: number;
+    invalidRows: number;
+    issues: Array<{
+      line: number;
+      issue: string;
+      suggestion: string;
+    }>;
+  };
+  normalizations: {
+    emails: string[];
+    roles: string[];
+    names: string[];
+  };
+  summary: {
+    totalRows: number;
+    canProceed: boolean;
+    recommendation: string;
+  };
+}
+
 export const EmployeeImportWizard = ({ onComplete }: EmployeeImportWizardProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [importResult, setImportResult] = useState<{
     success: number;
     errors: number;
@@ -41,7 +70,7 @@ Pedro López,pedro.lopez@empresa.com,EMPLOYEE,Equipo Marketing`;
     document.body.removeChild(link);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
@@ -56,6 +85,41 @@ Pedro López,pedro.lopez@empresa.com,EMPLOYEE,Equipo Marketing`;
 
       setFile(selectedFile);
       setImportResult(null);
+      setAiAnalysis(null);
+
+      // Automatically analyze with AI
+      await analyzeWithAI(selectedFile);
+    }
+  };
+
+  const analyzeWithAI = async (fileToAnalyze: File) => {
+    setAnalyzing(true);
+    try {
+      const text = await fileToAnalyze.text();
+      
+      const { data, error } = await supabase.functions.invoke('ai-csv-analysis', {
+        body: { csvData: text }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setAiAnalysis(data.analysis);
+        toast({
+          title: "✨ Análisis completado",
+          description: "La IA ha analizado tu archivo y detectado el formato",
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast({
+        title: "Análisis no disponible",
+        description: "Continuaremos con la importación estándar",
+        variant: "default"
+      });
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -164,14 +228,105 @@ Pedro López,pedro.lopez@empresa.com,EMPLOYEE,Equipo Marketing`;
           )}
         </div>
 
-        {file && !importResult && (
+        {analyzing && (
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
+              <h4 className="font-semibold">Analizando con IA...</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              La IA está revisando tu archivo para detectar formato y posibles errores
+            </p>
+          </Card>
+        )}
+
+        {aiAnalysis && !importResult && (
+          <Card className="p-4 space-y-4 border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h4 className="font-semibold">Análisis de IA</h4>
+              <Badge variant="outline" className="ml-auto">
+                {aiAnalysis.summary.totalRows} filas
+              </Badge>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Columnas detectadas:</p>
+                  <p className="text-muted-foreground">
+                    {aiAnalysis.columnMapping.detectedColumns.join(', ')}
+                  </p>
+                </div>
+              </div>
+
+              {Object.keys(aiAnalysis.columnMapping.suggestions).length > 0 && (
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Mapeos sugeridos:</p>
+                    <ul className="text-muted-foreground space-y-1">
+                      {Object.entries(aiAnalysis.columnMapping.suggestions).map(([from, to]) => (
+                        <li key={from}>• {from} → {to}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {aiAnalysis.dataQuality.issues.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Problemas detectados ({aiAnalysis.dataQuality.issues.length}):</p>
+                    <ul className="text-muted-foreground space-y-1">
+                      {aiAnalysis.dataQuality.issues.slice(0, 3).map((issue, idx) => (
+                        <li key={idx}>
+                          • Línea {issue.line}: {issue.issue}
+                          {issue.suggestion && (
+                            <span className="text-primary"> → {issue.suggestion}</span>
+                          )}
+                        </li>
+                      ))}
+                      {aiAnalysis.dataQuality.issues.length > 3 && (
+                        <li>... y {aiAnalysis.dataQuality.issues.length - 3} más</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 bg-background rounded-lg border">
+                <p className="font-medium mb-1">Recomendación:</p>
+                <p className="text-muted-foreground">{aiAnalysis.summary.recommendation}</p>
+              </div>
+
+              <div className="flex gap-2 text-xs">
+                <Badge variant={aiAnalysis.summary.canProceed ? "default" : "destructive"}>
+                  {aiAnalysis.summary.canProceed ? "✓ Listo para importar" : "⚠ Requiere correcciones"}
+                </Badge>
+                <Badge variant="outline">
+                  {aiAnalysis.dataQuality.validRows} válidas
+                </Badge>
+                {aiAnalysis.dataQuality.invalidRows > 0 && (
+                  <Badge variant="outline" className="text-yellow-600">
+                    {aiAnalysis.dataQuality.invalidRows} con problemas
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {file && !importResult && !analyzing && (
           <Button
             onClick={processCSV}
-            disabled={importing}
+            disabled={importing || (aiAnalysis && !aiAnalysis.summary.canProceed)}
             className="w-full"
           >
             <Upload className="w-4 h-4 mr-2" />
-            {importing ? 'Importando...' : 'Importar Empleados'}
+            {importing ? 'Importando...' : aiAnalysis ? 'Proceder con la Importación' : 'Importar Empleados'}
           </Button>
         )}
 
