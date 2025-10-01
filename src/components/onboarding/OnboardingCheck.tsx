@@ -9,13 +9,20 @@ const OnboardingCheck: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // SUPER_ADMIN no necesita onboarding
+    if (user?.role === 'SUPER_ADMIN') {
+      setLoading(false);
+      setNeedsOnboarding(false);
+      return;
+    }
+
     if (user?.tenant_id) {
       checkOnboardingStatus();
     } else if (user && !user.tenant_id) {
       setLoading(false);
       setNeedsOnboarding(false);
     }
-  }, [user?.tenant_id, user]);
+  }, [user?.tenant_id, user, user?.role]);
 
   const checkOnboardingStatus = async () => {
     if (!user?.tenant_id) {

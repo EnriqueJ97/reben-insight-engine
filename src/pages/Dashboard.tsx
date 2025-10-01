@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, TrendingUp, Users, AlertTriangle, Calendar, Target, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import ManagerDashboard from '@/components/dashboard/ManagerDashboard';
 import AdvancedManagerDashboard from '@/components/dashboard/AdvancedManagerDashboard';
 import EmployeeDashboard from '@/components/dashboard/EmployeeDashboard';
@@ -19,6 +19,11 @@ import { Brain } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  
+  // SUPER_ADMIN debe ir a su dashboard especial
+  if (user?.role === 'SUPER_ADMIN') {
+    return <Navigate to="/super-admin" replace />;
+  }
   
   // If user is a manager, show the advanced manager dashboard
   if (user?.role === 'MANAGER') {

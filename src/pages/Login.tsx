@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn, UserPlus, Eye, EyeOff, CheckCircle2, ShieldCheck, LineChart, Users, BellRing } from 'lucide-react';
 
@@ -204,66 +205,173 @@ const Login = () => {
             </CardHeader>
 
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4" aria-label="Formulario de inicio de sesión">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="tu@empresa.com"
-                    value={loginData.email}
-                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                    required
-                    autoComplete="email"
-                  />
-                </div>
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
+                  <TabsTrigger value="signup">Registrarse</TabsTrigger>
+                </TabsList>
 
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Contraseña</Label>
-                  <div className="relative">
-                    <Input
-                      id="login-password"
-                      type={showLoginPassword ? 'text' : 'password'}
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      required
-                      autoComplete="current-password"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowLoginPassword((v) => !v)}
-                      aria-label={showLoginPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                      className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+                <TabsContent value="login">
+                  <form onSubmit={handleLogin} className="space-y-4" aria-label="Formulario de inicio de sesión">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="tu@empresa.com"
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        required
+                        autoComplete="email"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="login-password"
+                          type={showLoginPassword ? 'text' : 'password'}
+                          value={loginData.password}
+                          onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                          required
+                          autoComplete="current-password"
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword((v) => !v)}
+                          aria-label={showLoginPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+                        >
+                          {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full hover-scale" 
+                      disabled={isLoading}
                     >
-                      {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      {isLoading ? 'Iniciando sesión...' : 'Entrar'}
+                    </Button>
+                  </form>
 
-                <Button 
-                  type="submit" 
-                  className="w-full hover-scale" 
-                  disabled={isLoading}
-                >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  {isLoading ? 'Iniciando sesión...' : 'Entrar'}
-                </Button>
+                  <Alert className="mt-6">
+                    <AlertDescription>
+                      <strong>Cuentas de prueba:</strong><br />
+                      • <strong>Empleado:</strong> empleado@demo.com / password123<br />
+                      • <strong>Manager:</strong> manager@demo.com / password123<br />
+                      • <strong>HR Admin:</strong> admin@demo.com / password123
+                    </AlertDescription>
+                  </Alert>
+                </TabsContent>
 
-                <div className="flex items-center justify-between mt-2 text-sm">
-                  <Link to="/landing" className="text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
-                  <Link to="/landing" className="text-primary hover:underline">Solicita acceso</Link>
-                </div>
-              </form>
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignup} className="space-y-4" aria-label="Formulario de registro">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Nombre Completo</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Tu nombre"
+                        value={signupData.fullName}
+                        onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                        required
+                      />
+                    </div>
 
-              <Alert className="mt-6">
-                <AlertDescription>
-                  <strong>Cuentas de prueba:</strong><br />
-                  • <strong>Empleado:</strong> empleado@demo.com / password123<br />
-                  • <strong>Manager:</strong> manager@demo.com / password123<br />
-                  • <strong>HR Admin:</strong> admin@demo.com / password123
-                </AlertDescription>
-              </Alert>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email Corporativo</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="tu@empresa.com"
+                        value={signupData.email}
+                        onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                        required
+                        autoComplete="email"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-role">Rol</Label>
+                      <Select
+                        value={signupData.role}
+                        onValueChange={(value: 'EMPLOYEE' | 'MANAGER' | 'HR_ADMIN') => 
+                          setSignupData({ ...signupData, role: value })
+                        }
+                      >
+                        <SelectTrigger id="signup-role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="HR_ADMIN">HR Admin - Configurar empresa</SelectItem>
+                          <SelectItem value="MANAGER">Manager - Gestionar equipo</SelectItem>
+                          <SelectItem value="EMPLOYEE">Empleado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="signup-password"
+                          type={showSignupPassword ? 'text' : 'password'}
+                          value={signupData.password}
+                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                          required
+                          autoComplete="new-password"
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSignupPassword((v) => !v)}
+                          aria-label={showSignupPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+                        >
+                          {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-confirm">Confirmar Contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="signup-confirm"
+                          type={showSignupConfirm ? 'text' : 'password'}
+                          value={signupData.confirmPassword}
+                          onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                          required
+                          autoComplete="new-password"
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSignupConfirm((v) => !v)}
+                          aria-label={showSignupConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+                        >
+                          {showSignupConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full hover-scale" 
+                      disabled={isLoading}
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </section>

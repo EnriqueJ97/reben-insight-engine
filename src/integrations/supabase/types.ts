@@ -3056,6 +3056,10 @@ export type Database = {
         Args: { message_uuid: string }
         Returns: boolean
       }
+      is_founder_email: {
+        Args: { email: string }
+        Returns: boolean
+      }
       send_intervention_message: {
         Args: {
           alert_uuid: string
