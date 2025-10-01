@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductionOnboardingWizard } from './ProductionOnboardingWizard';
+import { QuickDemoSetup } from './QuickDemoSetup';
 
 const OnboardingCheck: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -61,7 +62,8 @@ const OnboardingCheck: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   if (needsOnboarding && user?.role === 'HR_ADMIN') {
-    return <ProductionOnboardingWizard />;
+    // Usar QuickDemoSetup por defecto (2 minutos vs 10+ minutos)
+    return <QuickDemoSetup />;
   }
 
   return <>{children}</>;

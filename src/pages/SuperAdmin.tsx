@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Users, Activity, AlertTriangle, Plus, Edit, Ban, CheckCircle, BarChart3, Euro, CreditCard, Calendar } from 'lucide-react';
+import { Building2, Users, Activity, AlertTriangle, Plus, Edit, Ban, CheckCircle, BarChart3, Euro, CreditCard, Calendar, ArrowLeft, LogOut } from 'lucide-react';
 import TenantEditDialog from '@/components/TenantEditDialog';
 
 interface Tenant {
@@ -73,6 +74,7 @@ interface NewTenantForm {
 export default function SuperAdmin() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [tenants, setTenants] = useState<TenantWithMetrics[]>([]);
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,7 +97,11 @@ export default function SuperAdmin() {
             <div className="text-center">
               <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
               <h2 className="text-xl font-semibold mb-2">Acceso Denegado</h2>
-              <p className="text-muted-foreground">No tienes permisos para acceder al panel de Super-Admin.</p>
+              <p className="text-muted-foreground mb-4">No tienes permisos para acceder al panel de Super-Admin.</p>
+              <Button onClick={() => navigate('/dashboard')} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver al Dashboard
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -294,9 +300,20 @@ export default function SuperAdmin() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Panel Super-Admin</h1>
-          <p className="text-muted-foreground">Gestiona todas las empresas y la plataforma REBEN</p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate('/dashboard')}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Salir
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Panel Super-Admin</h1>
+            <p className="text-muted-foreground">Gestiona todas las empresas y la plataforma REBEN</p>
+          </div>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
