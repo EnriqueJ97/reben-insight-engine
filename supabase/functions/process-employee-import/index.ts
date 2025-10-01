@@ -29,9 +29,12 @@ serve(async (req) => {
     // Map of possible column names to standard names
     const columnMap: Record<string, string> = {
       'full_name': 'full_name',
-      'nombre': 'full_name',
+      'nombre': 'nombre',
+      'apellido': 'apellido',
       'nombre completo': 'full_name',
       'name': 'full_name',
+      'first_name': 'nombre',
+      'last_name': 'apellido',
       'email': 'email',
       'correo': 'email',
       'correo electrónico': 'email',
@@ -42,22 +45,28 @@ serve(async (req) => {
       'cargo': 'role',
       'team_name': 'team_name',
       'equipo': 'team_name',
-      'team': 'team_name'
+      'team': 'team_name',
+      'departamento': 'team_name',
+      'department': 'team_name'
     };
 
     // Normalize headers
     const headers = rawHeaders.map(h => columnMap[h] || h);
+    
+    // Check if we have nombre + apellido instead of full_name
+    const hasNombreApellido = headers.includes('nombre') && headers.includes('apellido');
+    const hasFullName = headers.includes('full_name');
     
     let imported = 0;
     let errors = 0;
     const details: string[] = [];
 
     // Validate required headers exist
-    if (!headers.includes('full_name')) {
+    if (!hasFullName && !hasNombreApellido) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Falta la columna requerida: full_name. Columnas encontradas: ${rawHeaders.join(', ')}`,
+          error: `Falta la columna requerida: full_name (o nombre + apellido). Columnas encontradas: ${rawHeaders.join(', ')}`,
           imported: 0,
           errors: 1
         }),
@@ -117,6 +126,11 @@ serve(async (req) => {
         headers.forEach((header: string, index: number) => {
           employee[header] = values[index];
         });
+
+        // Combine nombre + apellido if needed
+        if (hasNombreApellido && !employee.full_name) {
+          employee.full_name = `${employee.nombre || ''} ${employee.apellido || ''}`.trim();
+        }
 
         // Validate required fields
         if (!employee.full_name || !employee.email || !employee.role) {

@@ -135,13 +135,8 @@ Pedro López,pedro.lopez@empresa.com,EMPLOYEE,Equipo Marketing`;
         throw new Error('El archivo está vacío o no contiene datos');
       }
 
-      const headers = lines[0].split(',').map(h => h.trim());
-      const requiredHeaders = ['full_name', 'email', 'role'];
-      
-      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-      if (missingHeaders.length > 0) {
-        throw new Error(`Faltan columnas requeridas: ${missingHeaders.join(', ')}`);
-      }
+      // No validamos headers en frontend, dejamos que la edge function los maneje
+      // ya que tiene lógica inteligente para mapear columnas en español/inglés
 
       // Invoke edge function to process import
       const { data, error } = await supabase.functions.invoke('process-employee-import', {
