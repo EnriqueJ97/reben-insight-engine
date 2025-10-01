@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.ai-burnout-predictor]
 verify_jwt = true
+
+[functions.calendar-integration]
+verify_jwt = true
