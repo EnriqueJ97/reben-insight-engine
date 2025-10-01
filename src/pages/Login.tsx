@@ -66,11 +66,13 @@ const Login = () => {
           description: error.message || "Credenciales incorrectas",
           variant: "destructive",
         });
+        setIsLoading(false);
       } else {
         toast({
           title: "Sesión iniciada",
-          description: "Bienvenido/a de vuelta",
+          description: "Redirigiendo...",
         });
+        // No establecer isLoading a false aquí - dejar que el Navigate se encargue
       }
     } catch (error) {
       toast({
@@ -78,7 +80,6 @@ const Login = () => {
         description: "Ha ocurrido un error inesperado",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
