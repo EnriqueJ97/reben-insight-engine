@@ -40,45 +40,45 @@ export const useAIAnalysis = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase.functions.invoke('ai-analysis', {
+      const { data: result, error } = await supabase.functions.invoke('ai-burnout-detection', {
         body: {
-          type: 'wellness_analysis',
-          data,
-          tenant_id: user.tenant_id
+          user_id: data.user_id || user.id,
+          tenant_id: user.tenant_id,
+          period_days: data.period_days || 30
         }
       });
 
       if (error) throw error;
 
       if (result.success) {
-        return result.analysis;
-      } else if (result.fallback) {
-        // Use fallback data when API fails
+        const analysis = result.analysis;
         toast({
-          title: "Análisis Inteligente básico",
-          description: "API con limitaciones, usando datos básicos.",
-          variant: "default"
+          title: "Análisis de Burnout completado",
+          description: `Nivel de riesgo: ${analysis.risk_level.toUpperCase()}`,
+          variant: analysis.risk_level === 'critico' || analysis.risk_level === 'alto' ? 'destructive' : 'default'
         });
-        return result.fallback;
-      } else {
-        throw new Error(result.error);
+        
+        return {
+          wellness_assessment: `Riesgo ${analysis.risk_level} detectado`,
+          risk_level: analysis.risk_level === 'critico' ? 'alto' : 
+                     analysis.risk_level === 'alto' ? 'alto' : 
+                     analysis.risk_level === 'medio' ? 'medio' : 'bajo',
+          key_insights: analysis.warning_signs || [],
+          immediate_actions: analysis.immediate_actions || [],
+          predictions_30_days: analysis.predictions_30_days || '',
+          confidence_score: analysis.confidence_score || 0
+        };
       }
+      
+      throw new Error(result.error || 'Unknown error');
     } catch (error) {
       console.error('AI Analysis error:', error);
       toast({
-        title: "Error en análisis inteligente",
-        description: "Sistema funcionando en modo básico.",
-        variant: "default"
+        title: "Error en análisis de burnout",
+        description: error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive"
       });
-      // Return basic fallback
-      return {
-        wellness_assessment: "Análisis básico disponible. API temporalmente limitada.",
-        risk_level: "medio" as const,
-        key_insights: ["Sistema funcionando en modo básico"],
-        immediate_actions: ["Revisar configuración de API"],
-        predictions_30_days: "Análisis manual requerido",
-        confidence_score: 50
-      };
+      return null;
     } finally {
       setLoading(false);
     }
@@ -89,19 +89,27 @@ export const useAIAnalysis = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase.functions.invoke('ai-analysis', {
+      const { data: result, error } = await supabase.functions.invoke('ai-burnout-detection', {
         body: {
-          type: 'burnout_prediction',
-          data: employeeData,
+          user_id: employeeData.user_id,
           tenant_id: user.tenant_id,
-          user_id: employeeData.user_id
+          period_days: employeeData.period_days || 30
         }
       });
 
       if (error) throw error;
 
       if (result.success) {
-        return result.analysis;
+        const analysis = result.analysis;
+        return {
+          risk_score: analysis.risk_score || 0,
+          risk_level: analysis.risk_level === 'critico' ? 'alto' : 
+                     analysis.risk_level === 'alto' ? 'alto' : 
+                     analysis.risk_level === 'medio' ? 'medio' : 'bajo',
+          warning_signs: analysis.warning_signs || [],
+          recommended_actions: analysis.immediate_actions || [],
+          follow_up_timeline: analysis.follow_up_timeline || 'Seguimiento semanal recomendado'
+        };
       }
       
       return null;
@@ -118,19 +126,27 @@ export const useAIAnalysis = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase.functions.invoke('ai-analysis', {
+      const { data: result, error } = await supabase.functions.invoke('ai-recommendations', {
         body: {
-          type: 'team_insights',
-          data: teamData,
           tenant_id: user.tenant_id,
-          team_id: teamData.team_id
+          scope: 'team',
+          target_id: teamData.team_id
         }
       });
 
       if (error) throw error;
 
-      if (result.success) {
-        return result.analysis;
+      if (result.success && result.recommendations) {
+        const recs = result.recommendations;
+        return {
+          recommendations: recs.recommendations?.map((r: any) => ({
+            title: r.title,
+            description: r.description,
+            priority: r.priority === 'critica' ? 'alta' : r.priority,
+            timeframe: r.timeline,
+            category: r.category
+          })) || []
+        };
       }
       
       return null;
@@ -147,11 +163,11 @@ export const useAIAnalysis = () => {
 
     setLoading(true);
     try {
-      const { data: result, error } = await supabase.functions.invoke('ai-analysis', {
+      const { data: result, error } = await supabase.functions.invoke('ai-recommendations', {
         body: {
-          type: 'recommendations',
-          data,
-          tenant_id: user.tenant_id
+          tenant_id: user.tenant_id,
+          scope: 'organizational',
+          target_id: null
         }
       });
 
@@ -159,10 +175,10 @@ export const useAIAnalysis = () => {
 
       if (result.success) {
         toast({
-          title: "Análisis Inteligente completado",
-          description: "Se han generado insights y recomendaciones inteligentes"
+          title: "Recomendaciones generadas",
+          description: result.recommendations?.executive_summary || "Análisis completado"
         });
-        return result.analysis;
+        return result.recommendations;
       }
       
       return null;
@@ -170,7 +186,7 @@ export const useAIAnalysis = () => {
       console.error('Comprehensive report error:', error);
       toast({
         title: "Error en reporte inteligente",
-        description: "No se pudo generar el análisis completo",
+        description: error instanceof Error ? error.message : "Error desconocido",
         variant: "destructive"
       });
       return null;

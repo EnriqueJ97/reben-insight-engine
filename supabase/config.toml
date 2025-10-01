@@ -8,3 +8,15 @@ anon_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 
 [functions.ingest-people-data]
 verify_jwt = false
+
+[functions.ai-burnout-detection]
+verify_jwt = true
+
+[functions.ai-turnover-prediction]
+verify_jwt = true
+
+[functions.ai-recommendations]
+verify_jwt = true
+
+[functions.ai-economic-impact]
+verify_jwt = true
