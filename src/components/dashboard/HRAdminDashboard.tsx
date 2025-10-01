@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useProfiles } from '@/hooks/useProfiles';
 import RiskScoreDashboard from './RiskScoreDashboard';
+import { BurnoutPredictionPanel } from '@/components/analytics/BurnoutPredictionPanel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -289,16 +290,20 @@ const HRAdminDashboard = () => {
       <WellnessMetrics metrics={metrics} />
 
       <Tabs defaultValue="reben" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="reben">Risk Score</TabsTrigger>
+          <TabsTrigger value="prediction">🧠 Predicción IA</TabsTrigger>
           <TabsTrigger value="overview">Vista General</TabsTrigger>
           <TabsTrigger value="teams">Comparativa Equipos</TabsTrigger>
           <TabsTrigger value="trends">Tendencias Globales</TabsTrigger>
-          <TabsTrigger value="actions">Acciones Estratégicas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="reben" className="space-y-6">
           <RiskScoreDashboard userRole="HR_ADMIN" />
+        </TabsContent>
+
+        <TabsContent value="prediction" className="space-y-6">
+          <BurnoutPredictionPanel analysisType="team" />
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-6">
