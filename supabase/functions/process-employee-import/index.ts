@@ -24,11 +24,68 @@ serve(async (req) => {
 
     // Parse CSV
     const lines = csvData.split('\n').filter((line: string) => line.trim());
-    const headers = lines[0].split(',').map((h: string) => h.trim());
+    const rawHeaders = lines[0].split(',').map((h: string) => h.trim().toLowerCase());
+    
+    // Map of possible column names to standard names
+    const columnMap: Record<string, string> = {
+      'full_name': 'full_name',
+      'nombre': 'full_name',
+      'nombre completo': 'full_name',
+      'name': 'full_name',
+      'email': 'email',
+      'correo': 'email',
+      'correo electrónico': 'email',
+      'e-mail': 'email',
+      'role': 'role',
+      'rol': 'role',
+      'puesto': 'role',
+      'cargo': 'role',
+      'team_name': 'team_name',
+      'equipo': 'team_name',
+      'team': 'team_name'
+    };
+
+    // Normalize headers
+    const headers = rawHeaders.map(h => columnMap[h] || h);
     
     let imported = 0;
     let errors = 0;
     const details: string[] = [];
+
+    // Validate required headers exist
+    if (!headers.includes('full_name')) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Falta la columna requerida: full_name. Columnas encontradas: ${rawHeaders.join(', ')}`,
+          imported: 0,
+          errors: 1
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (!headers.includes('email')) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Falta la columna requerida: email. Columnas encontradas: ${rawHeaders.join(', ')}`,
+          imported: 0,
+          errors: 1
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (!headers.includes('role')) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Falta la columna requerida: role. Columnas encontradas: ${rawHeaders.join(', ')}`,
+          imported: 0,
+          errors: 1
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Get or create default team
     let { data: defaultTeam } = await supabase
@@ -63,7 +120,7 @@ serve(async (req) => {
 
         // Validate required fields
         if (!employee.full_name || !employee.email || !employee.role) {
-          details.push(`Línea ${i + 1}: Faltan campos requeridos`);
+          details.push(`Línea ${i + 1}: Faltan campos requeridos (full_name: ${!!employee.full_name}, email: ${!!employee.email}, role: ${!!employee.role})`);
           errors++;
           continue;
         }
