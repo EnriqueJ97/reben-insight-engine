@@ -5,113 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Leaf, AlertTriangle, CheckCircle, Clock, TrendingUp, Settings, BarChart3 } from 'lucide-react';
+import { Leaf, AlertTriangle, CheckCircle, Clock, TrendingUp, Settings, BarChart3, Zap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CSRDQuickActions } from '@/components/sustainability/CSRDQuickActions';
+import { CSRDArchitectureDiagram } from '@/components/sustainability/CSRDArchitectureDiagram';
+import { CSRDScenarioSimulator } from '@/components/sustainability/CSRDScenarioSimulator';
+import { CSRDComplianceAlerts } from '@/components/sustainability/CSRDComplianceAlerts';
+import { CSRDExecutiveDashboard } from '@/components/sustainability/CSRDExecutiveDashboard';
+import { useCSRDCompliance } from '@/hooks/useCSRDCompliance';
 import { useNavigate } from 'react-router-dom';
 
 const CSRDDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [complianceData, setComplianceData] = useState<any>({
-    complianceIndex: 0,
-    totalDataPoints: 0,
-    completedDataPoints: 0,
-    pendingTasks: 0,
-    criticalTasks: 0,
-    daysToDeadline: 0
-  });
-  const [csrdProfile, setCsrdProfile] = useState<any>(null);
+  const { profile: csrdProfile, metrics, loading: csrdLoading } = useCSRDCompliance();
   const [loading, setLoading] = useState(true);
 
+  // Mapear métricas del hook a estructura legacy para compatibilidad
+  const complianceData = {
+    complianceIndex: metrics.complianceIndex,
+    totalDataPoints: metrics.totalDataPoints,
+    completedDataPoints: metrics.completedDataPoints,
+    pendingTasks: metrics.missingDataPoints,
+    criticalTasks: metrics.criticalGaps,
+    daysToDeadline: metrics.daysToDeadline
+  };
+
   useEffect(() => {
-    if (user) {
-      cargarDatos();
-    }
-  }, [user]);
-
-  const cargarDatos = async () => {
-    try {
-      await Promise.all([
-        cargarPerfilCSRD(),
-        cargarEstadisticasCompliance()
-      ]);
-    } catch (error) {
-      console.error('Error cargando datos CSRD:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cargarPerfilCSRD = async () => {
-    const { data, error } = await supabase
-      .from('csrd_profile')
-      .select('*')
-      .eq('tenant_id', user?.tenant_id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error cargando perfil CSRD:', error);
-      return;
-    }
-
-    setCsrdProfile(data);
-  };
-
-  const cargarEstadisticasCompliance = async () => {
-    try {
-      // Cargar estadísticas reales de ESRS data points
-      const { data: dataPoints, error: dataError } = await supabase
-        .from('esrs_data_points')
-        .select('id')
-        .eq('tenant_id', user?.tenant_id);
-
-      const { data: values, error: valuesError } = await supabase
-        .from('esrs_values')
-        .select('*')
-        .eq('tenant_id', user?.tenant_id)
-        .not('value_numeric', 'is', null)
-        .not('value_text', 'is', null);
-
-      if (dataError || valuesError) {
-        console.error('Error cargando estadísticas:', dataError || valuesError);
-        return;
-      }
-
-      const totalDataPoints = dataPoints?.length || 0;
-      const completedDataPoints = values?.length || 0;
-      const complianceIndex = totalDataPoints > 0 
-        ? Math.round((completedDataPoints / totalDataPoints) * 100) 
-        : 0;
-
-      // Calcular días hasta deadline basado en el año del primer reporte
-      const currentYear = new Date().getFullYear();
-      const targetYear = csrdProfile?.year_first_report || currentYear + 1;
-      const deadline = new Date(targetYear, 2, 31); // 31 de marzo
-      const today = new Date();
-      const daysToDeadline = Math.max(0, Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-
-      setComplianceData({
-        complianceIndex,
-        totalDataPoints,
-        completedDataPoints,
-        pendingTasks: totalDataPoints - completedDataPoints,
-        criticalTasks: Math.floor((totalDataPoints - completedDataPoints) * 0.1), // 10% críticas
-        daysToDeadline
-      });
-    } catch (error) {
-      console.error('Error calculando estadísticas:', error);
-      // Fallback a datos simulados
-      setComplianceData({
-        complianceIndex: 0,
-        totalDataPoints: 0,
-        completedDataPoints: 0,
-        pendingTasks: 0,
-        criticalTasks: 0,
-        daysToDeadline: 365
-      });
-    }
-  };
+    setLoading(csrdLoading);
+  }, [csrdLoading]);
 
   const getComplianceColor = (index: number) => {
     if (index >= 80) return 'text-green-600';
@@ -249,14 +171,35 @@ const CSRDDashboard = () => {
       </Card>
 
       {/* Quick Actions Panel */}
-      <CSRDQuickActions onRefresh={cargarDatos} complianceData={complianceData} />
+      <CSRDQuickActions onRefresh={() => {}} complianceData={complianceData} />
 
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Resumen</TabsTrigger>
-          <TabsTrigger value="standards">Estándares ESRS</TabsTrigger>
+      <Tabs defaultValue="executive" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="executive">
+            <Zap className="w-4 h-4 mr-2" />
+            Ejecutivo
+          </TabsTrigger>
+          <TabsTrigger value="architecture">Arquitectura</TabsTrigger>
+          <TabsTrigger value="alerts">Alertas</TabsTrigger>
+          <TabsTrigger value="simulator">Simulador</TabsTrigger>
           <TabsTrigger value="timeline">Cronograma</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="executive" className="space-y-4">
+          <CSRDExecutiveDashboard />
+        </TabsContent>
+
+        <TabsContent value="architecture" className="space-y-4">
+          <CSRDArchitectureDiagram />
+        </TabsContent>
+
+        <TabsContent value="alerts" className="space-y-4">
+          <CSRDComplianceAlerts />
+        </TabsContent>
+
+        <TabsContent value="simulator" className="space-y-4">
+          <CSRDScenarioSimulator />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           {!csrdProfile ? (
