@@ -55,8 +55,10 @@ export const QuickDemoSetup = () => {
         description: "Tu cuenta está configurada. Explora el dashboard.",
       });
 
-      // Redirigir al dashboard
-      setTimeout(() => navigate('/dashboard'), 1500);
+      // Redirigir al dashboard con reload completo para refrescar el OnboardingCheck
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1500);
     } catch (error) {
       console.error('Error in quick setup:', error);
       toast({
