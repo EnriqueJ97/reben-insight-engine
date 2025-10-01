@@ -112,26 +112,39 @@ El sistema genera recomendaciones específicas basadas en los patrones detectado
 
 ## Configuración
 
-### Requisitos Previos
+### ✅ Configuración Centralizada (SaaS)
 
-1. **Google Cloud Project** con Calendar API habilitada
-2. **OAuth 2.0 Credentials** (Client ID + Secret)
-3. **Redirect URI** configurado
+**REBEN** gestiona las credenciales de Google OAuth de forma centralizada - **los usuarios NO necesitan configurar nada en Google Cloud Console**.
 
-### Variables de Entorno (Supabase Secrets)
+### Para Administradores de REBEN
+
+Las credenciales OAuth ya están configuradas en Supabase Secrets:
 
 ```bash
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URI=https://your-project.supabase.co/functions/v1/calendar-integration/callback
+GOOGLE_CLIENT_ID=<configurado centralmente>
+GOOGLE_CLIENT_SECRET=<configurado centralmente>
 ```
 
-### Scopes Requeridos
+**Redirect URI configurado en Google Cloud Console:**
+```
+https://scjwymsygllanubzfbok.supabase.co/functions/v1/calendar-integration/callback
+```
+
+### Para Usuarios Finales
+
+Solo necesitan:
+1. Hacer clic en **"Conectar Google Calendar"**
+2. Autorizar acceso en el popup de Google (como "Sign in with Google")
+3. ✅ Listo - su calendario está conectado
+
+### Scopes OAuth (Configurados Centralmente)
 
 ```
 https://www.googleapis.com/auth/calendar.readonly
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
+
+Los usuarios ven estos permisos cuando autorizan la aplicación.
 
 ## Flujo de Autenticación
 

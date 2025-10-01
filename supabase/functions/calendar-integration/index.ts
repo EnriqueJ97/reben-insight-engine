@@ -95,9 +95,9 @@ serve(async (req) => {
 
 async function getOAuthUrl(userId: string, supabase: any): Promise<Response> {
   const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-  const redirectUri = Deno.env.get('GOOGLE_REDIRECT_URI');
+  const redirectUri = 'https://scjwymsygllanubzfbok.supabase.co/functions/v1/calendar-integration/callback';
   
-  if (!clientId || !redirectUri) {
+  if (!clientId) {
     throw new Error('Google OAuth not configured');
   }
 
@@ -129,9 +129,9 @@ async function exchangeOAuthCode(
 ): Promise<Response> {
   const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
   const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
-  const redirectUri = Deno.env.get('GOOGLE_REDIRECT_URI');
+  const redirectUri = 'https://scjwymsygllanubzfbok.supabase.co/functions/v1/calendar-integration/callback';
 
-  if (!clientId || !clientSecret || !redirectUri) {
+  if (!clientId || !clientSecret) {
     throw new Error('Google OAuth not configured');
   }
 
