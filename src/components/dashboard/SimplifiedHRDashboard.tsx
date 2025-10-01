@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +13,15 @@ import {
   Brain,
   ArrowRight,
   Clock,
-  Target
+  Target,
+  BarChart3,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { BurnoutPredictionPanel } from '@/components/analytics/BurnoutPredictionPanel';
-import { EnhancedAlertsCenter } from '@/components/alerts/EnhancedAlertsCenter';
+import AttritionPredictionPanel from '@/components/analytics/AttritionPredictionPanel';
+import { useAlerts } from '@/hooks/useAlerts';
 
 /**
  * Dashboard HR simplificado con enfoque en lo esencial
@@ -25,7 +29,16 @@ import { EnhancedAlertsCenter } from '@/components/alerts/EnhancedAlertsCenter';
  */
 export const SimplifiedHRDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('urgente');
+  const { alerts, loading: alertsLoading } = useAlerts();
+  
+  // Filtrar alertas críticas (no resueltas y severity 'high')
+  const criticalAlerts = alerts?.filter(a => 
+    !a.resolved && a.severity === 'high'
+  ) || [];
+  
+  const urgentCount = criticalAlerts.length;
 
   return (
     <div className="space-y-6">
@@ -35,10 +48,16 @@ export const SimplifiedHRDashboard = () => {
           <h1 className="text-3xl font-bold">Dashboard HR</h1>
           <p className="text-muted-foreground">Panel de control simplificado</p>
         </div>
-        <Button variant="outline" className="gap-2">
-          <Brain className="h-4 w-4" />
-          Pregunta al Asistente IA
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => navigate('/dashboard/alerts')}>
+            <AlertTriangle className="h-4 w-4" />
+            Ver Alertas
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => navigate('/dashboard/hr-chat')}>
+            <Brain className="h-4 w-4" />
+            Asistente IA
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -46,7 +65,9 @@ export const SimplifiedHRDashboard = () => {
           <TabsTrigger value="urgente" className="flex flex-col items-center gap-1 py-3">
             <AlertTriangle className="h-5 w-5" />
             <span>🚨 Urgente</span>
-            <Badge variant="destructive" className="mt-1">3</Badge>
+            {urgentCount > 0 && (
+              <Badge variant="destructive" className="mt-1">{urgentCount}</Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="resumen" className="flex flex-col items-center gap-1 py-3">
             <Activity className="h-5 w-5" />
@@ -60,109 +81,78 @@ export const SimplifiedHRDashboard = () => {
 
         {/* Pestaña URGENTE */}
         <TabsContent value="urgente" className="space-y-6">
-          <Alert className="border-destructive">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <AlertDescription>
-              Tienes <strong>3 alertas críticas</strong> que requieren atención inmediata
-            </AlertDescription>
-          </Alert>
+          {alertsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : urgentCount > 0 ? (
+            <>
+              <Alert className="border-destructive">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <AlertDescription>
+                  Tienes <strong>{urgentCount} alertas críticas</strong> que requieren atención inmediata
+                </AlertDescription>
+              </Alert>
 
-          <div className="grid gap-4">
-            <Card className="border-l-4 border-l-destructive">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-destructive/10 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-destructive" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">Carlos López - Riesgo de Burnout</CardTitle>
-                      <p className="text-sm text-muted-foreground">Desarrollo • Hace 2 horas</p>
-                    </div>
+              <div className="grid gap-4">
+                {criticalAlerts.slice(0, 5).map((alert) => (
+                  <Card key={alert.id} className="border-l-4 border-l-destructive">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-destructive/10">
+                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">{alert.type}</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(alert.created_at).toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant="destructive">Alta</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm mb-4">{alert.message}</p>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => navigate('/dashboard/alerts')}>
+                          Ver detalles
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <Button className="w-full" variant="outline" onClick={() => navigate('/dashboard/alerts')}>
+                Ver todas las alertas
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="p-4 bg-green-500/10 rounded-full">
+                    <Zap className="h-8 w-8 text-green-500" />
                   </div>
-                  <Badge variant="destructive">Crítico</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">
-                  Burnout risk: <strong>87%</strong> • 5 check-ins consecutivos con estrés alto • 
-                  12h promedio de trabajo diario (últimos 7 días)
-                </p>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="default">
-                    <Clock className="h-3 w-3 mr-2" />
-                    Programar 1-on-1
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">¡Todo bajo control!</h3>
+                    <p className="text-muted-foreground">No hay alertas críticas en este momento</p>
+                  </div>
+                  <Button variant="outline" onClick={() => navigate('/dashboard/alerts')}>
+                    Ver historial de alertas
                   </Button>
-                  <Button size="sm" variant="outline">Ver detalles</Button>
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="border-l-4 border-l-orange-500">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-500/10 rounded-lg">
-                      <Users className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">Equipo Marketing - Sobrecarga</CardTitle>
-                      <p className="text-sm text-muted-foreground">8 miembros • Hace 5 horas</p>
-                    </div>
-                  </div>
-                  <Badge variant="destructive">Alto</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">
-                  Bienestar del equipo: <strong>2.8/5</strong> • 60% reporta sobrecarga de trabajo • 
-                  Reuniones promedio: 6.5h/día
-                </p>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="default">
-                    <Target className="h-3 w-3 mr-2" />
-                    Hablar con Manager
-                  </Button>
-                  <Button size="sm" variant="outline">Ver equipo</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-orange-500">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-500/10 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">Riesgo de Turnover Aumentando</CardTitle>
-                      <p className="text-sm text-muted-foreground">Toda la empresa • Hace 1 día</p>
-                    </div>
-                  </div>
-                  <Badge variant="destructive">Alto</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-4">
-                  Predicción IA: <strong>23% probabilidad turnover</strong> próximos 90 días • 
-                  +15% vs mes anterior • 7 empleados en riesgo
-                </p>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="default">
-                    <Brain className="h-3 w-3 mr-2" />
-                    Ver análisis IA
-                  </Button>
-                  <Button size="sm" variant="outline">Estrategias</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Button className="w-full" variant="outline">
-            Ver todas las alertas
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
+          )}
         </TabsContent>
 
         {/* Pestaña RESUMEN */}
@@ -305,9 +295,77 @@ export const SimplifiedHRDashboard = () => {
 
         {/* Pestaña ANÁLISIS */}
         <TabsContent value="analisis" className="space-y-6">
+          <Alert>
+            <Brain className="h-4 w-4" />
+            <AlertDescription>
+              Análisis predictivo con IA para anticipar riesgos y tomar decisiones basadas en datos
+            </AlertDescription>
+          </Alert>
+
           <div className="grid gap-6">
-            <BurnoutPredictionPanel />
-            <EnhancedAlertsCenter />
+            {/* Predicción de Burnout */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-destructive/10 rounded-lg">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div>
+                      <CardTitle>Predicción de Burnout</CardTitle>
+                      <p className="text-sm text-muted-foreground">Análisis de riesgo con machine learning</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Detalles
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <BurnoutPredictionPanel />
+              </CardContent>
+            </Card>
+
+            {/* Predicción de Rotación */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-500/10 rounded-lg">
+                      <Users className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div>
+                      <CardTitle>Riesgo de Rotación</CardTitle>
+                      <p className="text-sm text-muted-foreground">Identificación temprana de empleados en riesgo</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Ver análisis
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <AttritionPredictionPanel />
+              </CardContent>
+            </Card>
+
+            {/* Acceso rápido a reportes completos */}
+            <Card className="bg-primary/5">
+              <CardContent className="py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold mb-1">¿Necesitas más análisis?</h3>
+                    <p className="text-sm text-muted-foreground">Accede a reportes completos con insights avanzados</p>
+                  </div>
+                  <Button onClick={() => navigate('/dashboard/reports')}>
+                    Ver Reportes Completos
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
