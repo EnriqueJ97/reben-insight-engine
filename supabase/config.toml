@@ -35,3 +35,6 @@ verify_jwt = true
 
 [functions.calendar-integration]
 verify_jwt = true
+
+[functions.hr-ai-chat]
+verify_jwt = true
