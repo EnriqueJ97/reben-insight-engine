@@ -49,7 +49,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/join-team/:inviteCode" element={<JoinTeam />} />
       <Route path="/landing" element={<Landing />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
         path="/dashboard"
         element={
