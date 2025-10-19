@@ -21,6 +21,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { BurnoutPredictionPanel } from '@/components/analytics/BurnoutPredictionPanel';
 import AttritionPredictionPanel from '@/components/analytics/AttritionPredictionPanel';
+import { REBENScoresDashboard } from '@/components/analytics/REBENScoresDashboard';
+import { PlaybookRecommendations } from '@/components/analytics/PlaybookRecommendations';
 import { useAlerts } from '@/hooks/useAlerts';
 
 /**
@@ -298,11 +300,29 @@ export const SimplifiedHRDashboard = () => {
           <Alert>
             <Brain className="h-4 w-4" />
             <AlertDescription>
-              Análisis predictivo con IA para anticipar riesgos y tomar decisiones basadas en datos
+              Sistema REBEN Impact Engine: análisis combinado (activo + pasivo) con scoring transparente y recomendaciones accionables
             </AlertDescription>
           </Alert>
 
-          <div className="grid gap-6">
+          <div className="space-y-6">
+            {/* REBEN Scores Dashboard */}
+            <REBENScoresDashboard />
+
+            {/* Playbook Recommendations */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Recomendaciones Accionables</CardTitle>
+                  <Button variant="outline" size="sm">
+                    Ver Todos los Playbooks
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <PlaybookRecommendations />
+              </CardContent>
+            </Card>
+
             {/* Predicción de Burnout */}
             <Card>
               <CardHeader>
@@ -313,7 +333,7 @@ export const SimplifiedHRDashboard = () => {
                     </div>
                     <div>
                       <CardTitle>Predicción de Burnout</CardTitle>
-                      <p className="text-sm text-muted-foreground">Análisis de riesgo con machine learning</p>
+                      <p className="text-sm text-muted-foreground">Análisis predictivo 30-60 días anticipados</p>
                     </div>
                   </div>
                   <Button variant="outline" size="sm">
@@ -337,7 +357,7 @@ export const SimplifiedHRDashboard = () => {
                     </div>
                     <div>
                       <CardTitle>Riesgo de Rotación</CardTitle>
-                      <p className="text-sm text-muted-foreground">Identificación temprana de empleados en riesgo</p>
+                      <p className="text-sm text-muted-foreground">Identificación temprana con impacto económico</p>
                     </div>
                   </div>
                   <Button variant="outline" size="sm">
@@ -356,8 +376,8 @@ export const SimplifiedHRDashboard = () => {
               <CardContent className="py-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold mb-1">¿Necesitas más análisis?</h3>
-                    <p className="text-sm text-muted-foreground">Accede a reportes completos con insights avanzados</p>
+                    <h3 className="font-semibold mb-1">¿Necesitas análisis CSRD/ESRS?</h3>
+                    <p className="text-sm text-muted-foreground">Exporta KPIs sociales y genera reportes de cumplimiento</p>
                   </div>
                   <Button onClick={() => navigate('/dashboard/reports')}>
                     Ver Reportes Completos
