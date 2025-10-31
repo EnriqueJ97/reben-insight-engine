@@ -194,48 +194,78 @@ const AdvancedOrganizationalAnalytics = () => {
         </Card>
       </div>
 
-      {/* Advanced Analytics Tabs */}
+      {/* Quick Access Cards - Análisis Principales */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-xl">Acceso Rápido - Análisis Clave</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button 
+              onClick={() => setSelectedScope('correlations')}
+              className="group p-6 rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg bg-card text-left"
+            >
+              <Zap className="w-10 h-10 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-lg mb-2">Correlaciones</h3>
+              <p className="text-sm text-muted-foreground">Descubre patrones entre métricas clave</p>
+            </button>
+
+            <button 
+              onClick={() => setSelectedScope('comparison')}
+              className="group p-6 rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg bg-card text-left"
+            >
+              <GitCompare className="w-10 h-10 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-lg mb-2">Comparativas</h3>
+              <p className="text-sm text-muted-foreground">Compara equipos y departamentos</p>
+            </button>
+
+            <button 
+              onClick={() => setSelectedScope('attrition-prediction')}
+              className="group p-6 rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg bg-card text-left"
+            >
+              <Users className="w-10 h-10 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-lg mb-2">Predicción Rotación</h3>
+              <p className="text-sm text-muted-foreground">Identifica riesgos de salida</p>
+            </button>
+
+            <button 
+              onClick={() => setSelectedScope('trends')}
+              className="group p-6 rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg bg-card text-left"
+            >
+              <Clock className="w-10 h-10 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-lg mb-2">Tendencias</h3>
+              <p className="text-sm text-muted-foreground">Evolución temporal de métricas</p>
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Simplified Tabs */}
       <Tabs defaultValue="correlations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-10 gap-1">
-          <TabsTrigger value="correlations" className="flex items-center gap-1 text-xs">
-            <Zap className="w-3 h-3" />
-            <span className="hidden sm:inline">Correlaciones</span>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 h-auto p-2">
+          <TabsTrigger value="correlations" className="flex items-center gap-2 py-3">
+            <Zap className="w-4 h-4" />
+            <span>Correlaciones</span>
           </TabsTrigger>
-          <TabsTrigger value="comparison" className="flex items-center gap-1 text-xs">
-            <GitCompare className="w-3 h-3" />
-            <span className="hidden sm:inline">Comparativas</span>
+          <TabsTrigger value="comparison" className="flex items-center gap-2 py-3">
+            <GitCompare className="w-4 h-4" />
+            <span>Comparativas</span>
           </TabsTrigger>
-          <TabsTrigger value="diversity" className="flex items-center gap-1 text-xs">
-            <Scale className="w-3 h-3" />
-            <span className="hidden sm:inline">Diversidad</span>
+          <TabsTrigger value="diversity" className="flex items-center gap-2 py-3">
+            <Scale className="w-4 h-4" />
+            <span>Diversidad</span>
           </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center gap-1 text-xs">
-            <Clock className="w-3 h-3" />
-            <span className="hidden sm:inline">Tendencias</span>
+          <TabsTrigger value="trends" className="flex items-center gap-2 py-3">
+            <Clock className="w-4 h-4" />
+            <span>Tendencias</span>
           </TabsTrigger>
-          <TabsTrigger value="compliance" className="flex items-center gap-1 text-xs">
-            <Shield className="w-3 h-3" />
-            <span className="hidden sm:inline">Privacidad</span>
+          <TabsTrigger value="advanced-wellness" className="flex items-center gap-2 py-3">
+            <Activity className="w-4 h-4" />
+            <span>Wellness</span>
           </TabsTrigger>
-          <TabsTrigger value="qualitative" className="flex items-center gap-1 text-xs">
-            <MessageSquare className="w-3 h-3" />
-            <span className="hidden sm:inline">Cualitativo</span>
-          </TabsTrigger>
-          <TabsTrigger value="advanced-wellness" className="flex items-center gap-1 text-xs">
-            <Activity className="w-3 h-3" />
-            <span className="hidden md:inline">Wellness</span>
-          </TabsTrigger>
-          <TabsTrigger value="anomaly-detection" className="flex items-center gap-1 text-xs">
-            <AlertTriangle className="w-3 h-3" />
-            <span className="hidden md:inline">Anomalías</span>
-          </TabsTrigger>
-          <TabsTrigger value="dynamic-benchmark" className="flex items-center gap-1 text-xs">
-            <BarChart3 className="w-3 h-3" />
-            <span className="hidden lg:inline">Benchmarks</span>
-          </TabsTrigger>
-          <TabsTrigger value="attrition-prediction" className="flex items-center gap-1 text-xs">
-            <Users className="w-3 h-3" />
-            <span className="hidden lg:inline">Rotación</span>
+          <TabsTrigger value="attrition-prediction" className="flex items-center gap-2 py-3">
+            <Users className="w-4 h-4" />
+            <span>Rotación</span>
           </TabsTrigger>
         </TabsList>
 
@@ -271,44 +301,19 @@ const AdvancedOrganizationalAnalytics = () => {
           />
         </TabsContent>
 
-        <TabsContent value="compliance" className="space-y-6">
-          <PrivacyComplianceAnalysis 
-            reportData={reportData} 
+        <TabsContent value="advanced-wellness" className="space-y-6">
+          <MultifactorialWellnessPanel 
             period={selectedPeriod}
             scope={selectedScope}
           />
         </TabsContent>
 
-        <>
-          {/* New Analytics Tabs */}
-          <TabsContent value="advanced-wellness" className="space-y-6">
-            <MultifactorialWellnessPanel 
-              period={selectedPeriod}
-              scope={selectedScope}
-            />
-          </TabsContent>
-
-          <TabsContent value="anomaly-detection" className="space-y-6">
-            <AnomalyDetectionPanel 
-              period={selectedPeriod}
-              scope={selectedScope}
-            />
-          </TabsContent>
-
-          <TabsContent value="dynamic-benchmark" className="space-y-6">
-            <DynamicBenchmarkPanel 
-              period={selectedPeriod}
-              scope={selectedScope}
-            />
-          </TabsContent>
-
-          <TabsContent value="attrition-prediction" className="space-y-6">
-            <AttritionPredictionPanel 
-              period={selectedPeriod}
-              scope={selectedScope}
-            />
-          </TabsContent>
-        </>
+        <TabsContent value="attrition-prediction" className="space-y-6">
+          <AttritionPredictionPanel 
+            period={selectedPeriod}
+            scope={selectedScope}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
