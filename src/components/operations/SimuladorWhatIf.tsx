@@ -1,645 +1,379 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Calculator,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Clock,
-  DollarSign,
-  Activity,
-  Target,
-  BarChart3,
-  Lightbulb,
-  PlayCircle,
-  RefreshCw,
-  CheckCircle,
-  AlertTriangle,
-  Zap,
-  Brain
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Calculator, TrendingUp, Users, Euro, Target, CheckCircle, ArrowRight, Lightbulb, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const SimuladorWhatIf = () => {
-  const { toast } = useToast();
-  
-  // Estados del simulador
-  const [simulationParams, setSimulationParams] = useState({
-    teamSize: [12],
-    avgSalary: [45000],
-    turnoverRate: [15],
-    wellnessInvestment: [5000],
-    flexibilityLevel: [70],
-    trainingBudget: [3000],
-    managerRatio: [6]
+export const SimuladorWhatIf = () => {
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState({
+    numEmpleados: '',
+    rotacionActual: '',
+    salarioMedio: '',
+    inversionBienestar: ''
   });
 
-  const [results, setResults] = useState({
-    currentCosts: {
-      recruitment: 54000,
-      training: 36000,
-      productivity: 15000,
-      total: 105000
-    },
-    projectedCosts: {
-      recruitment: 32400,
-      training: 21600,
-      productivity: 9000,
-      total: 63000
-    },
-    savings: {
-      annual: 42000,
-      percentage: 40,
-      roi: 340
-    },
-    metrics: {
-      employeeSatisfaction: 85,
-      retentionRate: 92,
-      productivityIncrease: 23,
-      wellnessScore: 78
-    }
-  });
+  // Ejemplos realistas por tamaño de empresa
+  const ejemplos = {
+    pequena: { empleados: 15, rotacion: 18, salario: 35000, inversion: 8000 },
+    mediana: { empleados: 50, rotacion: 15, salario: 45000, inversion: 25000 },
+    grande: { empleados: 200, rotacion: 12, salario: 55000, inversion: 100000 }
+  };
 
-  const [scenarios, setScenarios] = useState([
-    {
-      id: '1',
-      name: 'Escenario Conservador',
-      description: 'Mejoras graduales sin cambios drásticos',
-      params: { wellness: 3000, flexibility: 50, training: 2000 },
-      expectedROI: 180,
-      confidence: 85
-    },
-    {
-      id: '2', 
-      name: 'Escenario Agresivo',
-      description: 'Inversión alta para transformación completa',
-      params: { wellness: 8000, flexibility: 90, training: 5000 },
-      expectedROI: 420,
-      confidence: 65
-    },
-    {
-      id: '3',
-      name: 'Escenario Equilibrado',
-      description: 'Balance óptimo riesgo-beneficio',
-      params: { wellness: 5000, flexibility: 70, training: 3000 },
-      expectedROI: 340,
-      confidence: 78
-    }
-  ]);
-
-  const [isRunningSimulation, setIsRunningSimulation] = useState(false);
-  const [activeScenario, setActiveScenario] = useState('3');
-
-  const handleRunSimulation = async () => {
-    setIsRunningSimulation(true);
-    
-    toast({
-      title: "Ejecutando simulación...",
-      description: "Analizando impacto con algoritmos de ML"
+  const cargarEjemplo = (tipo: keyof typeof ejemplos) => {
+    const ej = ejemplos[tipo];
+    setData({
+      numEmpleados: ej.empleados.toString(),
+      rotacionActual: ej.rotacion.toString(),
+      salarioMedio: ej.salario.toString(),
+      inversionBienestar: ej.inversion.toString()
     });
-
-    // Simular procesamiento con IA
-    setTimeout(() => {
-      // Cálculos simulados basados en parámetros
-      const teamSize = simulationParams.teamSize[0];
-      const currentTurnover = simulationParams.turnoverRate[0];
-      const wellnessInvestment = simulationParams.wellnessInvestment[0];
-      
-      // Algoritmo simplificado de impacto
-      const turnoverReduction = Math.min(50, (wellnessInvestment / 200) + (simulationParams.flexibilityLevel[0] / 10));
-      const newTurnoverRate = Math.max(5, currentTurnover - turnoverReduction);
-      
-      const avgRecruitmentCost = 4500; // por empleado
-      const currentRecruitmentCost = (currentTurnover / 100) * teamSize * avgRecruitmentCost;
-      const newRecruitmentCost = (newTurnoverRate / 100) * teamSize * avgRecruitmentCost;
-      
-      const savings = {
-        annual: Math.round(currentRecruitmentCost - newRecruitmentCost + (wellnessInvestment * 0.8)),
-        percentage: Math.round(((currentRecruitmentCost - newRecruitmentCost) / currentRecruitmentCost) * 100),
-        roi: Math.round(((currentRecruitmentCost - newRecruitmentCost) / wellnessInvestment) * 100)
-      };
-
-      setResults(prev => ({
-        ...prev,
-        savings,
-        metrics: {
-          employeeSatisfaction: Math.min(95, 60 + (wellnessInvestment / 150)),
-          retentionRate: Math.min(98, 100 - newTurnoverRate),
-          productivityIncrease: Math.min(35, (wellnessInvestment / 300) + (simulationParams.flexibilityLevel[0] / 5)),
-          wellnessScore: Math.min(90, 50 + (wellnessInvestment / 200) + (simulationParams.flexibilityLevel[0] / 3))
-        }
-      }));
-
-      setIsRunningSimulation(false);
-      toast({
-        title: "Simulación completada",
-        description: `ROI proyectado: ${savings.roi}% - Ahorro anual: €${savings.annual.toLocaleString()}`
-      });
-    }, 3000);
   };
 
-  const handleParameterChange = (param: string, value: number[]) => {
-    setSimulationParams(prev => ({
-      ...prev,
-      [param]: value
-    }));
-  };
+  // Cálculos reales
+  const numEmpleados = parseFloat(data.numEmpleados) || 0;
+  const rotacionActual = parseFloat(data.rotacionActual) || 0;
+  const salarioMedio = parseFloat(data.salarioMedio) || 0;
+  const inversionBienestar = parseFloat(data.inversionBienestar) || 0;
 
-  const handleLoadScenario = (scenarioId: string) => {
-    const scenario = scenarios.find(s => s.id === scenarioId);
-    if (scenario) {
-      setSimulationParams(prev => ({
-        ...prev,
-        wellnessInvestment: [scenario.params.wellness],
-        flexibilityLevel: [scenario.params.flexibility],
-        trainingBudget: [scenario.params.training]
-      }));
-      setActiveScenario(scenarioId);
-      
-      toast({
-        title: "Escenario cargado",
-        description: `Parámetros actualizados para: ${scenario.name}`
-      });
-    }
-  };
+  // Fórmula: Costo de rotación = 1.5x salario medio (reclutamiento, onboarding, pérdida productividad)
+  const costoRotacionPorPersona = salarioMedio * 1.5;
+  const empleadosRotados = (numEmpleados * rotacionActual) / 100;
+  const costoRotacionAnual = empleadosRotados * costoRotacionPorPersona;
 
-  const getROIColor = (roi: number) => {
-    if (roi >= 300) return 'text-success';
-    if (roi >= 200) return 'text-warning';
-    return 'text-destructive';
-  };
+  // Reducción estimada de rotación: 25-40% con programa de bienestar efectivo
+  const reduccionRotacion = 0.35; // 35% promedio según estudios
+  const empleadosRetenidos = empleadosRotados * reduccionRotacion;
+  const ahorroAnual = empleadosRetenidos * costoRotacionPorPersona;
+  
+  const roi = inversionBienestar > 0 ? ((ahorroAnual - inversionBienestar) / inversionBienestar) * 100 : 0;
+  const paybackMeses = inversionBienestar > 0 ? (inversionBienestar / (ahorroAnual / 12)) : 0;
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-success';
-    if (confidence >= 60) return 'text-warning'; 
-    return 'text-destructive';
-  };
+  const roiColor = roi >= 200 ? 'text-green-600' : roi >= 100 ? 'text-yellow-600' : 'text-red-600';
+  const roiStatus = roi >= 200 ? 'Excelente' : roi >= 100 ? 'Bueno' : roi < 0 ? 'Negativo' : 'Moderado';
+
+  const todosLosCamposCompletos = numEmpleados > 0 && rotacionActual > 0 && salarioMedio > 0 && inversionBienestar > 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header con descripción */}
-      <Alert className="border-primary/30 bg-primary/5">
-        <Brain className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Simulador What-If con Sistema Inteligente:</strong> Modelo predictivo que calcula el ROI de inversiones
-          en bienestar, usando datos reales de tu organización y algoritmos de machine learning.
-        </AlertDescription>
-      </Alert>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 bg-primary/10 rounded-2xl">
+              <Calculator className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-4xl font-bold">Calculadora ROI de Bienestar</h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Descubre cuánto puedes ahorrar invirtiendo en el bienestar de tu equipo.<br />
+            <span className="text-sm">✨ Cálculo basado en estudios de Harvard Business Review y McKinsey</span>
+          </p>
+        </div>
 
-      {/* Métricas actuales vs proyectadas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-success" />
-              <div>
-                <p className="text-2xl font-bold text-success">€{results.savings.annual.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Ahorro Anual Proyectado</p>
-              </div>
+        {/* Ejemplos rápidos */}
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">Empieza con un ejemplo</CardTitle>
+            </div>
+            <CardDescription>
+              Usa un caso real según el tamaño de tu empresa
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => cargarEjemplo('pequena')}
+              >
+                <div className="font-semibold">Pequeña (10-25)</div>
+                <div className="text-xs text-muted-foreground text-left">
+                  15 empleados • 18% rotación<br />
+                  €35k salario medio • €8k inversión
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2 border-primary"
+                onClick={() => cargarEjemplo('mediana')}
+              >
+                <div className="font-semibold text-primary">Mediana (25-100) ⭐</div>
+                <div className="text-xs text-muted-foreground text-left">
+                  50 empleados • 15% rotación<br />
+                  €45k salario medio • €25k inversión
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => cargarEjemplo('grande')}
+              >
+                <div className="font-semibold">Grande (100+)</div>
+                <div className="text-xs text-muted-foreground text-left">
+                  200 empleados • 12% rotación<br />
+                  €55k salario medio • €100k inversión
+                </div>
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <div>
-                <p className={`text-2xl font-bold ${getROIColor(results.savings.roi)}`}>
-                  {results.savings.roi}%
+        {/* Formulario paso a paso */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Inputs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Datos de tu organización
+              </CardTitle>
+              <CardDescription>
+                Completa 4 datos básicos (2 minutos)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Paso 1: Número de empleados */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                      data.numEmpleados ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      1
+                    </div>
+                    ¿Cuántos empleados tienes?
+                  </Label>
+                  {data.numEmpleados && <CheckCircle className="w-5 h-5 text-primary" />}
+                </div>
+                <Input
+                  type="number"
+                  placeholder="Ej: 50"
+                  value={data.numEmpleados}
+                  onChange={(e) => setData({...data, numEmpleados: e.target.value})}
+                  className="text-lg h-12"
+                />
+                <p className="text-xs text-muted-foreground">
+                  💡 Incluye todos los empleados de plantilla
                 </p>
-                <p className="text-xs text-muted-foreground">ROI Proyectado</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-info" />
-              <div>
-                <p className="text-2xl font-bold text-info">{results.metrics.retentionRate}%</p>
-                <p className="text-xs text-muted-foreground">Retención Proyectada</p>
+              {/* Paso 2: Rotación actual */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                      data.rotacionActual ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      2
+                    </div>
+                    ¿Cuál es tu rotación anual?
+                  </Label>
+                  {data.rotacionActual && <CheckCircle className="w-5 h-5 text-primary" />}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Ej: 15"
+                    value={data.rotacionActual}
+                    onChange={(e) => setData({...data, rotacionActual: e.target.value})}
+                    className="text-lg h-12"
+                  />
+                  <div className="flex items-center justify-center bg-muted px-4 rounded-md text-muted-foreground font-mono">
+                    %
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  💡 (Bajas voluntarias ÷ Total empleados) × 100. Promedio España: 14%
+                </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-warning" />
-              <div>
-                <p className="text-2xl font-bold text-warning">{results.metrics.productivityIncrease}%</p>
-                <p className="text-xs text-muted-foreground">Aumento Productividad</p>
+              {/* Paso 3: Salario medio */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                      data.salarioMedio ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      3
+                    </div>
+                    ¿Salario medio anual?
+                  </Label>
+                  {data.salarioMedio && <CheckCircle className="w-5 h-5 text-primary" />}
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex items-center justify-center bg-muted px-4 rounded-md text-muted-foreground">
+                    €
+                  </div>
+                  <Input
+                    type="number"
+                    placeholder="Ej: 45000"
+                    value={data.salarioMedio}
+                    onChange={(e) => setData({...data, salarioMedio: e.target.value})}
+                    className="text-lg h-12"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  💡 Salario bruto anual. Promedio España sector servicios: €40-50k
+                </p>
               </div>
-            </div>
+
+              {/* Paso 4: Inversión en bienestar */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <div className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                      data.inversionBienestar ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      4
+                    </div>
+                    ¿Cuánto invertirás en bienestar?
+                  </Label>
+                  {data.inversionBienestar && <CheckCircle className="w-5 h-5 text-primary" />}
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex items-center justify-center bg-muted px-4 rounded-md text-muted-foreground">
+                    €
+                  </div>
+                  <Input
+                    type="number"
+                    placeholder="Ej: 25000"
+                    value={data.inversionBienestar}
+                    onChange={(e) => setData({...data, inversionBienestar: e.target.value})}
+                    className="text-lg h-12"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  💡 Recomendado: €500-1000 por empleado/año (plataforma + acciones)
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resultados */}
+          <Card className={cn(
+            "border-2",
+            todosLosCamposCompletos ? "border-primary/50 bg-gradient-to-br from-primary/5 to-transparent" : "border-dashed"
+          )}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Resultados de tu inversión
+              </CardTitle>
+              {!todosLosCamposCompletos && (
+                <CardDescription>
+                  Completa los 4 datos para ver los resultados
+                </CardDescription>
+              )}
+            </CardHeader>
+            <CardContent>
+              {!todosLosCamposCompletos ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  <Calculator className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                  <p>Rellena los datos para calcular tu ROI</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* ROI Principal */}
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/20">
+                    <div className="text-center space-y-2">
+                      <div className="text-sm text-muted-foreground font-medium">Retorno de Inversión (ROI)</div>
+                      <div className={cn("text-6xl font-bold", roiColor)}>
+                        {roi.toFixed(0)}%
+                      </div>
+                      <Badge variant={roi >= 200 ? "default" : roi >= 100 ? "secondary" : "destructive"} className="text-sm">
+                        {roiStatus}
+                      </Badge>
+                      <p className="text-xs text-muted-foreground pt-2">
+                        Por cada €1 invertido, recuperas €{((roi/100) + 1).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Métricas clave */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <div className="text-xs text-muted-foreground mb-1">Ahorro Anual</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        €{ahorroAnual.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <div className="text-xs text-muted-foreground mb-1">Periodo de Retorno</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {paybackMeses.toFixed(1)} meses
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                      <div className="text-xs text-muted-foreground mb-1">Empleados Retenidos</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {empleadosRetenidos.toFixed(1)}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                      <div className="text-xs text-muted-foreground mb-1">Reducción Rotación</div>
+                      <div className="text-2xl font-bold text-orange-600">
+                        -{(reduccionRotacion * 100).toFixed(0)}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Explicación clara */}
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription className="text-sm space-y-2">
+                      <p className="font-semibold">¿Cómo se calcula esto?</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• <strong>Costo de rotación:</strong> {empleadosRotados.toFixed(1)} empleados × €{costoRotacionPorPersona.toLocaleString('es-ES', { maximumFractionDigits: 0 })} = €{costoRotacionAnual.toLocaleString('es-ES', { maximumFractionDigits: 0 })}/año</li>
+                        <li>• <strong>Con bienestar:</strong> Reduces 35% la rotación = {empleadosRetenidos.toFixed(1)} empleados retenidos</li>
+                        <li>• <strong>Ahorro:</strong> €{ahorroAnual.toLocaleString('es-ES', { maximumFractionDigits: 0 })} - €{inversionBienestar.toLocaleString('es-ES', { maximumFractionDigits: 0 })} inversión = {roi.toFixed(0)}% ROI</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground pt-2">
+                        📊 Basado en datos de Harvard Business Review, Gallup y McKinsey
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+
+                  {/* CTA */}
+                  <Button className="w-full h-12 text-base" size="lg">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Implementar Programa de Bienestar
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Nota metodológica */}
+        <Card className="border-muted-foreground/20">
+          <CardHeader>
+            <CardTitle className="text-sm">Metodología de Cálculo</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs text-muted-foreground space-y-2">
+            <p><strong>Costo de rotación por empleado:</strong> 1.5× salario anual (incluye reclutamiento, onboarding, pérdida de productividad durante 3-6 meses)</p>
+            <p><strong>Reducción de rotación esperada:</strong> 35% promedio (estudios muestran rangos 25-40% con programas de bienestar efectivos)</p>
+            <p><strong>Fuentes:</strong> Harvard Business Review (2023), Gallup State of Workplace (2024), McKinsey Health Institute</p>
           </CardContent>
         </Card>
       </div>
-
-      <Tabs defaultValue="parameters" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="parameters">Parámetros</TabsTrigger>
-          <TabsTrigger value="scenarios">Escenarios</TabsTrigger>
-          <TabsTrigger value="results">Resultados</TabsTrigger>
-          <TabsTrigger value="insights">Insights Inteligentes</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="parameters" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Panel de configuración */}
-            <Card className="p-6">
-              <CardHeader className="p-0 mb-6">
-                <CardTitle className="flex items-center space-x-2">
-                  <Calculator className="h-5 w-5 text-primary" />
-                  <span>Parámetros de Simulación</span>
-                </CardTitle>
-              </CardHeader>
-              
-              <div className="space-y-6">
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Tamaño del Equipo: {simulationParams.teamSize[0]} personas
-                  </Label>
-                  <Slider
-                    value={simulationParams.teamSize}
-                    onValueChange={(value) => handleParameterChange('teamSize', value)}
-                    max={50}
-                    min={5}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Tasa de Rotación Actual: {simulationParams.turnoverRate[0]}%
-                  </Label>
-                  <Slider
-                    value={simulationParams.turnoverRate}
-                    onValueChange={(value) => handleParameterChange('turnoverRate', value)}
-                    max={50}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Inversión en Bienestar: €{simulationParams.wellnessInvestment[0].toLocaleString()}
-                  </Label>
-                  <Slider
-                    value={simulationParams.wellnessInvestment}
-                    onValueChange={(value) => handleParameterChange('wellnessInvestment', value)}
-                    max={15000}
-                    min={1000}
-                    step={500}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Nivel de Flexibilidad: {simulationParams.flexibilityLevel[0]}%
-                  </Label>
-                  <Slider
-                    value={simulationParams.flexibilityLevel}
-                    onValueChange={(value) => handleParameterChange('flexibilityLevel', value)}
-                    max={100}
-                    min={0}
-                    step={5}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Presupuesto Formación: €{simulationParams.trainingBudget[0].toLocaleString()}
-                  </Label>
-                  <Slider
-                    value={simulationParams.trainingBudget}
-                    onValueChange={(value) => handleParameterChange('trainingBudget', value)}
-                    max={10000}
-                    min={500}
-                    step={250}
-                    className="w-full"
-                  />
-                </div>
-
-                <Button 
-                  className="w-full" 
-                  onClick={handleRunSimulation}
-                  disabled={isRunningSimulation}
-                >
-                  {isRunningSimulation ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Ejecutando Simulación...
-                    </>
-                  ) : (
-                    <>
-                      <PlayCircle className="h-4 w-4 mr-2" />
-                      Ejecutar Simulación Inteligente
-                    </>
-                  )}
-                </Button>
-              </div>
-            </Card>
-
-            {/* Preview de resultados en tiempo real */}
-            <Card className="p-6">
-              <CardHeader className="p-0 mb-6">
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 className="h-5 w-5 text-success" />
-                  <span>Preview de Resultados</span>
-                </CardTitle>
-              </CardHeader>
-              
-              <div className="space-y-4">
-                <div className="p-4 bg-success/10 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Satisfacción Empleados</span>
-                    <span className="text-lg font-bold text-success">{results.metrics.employeeSatisfaction}%</span>
-                  </div>
-                  <Progress value={results.metrics.employeeSatisfaction} className="h-2" />
-                </div>
-
-                <div className="p-4 bg-primary/10 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Retención de Talento</span>
-                    <span className="text-lg font-bold text-primary">{results.metrics.retentionRate}%</span>
-                  </div>
-                  <Progress value={results.metrics.retentionRate} className="h-2" />
-                </div>
-
-                <div className="p-4 bg-info/10 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Aumento Productividad</span>
-                    <span className="text-lg font-bold text-info">{results.metrics.productivityIncrease}%</span>
-                  </div>
-                  <Progress value={results.metrics.productivityIncrease} className="h-2" />
-                </div>
-
-                <div className="p-4 bg-warning/10 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Score de Bienestar</span>
-                    <span className="text-lg font-bold text-warning">{results.metrics.wellnessScore}%</span>
-                  </div>
-                  <Progress value={results.metrics.wellnessScore} className="h-2" />
-                </div>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="scenarios" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Escenarios Predefinidos</h3>
-              <p className="text-sm text-muted-foreground">
-                Configuraciones optimizadas según diferentes estrategias de inversión
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-6">
-            {scenarios.map((scenario) => (
-              <Card 
-                key={scenario.id} 
-                className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
-                  activeScenario === scenario.id ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => handleLoadScenario(scenario.id)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h4 className="font-semibold text-lg">{scenario.name}</h4>
-                      {activeScenario === scenario.id && (
-                        <Badge className="bg-primary text-primary-foreground">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Activo
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {scenario.description}
-                    </p>
-                    
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Inversión Bienestar</p>
-                        <p className="font-semibold">€{scenario.params.wellness.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Flexibilidad</p>
-                        <p className="font-semibold">{scenario.params.flexibility}%</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Formación</p>
-                        <p className="font-semibold">€{scenario.params.training.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <div className="mb-2">
-                      <p className="text-sm text-muted-foreground">ROI Esperado</p>
-                      <p className={`text-2xl font-bold ${getROIColor(scenario.expectedROI)}`}>
-                        {scenario.expectedROI}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Confianza</p>
-                      <p className={`text-sm font-medium ${getConfidenceColor(scenario.confidence)}`}>
-                        {scenario.confidence}%
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="results" className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Análisis Detallado de Resultados</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              Comparativa entre situación actual y proyecciones con inversión en bienestar
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Costos actuales vs proyectados */}
-            <Card className="p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-lg">Análisis de Costos</CardTitle>
-              </CardHeader>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm font-medium">Reclutamiento</span>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-destructive">€{results.currentCosts.recruitment.toLocaleString()}</div>
-                    <div className="text-sm text-success">→ €{results.projectedCosts.recruitment.toLocaleString()}</div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm font-medium">Formación</span>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-destructive">€{results.currentCosts.training.toLocaleString()}</div>
-                    <div className="text-sm text-success">→ €{results.projectedCosts.training.toLocaleString()}</div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm font-medium">Pérdida Productividad</span>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-destructive">€{results.currentCosts.productivity.toLocaleString()}</div>
-                    <div className="text-sm text-success">→ €{results.projectedCosts.productivity.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* ROI y métricas */}
-            <Card className="p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-lg">Retorno de Inversión</CardTitle>
-              </CardHeader>
-              <div className="space-y-4">
-                <div className="text-center p-6 bg-gradient-to-r from-success/10 to-success/5 rounded-lg">
-                  <div className="text-4xl font-bold text-success mb-2">
-                    €{results.savings.annual.toLocaleString()}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Ahorro Anual Total</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-primary/10 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">{results.savings.percentage}%</div>
-                    <p className="text-xs text-muted-foreground">Reducción Costos</p>
-                  </div>
-                  <div className="text-center p-4 bg-info/10 rounded-lg">
-                    <div className="text-2xl font-bold text-info">{results.savings.roi}%</div>
-                    <p className="text-xs text-muted-foreground">ROI</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="insights" className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Insights y Recomendaciones Inteligentes</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              Análisis inteligente basado en patrones de datos y mejores prácticas del sector
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <Card className="p-6 border-l-4 border-l-success">
-              <div className="flex items-start space-x-3">
-                <Lightbulb className="h-5 w-5 text-success mt-1" />
-                <div>
-                  <h4 className="font-semibold text-success mb-2">💡 Oportunidad de Alto Impacto</h4>
-                  <p className="text-sm mb-3">
-                    Nuestro modelo identifica que incrementar la flexibilidad laboral al 80% 
-                    generaría el mayor ROI con menor riesgo.
-                  </p>
-                  <Badge className="bg-success/10 text-success">Confianza: 89%</Badge>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 border-l-4 border-l-warning">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="h-5 w-5 text-warning mt-1" />
-                <div>
-                  <h4 className="font-semibold text-warning mb-2">⚠️ Punto de Atención</h4>
-                  <p className="text-sm mb-3">
-                    La inversión actual en formación es 40% inferior al benchmark del sector. 
-                    Aumentarla optimizaría significativamente los resultados.
-                  </p>
-                  <Badge className="bg-warning/10 text-warning">Impacto: Alto</Badge>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 border-l-4 border-l-info">
-              <div className="flex items-start space-x-3">
-                <Target className="h-5 w-5 text-info mt-1" />
-                <div>
-                  <h4 className="font-semibold text-info mb-2">🎯 Recomendación Estratégica</h4>
-                  <p className="text-sm mb-3">
-                    Implementar la inversión de forma gradual durante 6 meses maximizaría 
-                    la adopción y minimizaría la resistencia al cambio.
-                  </p>
-                  <Badge className="bg-info/10 text-info">Implementación: Gradual</Badge>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 border-l-4 border-l-primary">
-              <div className="flex items-start space-x-3">
-                <Zap className="h-5 w-5 text-primary mt-1" />
-                <div>
-                  <h4 className="font-semibold text-primary mb-2">⚡ Quick Win</h4>
-                  <p className="text-sm mb-3">
-                    Implementar check-ins semanales de bienestar requiere inversión mínima 
-                    pero genera impacto inmediato en retención.
-                  </p>
-                  <Badge className="bg-primary/10 text-primary">Tiempo: 2 semanas</Badge>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Próximos pasos recomendados */}
-          <Card className="p-6">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle className="text-lg">Próximos Pasos Recomendados</CardTitle>
-            </CardHeader>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-                  1
-                </div>
-                <span className="text-sm">Aprobar presupuesto de €{simulationParams.wellnessInvestment[0].toLocaleString()} para iniciativa de bienestar</span>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-                  2
-                </div>
-                <span className="text-sm">Implementar política de flexibilidad al {simulationParams.flexibilityLevel[0]}%</span>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-                  3
-                </div>
-                <span className="text-sm">Establecer métricas de seguimiento trimestral con REBEN</span>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 };
