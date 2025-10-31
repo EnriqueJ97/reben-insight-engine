@@ -6,10 +6,24 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calculator, TrendingUp, Users, Euro, Target, CheckCircle, ArrowRight, Lightbulb, Info } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calculator, TrendingUp, Users, Euro, Target, CheckCircle, ArrowRight, Lightbulb, Info, Sparkles, Brain, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface PolicyRecommendation {
+  name: string;
+  costAnual: number;
+  reduccionRotacion: number;
+  aumentoSatisfaccion: number;
+  roi: number;
+  justificacion: string;
+  prioridad: 'Alta' | 'Media' | 'Baja';
+}
 
 export const SimuladorWhatIf = () => {
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
     numEmpleados: '',
@@ -17,6 +31,8 @@ export const SimuladorWhatIf = () => {
     salarioMedio: '',
     inversionBienestar: ''
   });
+  const [recommendations, setRecommendations] = useState<PolicyRecommendation[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   // Ejemplos realistas por tamaño de empresa
   const ejemplos = {
@@ -58,6 +74,48 @@ export const SimuladorWhatIf = () => {
   const roiStatus = roi >= 200 ? 'Excelente' : roi >= 100 ? 'Bueno' : roi < 0 ? 'Negativo' : 'Moderado';
 
   const todosLosCamposCompletos = numEmpleados > 0 && rotacionActual > 0 && salarioMedio > 0 && inversionBienestar > 0;
+
+  const obtenerRecomendaciones = async () => {
+    if (!todosLosCamposCompletos) {
+      toast({
+        title: "Datos incompletos",
+        description: "Completa los 4 campos para obtener recomendaciones",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoadingRecommendations(true);
+    try {
+      const { data: functionData, error } = await supabase.functions.invoke('ai-policy-recommendations', {
+        body: {
+          numEmpleados,
+          rotacionActual,
+          salarioMedio,
+          inversionBienestar
+        }
+      });
+
+      if (error) throw error;
+      
+      if (functionData?.recommendations) {
+        setRecommendations(functionData.recommendations);
+        toast({
+          title: "✨ Recomendaciones generadas",
+          description: `${functionData.recommendations.length} políticas personalizadas para tu empresa`
+        });
+      }
+    } catch (error: any) {
+      console.error('Error obteniendo recomendaciones:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudieron generar recomendaciones",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
@@ -128,8 +186,19 @@ export const SimuladorWhatIf = () => {
           </CardContent>
         </Card>
 
-        {/* Formulario paso a paso */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Tabs principales */}
+        <Tabs defaultValue="calculadora" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="calculadora">Calculadora ROI</TabsTrigger>
+            <TabsTrigger value="recomendaciones">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Recomendaciones IA
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="calculadora" className="space-y-6">
+            {/* Formulario paso a paso */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Inputs */}
           <Card>
             <CardHeader>
@@ -362,17 +431,164 @@ export const SimuladorWhatIf = () => {
           </Card>
         </div>
 
-        {/* Nota metodológica */}
-        <Card className="border-muted-foreground/20">
-          <CardHeader>
-            <CardTitle className="text-sm">Metodología de Cálculo</CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-muted-foreground space-y-2">
-            <p><strong>Costo de rotación por empleado:</strong> 1.5× salario anual (incluye reclutamiento, onboarding, pérdida de productividad durante 3-6 meses)</p>
-            <p><strong>Reducción de rotación esperada:</strong> 35% promedio (estudios muestran rangos 25-40% con programas de bienestar efectivos)</p>
-            <p><strong>Fuentes:</strong> Harvard Business Review (2023), Gallup State of Workplace (2024), McKinsey Health Institute</p>
-          </CardContent>
-        </Card>
+            {/* Nota metodológica */}
+            <Card className="border-muted-foreground/20">
+              <CardHeader>
+                <CardTitle className="text-sm">Metodología de Cálculo</CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-muted-foreground space-y-2">
+                <p><strong>Costo de rotación por empleado:</strong> 1.5× salario anual (incluye reclutamiento, onboarding, pérdida de productividad durante 3-6 meses)</p>
+                <p><strong>Reducción de rotación esperada:</strong> 35% promedio (estudios muestran rangos 25-40% con programas de bienestar efectivos)</p>
+                <p><strong>Fuentes:</strong> Harvard Business Review (2023), Gallup State of Workplace (2024), McKinsey Health Institute</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab de Recomendaciones con IA */}
+          <TabsContent value="recomendaciones" className="space-y-6">
+            <Alert className="border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
+              <Brain className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Recomendaciones Inteligentes:</strong> La IA analiza tus datos y sugiere las 5 políticas de bienestar con mejor ROI para tu organización.
+              </AlertDescription>
+            </Alert>
+
+            {!todosLosCamposCompletos ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Calculator className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                  <p className="text-muted-foreground mb-4">
+                    Completa los 4 campos en la pestaña "Calculadora ROI" para obtener recomendaciones personalizadas
+                  </p>
+                </CardContent>
+              </Card>
+            ) : recommendations.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center space-y-4">
+                  <Sparkles className="w-16 h-16 mx-auto text-primary" />
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Genera recomendaciones con IA</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Obtén 5 políticas personalizadas basadas en tus datos:<br />
+                      {numEmpleados} empleados • {rotacionActual}% rotación • €{inversionBienestar.toLocaleString()} presupuesto
+                    </p>
+                  </div>
+                  <Button 
+                    size="lg" 
+                    onClick={obtenerRecomendaciones}
+                    disabled={loadingRecommendations}
+                    className="gap-2"
+                  >
+                    {loadingRecommendations ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Analizando con IA...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="w-5 h-5" />
+                        Obtener Recomendaciones
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-semibold">Políticas Recomendadas</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Basadas en {numEmpleados} empleados con {rotacionActual}% de rotación
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={obtenerRecomendaciones}
+                    disabled={loadingRecommendations}
+                  >
+                    {loadingRecommendations ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Regenerar"
+                    )}
+                  </Button>
+                </div>
+
+                {recommendations.map((rec, idx) => (
+                  <Card key={idx} className="border-2 hover:border-primary/50 transition-colors">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className={cn(
+                              "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
+                              rec.prioridad === 'Alta' ? "bg-green-500/20 text-green-600" :
+                              rec.prioridad === 'Media' ? "bg-yellow-500/20 text-yellow-600" :
+                              "bg-blue-500/20 text-blue-600"
+                            )}>
+                              {idx + 1}
+                            </div>
+                            <CardTitle className="text-lg">{rec.name}</CardTitle>
+                            <Badge variant={
+                              rec.prioridad === 'Alta' ? 'default' : 
+                              rec.prioridad === 'Media' ? 'secondary' : 
+                              'outline'
+                            }>
+                              {rec.prioridad}
+                            </Badge>
+                          </div>
+                          <CardDescription className="text-sm">
+                            {rec.justificacion}
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                          <div className="text-xs text-muted-foreground mb-1">Costo Anual</div>
+                          <div className="text-lg font-bold text-primary">
+                            €{rec.costAnual.toLocaleString()}
+                          </div>
+                        </div>
+                        
+                        <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                          <div className="text-xs text-muted-foreground mb-1">↓ Rotación</div>
+                          <div className="text-lg font-bold text-green-600">
+                            -{rec.reduccionRotacion}%
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                          <div className="text-xs text-muted-foreground mb-1">↑ Satisfacción</div>
+                          <div className="text-lg font-bold text-blue-600">
+                            +{rec.aumentoSatisfaccion}%
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                          <div className="text-xs text-muted-foreground mb-1">ROI 12 meses</div>
+                          <div className="text-lg font-bold text-purple-600">
+                            {rec.roi}%
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                <Alert className="mt-6">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    <strong>Nota:</strong> Los valores son estimaciones basadas en estudios de mercado y datos de empresas similares. 
+                    Los resultados reales pueden variar según la cultura organizacional y la calidad de la implementación.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

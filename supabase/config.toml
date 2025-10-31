@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.hr-ai-chat]
 verify_jwt = true
+
+[functions.ai-policy-recommendations]
+verify_jwt = false
