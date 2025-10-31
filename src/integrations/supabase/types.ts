@@ -2346,6 +2346,68 @@ export type Database = {
           },
         ]
       }
+      scale_scores: {
+        Row: {
+          calculated_at: string | null
+          completion_percentage: number | null
+          created_at: string | null
+          dimension: string | null
+          id: string
+          interpretation: string | null
+          last_updated: string | null
+          percentile: number | null
+          questions_answered: number
+          questions_total: number
+          scale_code: string
+          scale_name: string
+          score: number
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          dimension?: string | null
+          id?: string
+          interpretation?: string | null
+          last_updated?: string | null
+          percentile?: number | null
+          questions_answered: number
+          questions_total: number
+          scale_code: string
+          scale_name: string
+          score: number
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          dimension?: string | null
+          id?: string
+          interpretation?: string | null
+          last_updated?: string | null
+          percentile?: number | null
+          questions_answered?: number
+          questions_total?: number
+          scale_code?: string
+          scale_name?: string
+          score?: number
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scale_scores_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scenario_outputs: {
         Row: {
           baseline: number | null
@@ -2454,6 +2516,51 @@ export type Database = {
           status?: string
           tenant_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      scientific_questions: {
+        Row: {
+          created_at: string | null
+          dimension: string
+          id: string
+          is_active: boolean | null
+          question_order: number
+          question_text: string
+          response_scale: string
+          reverse_scored: boolean | null
+          scale_code: string
+          scale_name: string
+          timing: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          dimension: string
+          id?: string
+          is_active?: boolean | null
+          question_order: number
+          question_text: string
+          response_scale: string
+          reverse_scored?: boolean | null
+          scale_code: string
+          scale_name: string
+          timing: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          dimension?: string
+          id?: string
+          is_active?: boolean | null
+          question_order?: number
+          question_text?: string
+          response_scale?: string
+          reverse_scored?: boolean | null
+          scale_code?: string
+          scale_name?: string
+          timing?: string
+          weight?: number | null
         }
         Relationships: []
       }
@@ -2885,6 +2992,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_question_history: {
+        Row: {
+          answered_at: string | null
+          created_at: string | null
+          id: string
+          question_id: string
+          response_value: number
+          tenant_id: string
+          timing: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          created_at?: string | null
+          id?: string
+          question_id: string
+          response_value: number
+          tenant_id: string
+          timing: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          created_at?: string | null
+          id?: string
+          question_id?: string
+          response_value?: number
+          tenant_id?: string
+          timing?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_question_history_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "scientific_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_question_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_endpoints: {
         Row: {
           created_at: string
@@ -3032,34 +3187,31 @@ export type Database = {
           volume_discount: number
         }[]
       }
-      cleanup_expired_aliases: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      create_employee_alias: {
-        Args: { employee_id: string }
-        Returns: string
-      }
+      cleanup_expired_aliases: { Args: never; Returns: undefined }
+      create_employee_alias: { Args: { employee_id: string }; Returns: string }
       generate_evaluation_alias: {
         Args: { campaign_uuid: string; user_uuid: string }
         Returns: string
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_user_tenant_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      get_current_user_role: { Args: never; Returns: string }
+      get_current_user_tenant_id: { Args: never; Returns: string }
+      get_next_scientific_question: {
+        Args: { p_timing: string; p_user_id: string }
+        Returns: {
+          dimension: string
+          question_id: string
+          question_text: string
+          response_scale: string
+          reverse_scored: boolean
+          scale_code: string
+          scale_name: string
+        }[]
       }
       grant_identity_consent: {
         Args: { message_uuid: string }
         Returns: boolean
       }
-      is_founder_email: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
+      is_founder_email: { Args: { user_email: string }; Returns: boolean }
       send_intervention_message: {
         Args: {
           alert_uuid: string
